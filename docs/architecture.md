@@ -46,6 +46,14 @@ Server pages compose fixture content. Local filters, dialogs, editors, clipboard
 
 All `/app` routes inherit noindex and are excluded from the sitemap/robots-allowed area. The visible demo workspace is not authenticated or authorized. See `dashboard-architecture.md` for component/trust boundaries and `dashboard-navigation.md` for the complete route map.
 
+## Prompt 4 administration frontend architecture
+
+Prompt 4 adds an independent noindex `/admin` nested shell with 13 operations routes, grouped navigation, global local-fixture search, notifications, demo profile and breadcrumbs. Public/auth and customer shells remain isolated. An admin catch-all supplies safe unknown-route UI without a parent loading boundary that could obscure 404 statuses.
+
+`components/admin/` contains data-oriented shell/table/chart/dialog primitives and feature workspaces. `lib/contracts/admin.ts` defines display-safe operational DTOs, proposed permissions and mutation-like intents. `lib/admin/` owns deterministic fictional fixtures, navigation, UTC/minor-unit formatting and documented metric calculations. `lib/mocks/admin-preview.ts` is the only admin mutation adapter and returns non-persistent results with zero credits/payment changes and no persisted audit.
+
+Native tables, responsive named scroll regions and local filter/pagination are preferred to an incomplete ARIA grid. Lightweight SVG/HTML charts include text and tabular equivalents. No table/chart/RBAC/database/provider package is introduced. Real admin identity, authorization, queries, health checks, financial/credit operations and audit persistence remain Prompt 5 work. See `admin-architecture.md`, `admin-permissions.md` and `admin-data-contracts.md`.
+
 ## Dependency direction
 
 Routes compose content and components. Content modules do not import React or route code. UI primitives have no product/business rules. Pricing displayed on the public site is presentational typed content; later server configuration becomes authoritative and must be reconciled before checkout. SEO helpers receive explicit canonical paths and never infer request hosts from untrusted headers. JSON-LD is serialized by a small component that escapes `<` to reduce script-breakout risk.

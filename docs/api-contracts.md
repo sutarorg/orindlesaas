@@ -95,6 +95,16 @@ Future chat transport maps provider UI message parts to display-safe text/code/f
 
 Future project/asset/wallet/settings/website endpoints must verify identity and per-object authorization, runtime-validate inputs and return safe DTOs. The server issues model availability and quotes, calculates final metered credits, handles idempotent payment fulfillment and controls publish/deployment. Browser fixture values are never accepted as balance, payment, ownership, progress or entitlement evidence.
 
+## Administration frontend contract (Prompt 4)
+
+`lib/contracts/admin.ts` defines the display-safe operations boundary. `AdminPreviewResult` returns only `preview`/`unavailable`, `persisted: false`, `auditPersisted: false`, `paymentChanged: false` and `creditsChanged: 0`. It cannot represent a successful real administration operation.
+
+`AdminService` covers account status/session intent, provider/model configuration, model pricing, credit packages, payment reconciliation, credit adjustment, dispute review, job retry and admin preferences. Requests carry fixture IDs and operator-entered intent/reason only. Credit adjustment additionally requires category, ticket/reference, signed non-zero integer amount and an explicit confirmation step; its optional `auditPreview` is always non-persistent.
+
+Future admin queries are server-bounded and permission-filtered. Future mutations require verified current admin membership, explicit route/action/field/object permissions, step-up evidence where required, runtime validation, idempotency, current-state checks and an attributable audit event. Raw provider/payment errors, secrets, customer prompts/files/code and unrestricted deployment identifiers never enter these DTOs.
+
+`admin-data-contracts.md` defines the operational records and financial formulas; `admin-permissions.md` defines proposed permission bundles. Neither document is evidence that those controls exist.
+
 ## Common error envelope
 
 Future endpoints use a safe error code/message, request correlation ID and appropriate HTTP status. Do not leak stack traces, provider payloads, secrets or internal cost. Mutations require CSRF/origin defenses as applicable, authentication, authorization, validation, rate limits and idempotency.

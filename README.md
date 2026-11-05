@@ -2,7 +2,7 @@
 
 **Everything AI. One Platform.**
 
-Premium-white public website and authentication frontend for Orindle Chat, Image Studio, Video Studio and Websites. Built with Next.js App Router, React, strict TypeScript, Tailwind CSS, shadcn/ui patterns, Radix primitives, Lucide and Framer Motion.
+Premium-white public website, authentication frontend, customer demo workspace and operations admin demo for Orindle Chat, Image Studio, Video Studio and Websites. Built with Next.js App Router, React, strict TypeScript, Tailwind CSS, shadcn/ui patterns, Radix primitives, Lucide and Framer Motion.
 
 ## Develop
 
@@ -15,6 +15,10 @@ npm run dev
 ## Authentication frontend
 
 The noindex routes `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/verify-email` and `/auth/callback` provide local validation, accessible password controls and explicitly preview-only states. They do not create accounts/sessions, contact OAuth providers, send email or change passwords. Real Supabase and server authorization belong to Prompt 5.
+
+## Customer and admin demos
+
+The noindex `/app` workspace demonstrates all four customer products with typed local fixtures. The separate noindex `/admin` workspace contains 13 operational destinations for users, catalogue/pricing, payments/usage, jobs/websites, adjustments and settings. Every administrative action is an explicitly non-persistent preview: there is no active admin role, real payment/provider connection, wallet mutation or persistent audit. See `docs/handoff-prompt5.md` for backend and authorization contracts.
 
 ## Validate
 
@@ -36,4 +40,4 @@ npm run test:e2e
 
 See `docs/quality-assurance.md` for the optional npm-packaged Chromium fallback used in this sandbox and the final validation evidence.
 
-This stage is frontend-only. It does not implement real authentication/session handling, payments, credit deductions, AI generation, database writes, email delivery or deployment. See [`docs/README.md`](docs/README.md) for architecture, design, requirements, research and validation evidence.
+This stage is frontend-only. It does not implement real authentication/session handling, admin authorization, payments, credit deductions, AI generation, database writes, email delivery or deployment. Final frontend evidence includes 57/57 unit tests and 91/91 production Playwright tests. See [`docs/README.md`](docs/README.md) for architecture, design, requirements, research and validation evidence.

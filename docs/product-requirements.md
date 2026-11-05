@@ -33,6 +33,16 @@ Orindle provides exactly four primary products under one account and workspace: 
 - Implement cross-product projects, searchable/filterable library, history, exact one-time wallet packs/history and profile/security/preferences/connected-account/deletion-request settings previews.
 - Use typed fixtures and preview adapters only. Do not claim authentication, persistence, AI generation, uploads, payment, credit changes, deployment or account deletion. No real backend integration belongs to this stage.
 
+## Prompt 4 administration frontend requirements
+
+- Deliver a separate noindex `/admin` operations shell and all 13 routes for Overview, Users, AI Models, Providers, Model Pricing, Credit Packages, Payments, Transactions, AI Usage & Costs, Generation Jobs, Website Projects, Adjustments & Disputes and Admin Settings.
+- Provide responsive semantic tables, working local search/filter/pagination, useful details, accessible charts, confirmations and explicit preview feedback. Prioritize discovery, evidence and safe action flows over decorative analytics.
+- Use clearly labelled fictional fixtures and typed preview adapters only. Define captured payment value, usage value, provider cost and gross contribution precisely; never present modeled values as actual Orindle financial performance.
+- Require reason/confirmation for privileged intents and a non-persistent audit preview for credit adjustments. Do not expose secrets, customer files/code, raw logs or payment details.
+- Document proposed route/action/field permissions for Prompt 5. Do not implement or claim actual authorization, database access, payment/provider/user/credit mutation, live health checks or persistent audit.
+
+`admin-requirements.md` contains the complete route acceptance criteria and `admin-permissions.md` contains the future access contract.
+
 ## Pricing truth
 
 | Pack | One-time price | Credits |
@@ -49,4 +59,4 @@ A Credits Policy explains purchases and usage without removing statutory rights,
 
 ## Out of scope
 
-Real signup/login, checkout, authoritative credit balance/ledger, model execution, file upload/storage, website deployment, email delivery, admin and persistent customer workspace behavior. Prompt 3 implements the customer dashboard frontend with clearly labelled fixtures; real data and operations remain unimplemented.
+Real signup/login, checkout, authoritative credit balance/ledger, model execution, file upload/storage, website deployment, email delivery, administrative authorization/database access and persistent customer/admin behavior. Prompts 3 and 4 implement customer and admin frontends with clearly labelled fixtures; real data and operations remain unimplemented.

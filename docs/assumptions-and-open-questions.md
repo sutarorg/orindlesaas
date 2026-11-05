@@ -19,5 +19,8 @@
 6. What retention periods and subprocessors must the production Privacy Policy enumerate?
 7. Is customer consent required for cookies/analytics in target markets, and which consented analytics system will be used?
 8. What accessibility assistive-technology matrix and real-user performance telemetry will be available before launch?
+9. Which production admin roles/permission bundles are approved, who may assign them, and which operations require dual review or time-bound break-glass access?
+10. Which finance-owned definitions, time zones, tax/refund/chargeback treatments and provider-invoice reconciliation cadence determine revenue, usage value, cost and contribution?
+11. What admin audit retention, evidence access, redaction and incident-escalation policies apply to account, payment, credit, provider and deployment operations?
 
 None of these questions blocks the static frontend. They do block truthful production claims, real payments or launch sign-off.

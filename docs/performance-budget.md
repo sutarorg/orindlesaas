@@ -26,4 +26,4 @@ Lighthouse, CPU/network-throttled profiling and field Core Web Vitals were not r
 
 ## Later-stage watch items
 
-AI SDK, dashboard charts, media players and admin tooling must not enter the public shared bundle. Generated media needs responsive variants and poster dimensions. R2/image optimizer caching and third-party script consent require separate budgets.
+AI SDK, dashboard charts, media players and admin tooling must not enter the public shared bundle. Prompt 4 uses native semantic tables and lightweight SVG/HTML figures rather than a chart/table dependency; admin client code stays in its route subtree. Generated media needs responsive variants and poster dimensions. R2/image optimizer caching and third-party script consent require separate budgets. Future large server datasets need bounded pagination rather than serializing an entire operations ledger to the browser.

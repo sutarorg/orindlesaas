@@ -4,9 +4,45 @@ Last updated: **2026-11-05**.
 
 ## Current status
 
-**Prompt 1 and Prompt 2 are merged and validated. Prompt 3’s complete customer dashboard frontend is implemented and validated on `arena/48bf0838-orindlesaas`.** The customer application remains an explicitly fixture-driven frontend. Real Supabase authentication, session/cookie handling, database, payments, credit deductions, AI generation, uploads, email delivery and deployment remain unimplemented.
+**Prompts 1–4 are implemented and validated as frontend stages.** The customer and admin applications are explicitly fixture-driven frontends. Real Supabase authentication, authorization, session/cookie handling, database, payments, credit deductions, AI generation, uploads, email delivery, deployment and persistent administrative operations remain unimplemented.
 
 The repository began Prompt 1 with only a minimal `README.md`; its 35-file documentation baseline was created before application code. Prompt 2 adds `authentication-design.md` and `authentication-flows.md`, updates the shared architecture/routes/requirements/security docs and creates the Prompt 3 shell handoff before changing auth application code.
+
+## Prompt 4 documentation baseline — completed 2026-11-05
+
+- Read the shared documentation and `handoff-prompt4.md`; inspected the conceptual public/auth/dashboard contracts and confirmed there is no implemented Drizzle schema, route handler, admin repository or authorization layer.
+- Researched WAI native table/grid/dialog/status/chart guidance, Carbon/PatternFly data-table/toolbar/chart patterns and OWASP authorization/logging guidance before application code.
+- Created `admin-architecture.md`, `admin-requirements.md`, `admin-permissions.md`, `admin-navigation.md`, `admin-data-contracts.md` and `admin-design.md`.
+- Defined 13 noindex `/admin` routes, responsive semantic tables, local filter/pagination/search, accessible chart equivalents, reasoned two-step previews and explicitly fictional operational data.
+- Defined integer-cent/credit arithmetic and separated captured payment value, customer usage value, provider cost and gross contribution. No actual financial or health claim is permitted.
+- Prepared `handoff-prompt5.md` with every administrative operation, proposed permission and backend expectation. Actual authentication/RBAC/database/payment/provider/credit/audit behavior remains unimplemented.
+
+The documentation checkpoint contains 45 shared Markdown documents. Final implementation evidence is recorded separately below.
+
+## Prompt 4 implementation — completed 2026-11-05
+
+- Added the independent noindex `/admin` shell with all 13 destinations, responsive sidebar/mobile drawer, breadcrumbs, local global search, fixture notifications/profile controls, admin-safe error/404 states and crawler exclusions. Unknown admin destinations return real 404 responses.
+- Added typed deterministic fixtures for users, providers, models/prices, exact credit packs, payments, transactions, usage/costs, jobs, websites, disputes, audit examples and 90 UTC trend days. Shared helpers provide inclusive ranges, financial arithmetic, breakdowns, formatting, local search and clamped pagination.
+- Built semantic native tables, labelled scroll regions, pagination, accessible SVG trends with exact-value tables, status/notice/metric primitives and reasoned two-step confirmation dialogs. No incomplete ARIA grid is used.
+- Implemented Overview, Users, AI Models, Providers, Model Pricing, Credit Packages, Payments, Transactions, AI Usage & Costs, Generation Jobs, Website Projects, Adjustments & Disputes and Admin Settings. Filters, details, local preferences and every configuration/action preview are functional without persistence.
+- Credit adjustments require a fixture user, bounded signed integer amount, category, ticket/reference and substantive reason, followed by explicit review. The result contains an ephemeral audit preview with actor/action/target/reason/reference/summary/time and `persisted: false`; real credits and audit counts remain zero.
+- Added 17 admin unit/component tests and 14 admin Playwright tests while preserving every public/auth/customer regression. Production visual/runtime review covered all routes and representative desktop/mobile screenshots.
+
+| Prompt 4 check | Result | Evidence |
+|---|---|---|
+| Documentation inventory | Passed | 45/45 `docs/*.md` files nonempty; both risk copies synchronized. |
+| Strict TypeScript / ESLint | Passed | `tsc --noEmit` and ESLint completed with no warnings or errors. |
+| Unit/component tests | Passed | 13 files, **57/57 tests**, including 17 new admin tests across three suites. |
+| Production build | Passed | Next 16.4.5 build; 59-page generation phase, 13 admin destinations and admin catch-all. |
+| Production Playwright | Passed | **91/91 tests**: 14 admin plus all 77 public/auth/customer regressions. |
+| Admin axe automation | Passed within limits | 13/13 route scans, zero violations for selected WCAG 2/2.1/2.2 A/AA tags. |
+| Admin responsive overflow | Passed | **49/49 combinations**: all 13 routes at 320, 390 and 1440px, plus five complex routes at 768 and 1024px. |
+| Admin internal links/runtime | Passed | 13 unique internal URLs and 13 route-specific `#main-content` fragment targets; zero broken targets, missing fragments or browser errors. |
+| Keyboard and honest behavior | Passed | Mobile drawer Escape/focus return/navigation, local search, filters/pagination, reasoned dialogs, adjustment audit previews and no-operation payment/provider/model/package/job/settings actions. |
+| Representative visual/runtime review | Passed with noted limits | Desktop Overview/Users/Usage and mobile Overview inspected from production; all 13 routes checked with no browser console/page errors. |
+| Backend/security boundary | Preserved | Every admin adapter result is non-persistent with zero credit/payment/audit changes. No admin authorization, database, payment, provider, wallet or customer-code access was added. |
+
+No Prompt 4 result demonstrates real admin authentication, role enforcement, persistence, payment reconciliation, provider health, credit mutation or deployment readiness.
 
 ## Prompt 3 documentation baseline — completed 2026-11-05
 

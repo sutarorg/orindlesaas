@@ -1,6 +1,6 @@
 # Implementation plan
 
-Status: Prompt 1 and Prompt 2 are merged and validated. Prompt 3’s dashboard frontend and validation milestones are complete. Prompt 4 may refine this baseline and design separate administration UI; Prompt 5 still owns real Supabase/session and backend behavior. Later-stage work begins from the relevant handoff, not by treating this plan as provider API verification.
+Status: Prompts 1–4 are implemented and validated as frontend stages. Prompt 5 owns real Supabase/session, backend and admin authorization behavior. Later-stage work begins from the relevant handoff, not by treating this plan as provider API verification.
 
 ## Milestone 0 — Documentation and research (completed)
 
@@ -73,3 +73,23 @@ Build task-specific generation configuration and histories/jobs, then website ov
 ## Prompt 3 Milestone 4 — Shared workspace and validation
 
 Build Projects, Library, History, Credits/Wallet, Settings and Support. Run unit/component/E2E, strict typecheck, lint, production build, responsive/axe and visual review. Exit: all routes and dynamic IDs pass, Prompt 1/2 regressions remain green and `handoff-prompt4.md` matches actual behavior.
+
+## Prompt 4 Milestone 0 — Administration documentation and research (completed)
+
+Inspect all shared docs/contracts and confirm no implemented database/API authorization exists. Research native table/grid semantics, responsive toolbars/pagination, chart equivalents, dialog/status accessibility, least privilege and audit logging. Create six admin documents, reconcile shared docs and prepare the Prompt 5 operations handoff. Exit: 45 nonempty docs, synchronized risk copies and docs-only checkpoint.
+
+## Prompt 4 Milestone 1 — Admin shell, contracts and primitives (completed)
+
+Add the independent noindex `/admin` shell, 13-route navigation, global local search, breadcrumbs, notifications/profile, catch-all 404 and robots exclusion. Add typed operational fixtures, integer minor-unit formatting, metric helpers, proposed permissions and no-operation adapter. Build semantic table/pagination, status, chart and confirmation primitives. Exit: strict types/lint and focused unit tests pass.
+
+## Prompt 4 Milestone 2 — Overview, users and catalogue operations (completed)
+
+Build range-aware overview metrics/charts/exception links; user search/filter/pagination/details/account-action previews; provider/model capability, modality, availability and pricing configuration views. Exit: every control is functional locally or returns explicit non-persistent feedback and no sensitive fields appear.
+
+## Prompt 4 Milestone 3 — Financial and operational workspaces (completed)
+
+Build model pricing, exact credit packs, payments, transactions, usage/costs, jobs, websites, adjustments/disputes and settings. Add validated two-step credit/package/pricing flows and ephemeral adjustment audit previews. Exit: financial definitions remain distinct, filters/pagination work and no real mutation is claimed.
+
+## Prompt 4 Milestone 4 — Regression validation and Prompt 5 handoff (completed)
+
+Run unit/component/E2E, strict typecheck, lint, production build, all-route axe/overflow, keyboard/dialog, internal-link and representative visual review. Synchronize risks and finalize research, QA, progress and `handoff-prompt5.md` with actual behavior/evidence. Exit: all admin routes and prior public/auth/customer suites pass; backend/security limitations remain explicit.

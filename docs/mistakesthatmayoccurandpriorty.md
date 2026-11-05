@@ -9,6 +9,10 @@
 | P0 | Password, auth code, token or provider secret logged/persisted | No auth network/storage/logging in Prompt 2; server-only exchange later | Stop the flow, rotate affected credentials/tokens and purge logs |
 | P0 | Mock generation/upload/payment/publish/deletion presented as completed | Non-persistent preview adapter, fixture labels and no-operation feedback | Remove claim, correct UI and add dashboard regression tests |
 | P0 | Fixture wallet/history/profile treated as real account data | Persistent demo notice and typed `fixture` records; no session inference | Remove implication and label/segregate all illustrative data |
+| P0 | Admin fixture route or browser role treated as real authorization | Persistent demo-admin notice; proposed permissions only; no private data | Remove access and enforce verified server route/action/object/field permissions before data |
+| P0 | Mock admin payment/user/provider/job/package/credit action presented as completed | Non-persistent adapter, two-step review and explicit no-operation result fields | Remove claim, correct UI and add admin regression tests |
+| P0 | Demo revenue/cost/contribution presented as actual company performance | Persistent fixture labels, integer minor units and visible metric definitions | Correct labels/calculations and add financial-contract tests |
+| P0 | Credit adjustment reported without a real ledger and audit transaction | Preview requires reason/reference/confirmation but returns zero credits and `auditPersisted: false` | Disable production action until transactional ledger/audit, step-up and idempotency tests pass |
 | P0 | Unsupported payment/refund legal statement | Qualified legal review; preserve statutory rights and disputes | Correct copy before enabling commerce |
 | P1 | Signup/reset response enables account enumeration | Generic reset copy and non-confirming registered-account presentation | Map outcomes to safe copy and test differing inputs |
 | P1 | Arbitrary auth `next`/callback redirect | Ignore return/code parameters now; exact allowlists in Prompt 5 | Remove redirect, allowlist safe paths and retest |
@@ -17,6 +21,10 @@
 | P1 | Dashboard fixture mistaken for authenticated/authorized data | Demo-only shell and no user/session claims | Remove fixture access and enforce verified server authorization before real data |
 | P1 | Markdown/generated code executes untrusted HTML or script | Constrained typed renderer and text-only code editor; no raw HTML | Remove execution path, sanitize/render as text and add XSS tests |
 | P1 | Static progress/streaming presented as a live AI job | Explicit state fixtures and no timers/countdowns/job creation | Correct status copy and test stop/retry behavior |
+| P1 | Admin logs/details expose secrets, prompts, customer files/code or raw payment payloads | Allowlisted redacted DTOs and source scans; no unrestricted identifiers | Remove fields, rotate exposed secrets, review access and add redaction tests |
+| P1 | Modeled usage value confused with received revenue or gross contribution with net profit | Separate payment/usage/provider-cost formulas and exclusions | Correct definitions, reconcile source records and rerun metric tests |
+| P1 | Admin table/filter/dialog loses keyboard or mobile access | Native tables, named scroll regions, responsive toolbars and Radix focus management | Restore semantics/control access and rerun keyboard/320px/axe tests |
+| P1 | Admin streaming boundary masks an unknown-route 404 | No admin-root loading boundary; catch-all plus production status tests | Move boundary and rerun actual response-status tests |
 | P1 | Streaming loading boundary returns 200 for an unknown fixture | Scope loading UI away from dynamic not-found paths and test actual status codes | Move the boundary, add a workspace catch-all and rerun production 404 tests |
 | P1 | Invented or stale model IDs/capabilities | Date-labelled official registry research and fixture availability | Revalidate provider registry and update centralized model source |
 | P1 | Dashboard/editor controls disappear or overflow on mobile | Responsive panel stacking, accessible drawer/dialog and viewport tests | Restore control access and rerun 320px keyboard/reflow tests |

@@ -2,7 +2,7 @@
 
 ## Stage gates
 
-1. **Documentation baseline:** all 39 Markdown files exist and are nonempty; architecture, design, routes and contracts are populated before each stage's application code.
+1. **Documentation baseline:** all 45 Markdown files exist and are nonempty; architecture, design, routes and contracts are populated before each stage's application code.
 2. **Foundation:** exact dependencies installed; strict TypeScript, ESLint, brand tokens and shared layout pass inspection.
 3. **Content/routes:** every required page and six substantial articles resolve; `/refund-policy` and unknown slugs return the custom 404.
 4. **Experience:** representative mobile/tablet/desktop inspection, keyboard navigation, reduced motion and honest preview states verified in Chromium.
@@ -107,6 +107,43 @@ Automated axe results are not a WCAG certification. They cover the tested route 
 - Website settings used an intrinsic implicit grid track that overflowed at 320px. A bounded base grid track and `min-w-0` panel sizing resolved it; all 48 route/viewport combinations then passed.
 - Unmatched `/app/*` initially used marketing 404 chrome. A workspace catch-all restored DashboardShell, but the root streaming `loading.tsx` still produced 200 before dynamic fixture lookup rejected an ID. The loading presentation is now scoped to Image Studio; unknown routes and IDs return actual 404 responses with workspace chrome.
 - Video-mode and estimate/browser tests initially used a hidden-radio click target, ambiguous text and an immediate mid-transition width assertion. Tests now click the visible label, use exact names and poll the actual preview width; application behavior was not bypassed.
+
+## Prompt 4 documentation checkpoint — 2026-11-05
+
+| Check | Result | Actual evidence |
+|---|---|---|
+| Admin research and documentation ordering | Pass | WAI/Carbon/PatternFly/OWASP research and six admin documents completed before admin application code; shared contracts/routes/design/security/testing/plans were reconciled. |
+| Documentation inventory | Pass | 45/45 `docs/*.md` files nonempty after adding the admin document set. |
+| Risk-copy synchronization | Pass | Both risk filenames synchronized after adding admin authorization, financial-label, redaction and audit risks. |
+| Application validation | Not yet run at this checkpoint | No Prompt 4 route is marked implemented/tested by this documentation-only entry. Final results are recorded below after implementation. |
+
+## Prompt 4 implementation QA log — 2026-11-05
+
+| Check | Result | Actual evidence |
+|---|---|---|
+| Documentation inventory and ordering | Pass | 45/45 `docs/*.md` files nonempty. Admin research, six admin documents, shared contracts/routes/design/security/testing/plans and the Prompt 5 operations handoff were completed before application code. Final evidence was reconciled after implementation. |
+| Risk-copy synchronization | Pass | `mistakes-that-may-occur-and-priorities.md` and `mistakesthatmayoccurandpriorty.md` are byte-identical. |
+| `npm run typecheck` | Pass | Strict `tsc --noEmit`; no errors after implementation and test additions. |
+| `npm run lint` | Pass | ESLint 10.14.0; no warnings or errors in the final run. |
+| `npm run test:unit` | Pass | 13 files, **57/57 tests**. Seventeen new admin tests cover navigation/permissions, fixture references/modalities, exact packs, UTC ranges, financial arithmetic, formatting/search/pagination, chart/confirmation primitives and every no-operation adapter method. |
+| `npm run build` | Pass | Next 16.4.5 production build; 59-page generation phase, all 13 admin destinations and `/admin/[...slug]`. |
+| Production Playwright | Pass | **91/91 Chromium tests**: 14 administration tests plus all 77 Prompt 1/2/3 regressions. |
+| Admin axe automation | Pass within limits | 13/13 admin route scans, zero violations for `wcag2a`, `wcag2aa`, `wcag21aa`, `wcag22aa` in the tested Chromium DOM states. |
+| Admin responsive overflow | Pass | All 13 admin routes at 320, 390 and 1440px, plus Overview/Users/Usage/Adjustments/Settings at 768 and 1024px: **49/49 combinations** without page-level horizontal overflow. |
+| Keyboard and honest behavior | Pass | Mobile drawer Escape/focus return/navigation, local global search, user/payment/job filters and pagination, model/pricing/package review forms, payment reconciliation, job retry, user/session previews, dispute review, local settings and sign-out feedback. Credit adjustments require reason/reference/review and produce only an ephemeral audit preview. |
+| Discovery and 404 behavior | Pass | All admin routes are noindex and excluded from sitemap/robots discovery; unknown admin routes return an actual 404 inside admin chrome. Next may emit its own additional noindex on a 404; both observed values are safe. |
+| Admin internal-link/runtime audit | Pass | 13 unique internal URLs and 13 route-specific `#main-content` fragment targets collected across admin; zero non-200 targets, missing fragments or browser console/page errors. Admin network/storage/secret-pattern scan and API-handler inventory found no prohibited implementation. |
+| Representative visual/runtime review | Pass with noted limits | Inspected production desktop Overview, Users and Usage plus mobile Overview. Reviewed the model-cost table fit after screenshots. All 13 routes were checked for browser console/page errors; none occurred. |
+| Backend/security boundary | Pass for frontend scope | Adapter tests prove no fixture mutation, payment change, credit change or persisted audit. No admin API, authorization, database, payment/provider SDK, secret, raw webhook, customer file/code or unrestricted deployment identifier was introduced. |
+
+Automated axe results are not a WCAG certification. They cover the tested route DOM states, not every possible interaction, zoom level or assistive technology. No result demonstrates real administration security or financial accuracy.
+
+### Prompt 4 defects found and corrected
+
+- Initial inferred notification state and derived usage-event status types were too narrow; explicit fixture collection/status typing corrected them before the successful build.
+- Browser execution initially lacked the packaged Chromium binary and then its NSPR/NSS runtime. Extracting the binary and `al2023` libraries restored the documented local-only test environment; no application runtime dependency was added.
+- Browser assertions initially used copy/locator assumptions rather than the actual accessible names (provider heading, pagination labels, chart descriptions and route announcer). Tests were corrected without weakening application assertions; the final complete suite passed.
+- Desktop visual review found avoidable clipping in the two-column model-cost table. Its minimum width was refined while retaining named horizontal scrolling for genuinely narrow viewports.
 
 ## Remaining validation and launch limits
 

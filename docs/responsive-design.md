@@ -29,6 +29,10 @@ Start at 320px with a single-column reading flow, 20px gutters and no fixed-widt
 - Image/Video Studio: configuration and results stack before wide desktop; galleries use responsive grid tracks and dialogs fit the viewport.
 - Website editor: three work regions appear only on wide screens; smaller layouts stack pages, preview and AI/code controls. Device modes resize the preview inside the available region rather than the page.
 - Workspace data: tables become cards where practical; necessary wide tables use a labelled keyboard-focusable scroll region without page overflow.
+- Admin shell: 264px persistent sidebar at wide desktop, then a focus-managed drawer. Search, notification and profile controls retain accessible names as the top bar narrows.
+- Admin metrics/charts: four/two/one-column grids, stacked figures and full visible units/definitions; no chart depends on hover or a hidden mobile legend.
+- Admin tables/toolbars: controls wrap to full width, pagination stays below results and wide semantic tables use a named keyboard-focusable scroll region. Long IDs and detail grids wrap without expanding the document.
+- Admin dialogs: viewport-bounded internal scrolling, single-column fields and reachable Cancel/review actions at 320px.
 - Footer: columns collapse to 2 and then 1 based on available width.
 
 ## Media and layout stability
