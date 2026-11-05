@@ -50,11 +50,20 @@ test("sitemap and robots exclude authentication routes", async ({ request }) => 
   }
 });
 
-test("desktop Products menu navigates to a real product", async ({ page }) => {
+test("desktop Products disclosure supports Escape and navigates to a real product", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/");
-  await page.getByRole("button", { name: "Products" }).click();
-  await page.getByRole("menuitem").filter({ hasText: "Orindle Chat" }).click();
+  const trigger = page.getByRole("button", { name: "Products" });
+  const productLink = page.locator("#products-navigation").getByRole("link").filter({ hasText: "Orindle Chat" });
+
+  await trigger.click();
+  await expect(productLink).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(productLink).toBeHidden();
+  await expect(trigger).toBeFocused();
+
+  await trigger.click();
+  await productLink.click();
   await expect(page).toHaveURL(/\/features\/ai-chat$/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("A conversation that keeps the work moving.");
 });
@@ -117,12 +126,15 @@ test("contact API rejects cross-origin writes and fails closed when abuse contro
   expect((await unconfigured.json()).error.code).toBe("integration_unavailable");
 });
 
-test("FAQ accordion exposes state", async ({ page }) => {
+test("FAQ disclosure exposes native expanded state", async ({ page }) => {
   await page.goto("/faq");
-  const trigger = page.getByRole("button", { name: "Is this a monthly subscription?" });
+  const details = page.locator("details").filter({ hasText: "Is this a monthly subscription?" });
+  const trigger = details.locator("summary");
+
+  await expect(details).not.toHaveAttribute("open", "");
   await trigger.click();
-  await expect(trigger).toHaveAttribute("aria-expanded", "true");
-  await expect(page.getByText(/No. Creator, Pro and Studio are one-time credit packages/)).toBeVisible();
+  await expect(details).toHaveAttribute("open", "");
+  await expect(details.getByText(/No. Creator, Pro and Studio are one-time credit packages/)).toBeVisible();
 });
 
 test("complex pages do not overflow target viewports", async ({ page }) => {
