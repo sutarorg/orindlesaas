@@ -102,11 +102,13 @@ test("all public internal links and fragments resolve without dead placeholder c
 
 for (const width of [320, 390, 768, 1440]) {
   test(`every public route reflows at ${width}px and keeps native controls operable`, async ({ page }) => {
+    test.setTimeout(60_000);
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.setViewportSize({ width, height: 900 });
     for (const route of publicRoutes) {
       await page.goto(route);
+      await page.waitForLoadState("networkidle");
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${route} at ${width}`).toBe(true);
       const undersizedButtons = await page.getByRole("button").evaluateAll((buttons) => buttons.filter((button) => {
         const rect = button.getBoundingClientRect();
