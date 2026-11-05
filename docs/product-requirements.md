@@ -22,6 +22,17 @@ Orindle provides exactly four primary products under one account and workspace: 
 - Do not install/connect Supabase, send email, redirect to OAuth, read/exchange auth codes, create cookies/sessions, store credentials or claim account/password/verification success.
 - Keep every auth route noindex and outside the sitemap. Actual session handling and server route protection belong to Prompt 5.
 
+## Prompt 3 customer application requirements
+
+- Deliver a unified noindex `/app` shell with persistent desktop sidebar, accessible mobile drawer, contextual top bar, fixture-labelled universal balance, notifications and demo profile menu.
+- Provide an intelligent overview plus complete Chat, Image Studio, Video Studio and Websites task interfaces; share projects, library, history, credits and settings across all four products.
+- Implement conversation/new-chat, registry-driven model selection, safe message/code rendering, attachments, composer, copy, regenerate, stop and submitted/streaming/ready/error presentations.
+- Implement image prompt/configuration, reference selection, estimates, fixture gallery/history, accessible preview and honest edit/download/save actions.
+- Implement video text/image modes, documented model/options, illustrative estimates, distinct queued/processing/completed/failed jobs, retry and honest preview/download/save behavior.
+- Implement website overview, creation, editor and settings with responsive local preview, sections/pages, AI-edit and code panels, save/publish/preview-URL distinctions.
+- Implement cross-product projects, searchable/filterable library, history, exact one-time wallet packs/history and profile/security/preferences/connected-account/deletion-request settings previews.
+- Use typed fixtures and preview adapters only. Do not claim authentication, persistence, AI generation, uploads, payment, credit changes, deployment or account deletion. No real backend integration belongs to this stage.
+
 ## Pricing truth
 
 | Pack | One-time price | Credits |
@@ -38,4 +49,4 @@ A Credits Policy explains purchases and usage without removing statutory rights,
 
 ## Out of scope
 
-Real signup/login, checkout, credit balance/ledger, model execution, file upload/storage, website deployment, email delivery, admin and customer dashboard. Their future contracts and handoffs are documented but not faked.
+Real signup/login, checkout, authoritative credit balance/ledger, model execution, file upload/storage, website deployment, email delivery, admin and persistent customer workspace behavior. Prompt 3 implements the customer dashboard frontend with clearly labelled fixtures; real data and operations remain unimplemented.

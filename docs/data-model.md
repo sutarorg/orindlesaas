@@ -16,6 +16,20 @@ Authentication form state is ephemeral React state; it is not a database model. 
 
 `AuthenticationResult` distinguishes future success/safe error from current preview. `SessionSnapshot` may later contain only a display-safe user ID/email/name, verification status and expiry; never access/refresh tokens. The mock snapshot is unavailable and has no user. `RouteAccessResult` is similarly unavailable and cannot authorize rendering. No profile, account, session or verification record is created locally.
 
+## Prompt 3 dashboard fixtures and DTOs (frontend only)
+
+`WorkspaceFixture` is explicitly `kind: "fixture"` and contains a demo profile, fixture wallet, notifications, projects, conversations/messages, assets, generations/jobs, websites and ledger entries. It is not a session or database snapshot. Dates are stable fixture values; no live relative-time or online presence is inferred.
+
+- `ModelRegistryEntry`: documented `id`, display name, provider, product, capabilities, input/output modalities, optional context display, pricing display, `availability: "catalog-fixture"` and feature tags. Auto is a separate UI routing option, not a model ID.
+- `Conversation`: ID/title/project/model/messages/update time. `DashboardMessage` contains typed text/code/list/heading parts and role/status; it never contains executable HTML.
+- `Generation`: ID, product, model/provider display, illustrative credit value, status, created time and optional project/asset references. Video jobs use queued/processing/completed/failed and static optional progress.
+- `Project` / `LibraryAsset`: cross-product ownership-shaped display fields, type/status/update metadata and safe preview path/alt where applicable. Fixture ownership does not prove authorization.
+- `WebsiteProject`: ID/name/status/domain-preview state, pages/sections, local preview content and editable fixture code. Published/deployed URLs remain unassigned unless a real server later supplies them.
+- `WalletFixture` / `LedgerEntry`: fixture balance and clearly labelled purchase/usage entries. Browser values are never authoritative and mock operations return `creditsChanged: 0`.
+- `GenerationQuote`: `kind: "fixture"`, estimated credits and option summary. It is not a server quote, reservation or final deduction.
+
+Mutation requests cover generation intent, project/asset changes, wallet intent, profile/preferences, website save/publish and account-deletion request. `DashboardPreviewResult` returns a safe message, `persisted: false` and zero credit changes. No password, session token, secret object key, provider cost, unrestricted deployment ID or raw provider/webhook payload appears in a fixture DTO.
+
 ## Future production entities (contract only)
 
 `users` (Supabase-owned identity), `profiles`, `projects`, `assets`, `conversations`, `generations`, `website_projects`, `wallets`, `credit_ledger_entries`, `credit_purchases`, `usage_events`, `model_prices` and `background_jobs`.

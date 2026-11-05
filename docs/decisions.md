@@ -55,3 +55,23 @@
 ## D014 — Allowlisted presentation states
 
 **Status:** accepted. Required server/error designs are inspectable through documented `state`/provider query values parsed against explicit allowlists. Callback/token-like parameters and arbitrary return URLs are ignored. Success-state designs always retain a visible preview disclaimer so they cannot be mistaken for real verification, email or session operations.
+
+## D015 — Canonical customer workspace is `/app`
+
+**Status:** accepted for Prompt 3. The complete customer frontend uses `/app` and nested product/workspace routes, superseding earlier root-level `/dashboard`/`projects` suggestions. `/admin` remains separate and unimplemented. Public/auth URLs do not change.
+
+## D016 — Demo workspace, never a fixture session
+
+**Status:** accepted. Prompt 3 uses a clearly labelled `WorkspaceFixture`, not an authenticated user. Every balance, history, project, job and profile is illustrative; mutation-like operations return non-persistent previews with zero credit changes. Real authorization and backend operations remain Prompt 5 work.
+
+## D017 — Route-group chrome isolation
+
+**Status:** accepted after current Next.js layout research. Existing public/auth routes move into a URL-neutral `(site)` group with the existing header/footer; the root layout retains shared metadata/fonts. `/app` has its own nested DashboardShell and no marketing chrome. This is preferred to pathname-dependent root-client chrome or CSS hiding.
+
+## D018 — Safe lightweight AI/code rendering
+
+**Status:** accepted. Chat uses typed message DTOs and a constrained markdown/code renderer without raw HTML. The website editor uses an editable text area and a structured local preview, with no code or script execution. Monaco and AI SDK packages are deferred because they do not improve the required frontend-only interactions enough to justify their integration surface.
+
+## D019 — Preserve real dynamic-fixture 404 responses
+
+**Status:** accepted after production browser QA. A workspace-root `loading.tsx` streamed a 200 shell before awaited dynamic params could reject an unknown fixture. The loading presentation is now scoped to the static Image Studio route, and `/app/[...not-found]` handles unmatched workspace paths. Unknown conversations, websites and workspace paths return actual 404 responses inside DashboardShell. Do not reintroduce a parent streaming boundary without rerunning status-code tests.

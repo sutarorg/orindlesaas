@@ -75,4 +75,35 @@ Status keys: `[ ]` not started, `[~]` in progress, `[x]` implemented and appropr
 - [x] Inspect representative auth pages visually and update QA/progress/assets/decisions with actual evidence.
 - [x] Finalize `handoff-prompt3.md` with exact implemented imports, user-state assumptions and shell requirements.
 
+## Prompt 3 — customer dashboard frontend
+
+### Documentation and research
+
+- [x] Inspect the merged repository, Prompt 3 handoff and previous design/architecture decisions.
+- [x] Research current Next.js nested/dynamic routes, shadcn sidebar/AI patterns, AI SDK UI message states and WCAG responsive reflow.
+- [x] Research official current model IDs/capabilities for a date-labelled catalogue fixture.
+- [x] Create/update dashboard architecture, navigation, shared requirements/contracts/data/routes/design/accessibility/plans/risks and Prompt 4 handoff before application code.
+
+### Shell and shared contracts
+
+- [x] Separate public/auth chrome with a URL-neutral route group and implement the unified noindex `/app` shell.
+- [x] Add desktop/mobile navigation, contextual top bar, fixture balance, notifications, demo profile and state presentations.
+- [x] Add typed dashboard contracts, documented model registry, shared fixtures, estimates and non-persistent preview adapter.
+
+### Product and workspace experiences
+
+- [x] Implement the intelligent `/app` overview and complete chat/new-conversation/message states.
+- [x] Implement Image Studio and Video Studio configuration, history/job states, previews and honest actions.
+- [x] Implement website overview, creation, responsive editor and settings routes.
+- [x] Implement Projects, Library, History, Credits/Wallet and Settings/Support with useful local interactions.
+
+### Validation and delivery
+
+- [x] Unit/component tests cover fixtures, registry, estimates, mock methods, safe markdown, filters and validation.
+- [x] E2E tests cover every route/dynamic ID, shell navigation, product controls, dialogs, states and no-operation claims.
+- [x] Verify 320–1440px responsive behavior, keyboard/focus handling and representative axe scans.
+- [x] Strict TypeScript, ESLint, unit tests and production build pass alongside Prompt 1/2 regressions.
+- [x] Inspect representative desktop/mobile application views and finalize QA/progress/assets/decisions.
+- [x] Finalize `handoff-prompt4.md` with actual shell, fixture, backend and administration requirements.
+
 Commercial launch tasks remain explicitly open in `production-readiness.md`; this checklist does not claim real backend services, field performance or legal sign-off.

@@ -7,11 +7,19 @@
 | P0 | Secret exposed through public env or source | No secrets in Prompt 1; server-only later integrations | Rotate immediately and purge exposed artifacts |
 | P0 | Mock auth/email/OAuth/callback presented as real success | Preview-only adapter results and persistent no-operation notices | Remove claim, correct UI and add auth regression tests |
 | P0 | Password, auth code, token or provider secret logged/persisted | No auth network/storage/logging in Prompt 2; server-only exchange later | Stop the flow, rotate affected credentials/tokens and purge logs |
+| P0 | Mock generation/upload/payment/publish/deletion presented as completed | Non-persistent preview adapter, fixture labels and no-operation feedback | Remove claim, correct UI and add dashboard regression tests |
+| P0 | Fixture wallet/history/profile treated as real account data | Persistent demo notice and typed `fixture` records; no session inference | Remove implication and label/segregate all illustrative data |
 | P0 | Unsupported payment/refund legal statement | Qualified legal review; preserve statutory rights and disputes | Correct copy before enabling commerce |
 | P1 | Signup/reset response enables account enumeration | Generic reset copy and non-confirming registered-account presentation | Map outcomes to safe copy and test differing inputs |
 | P1 | Arbitrary auth `next`/callback redirect | Ignore return/code parameters now; exact allowlists in Prompt 5 | Remove redirect, allowlist safe paths and retest |
 | P1 | Client mock guard mistaken for authorization | Unavailable session/access results only; no private data | Enforce verified server claims and object authorization before data |
 | P1 | Auth form blocks password managers or keyboard use | Standard autocomplete, paste, native controls, labels and visibility buttons | Restore native behavior and rerun accessibility tests |
+| P1 | Dashboard fixture mistaken for authenticated/authorized data | Demo-only shell and no user/session claims | Remove fixture access and enforce verified server authorization before real data |
+| P1 | Markdown/generated code executes untrusted HTML or script | Constrained typed renderer and text-only code editor; no raw HTML | Remove execution path, sanitize/render as text and add XSS tests |
+| P1 | Static progress/streaming presented as a live AI job | Explicit state fixtures and no timers/countdowns/job creation | Correct status copy and test stop/retry behavior |
+| P1 | Streaming loading boundary returns 200 for an unknown fixture | Scope loading UI away from dynamic not-found paths and test actual status codes | Move the boundary, add a workspace catch-all and rerun production 404 tests |
+| P1 | Invented or stale model IDs/capabilities | Date-labelled official registry research and fixture availability | Revalidate provider registry and update centralized model source |
+| P1 | Dashboard/editor controls disappear or overflow on mobile | Responsive panel stacking, accessible drawer/dialog and viewport tests | Restore control access and rerun 320px keyboard/reflow tests |
 | P1 | Model catalog presented as live availability | Distinguish planned from connected; verify IDs at integration | Qualify/remove claim and update source |
 | P1 | Metadata canonical host wrong | Central site URL helper and deployment checklist | Set env, rebuild, inspect tags/sitemap |
 | P1 | Mobile navigation traps or loses focus | Semantic button, Escape/focus handling and keyboard E2E | Fix disclosure and rerun keyboard tests |

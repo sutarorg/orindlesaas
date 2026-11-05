@@ -95,3 +95,23 @@ Research performed **2026-11-05**, before authentication application code. Supab
 | NIST SP 800-63B-4 | https://pages.nist.gov/800-63-4/sp800-63b.html | Current final guidance requires 15 characters for a password used as a single factor, permits at least 64, supports printing characters/spaces/Unicode and requires password-manager/autofill support. Orindle adopts a 15–128 Unicode-code-point frontend guide with no composition rules; Prompt 5 must align server policy. |
 
 The staging in the earlier handoff has been clarified by the current requirement: **Prompt 2 is frontend-only; Prompt 5 owns actual Supabase authentication and session handling**. The research above informs contracts and UX only; no Supabase method, environment variable, callback field or cookie behavior is implemented by assumption.
+
+## Prompt 3 dashboard, AI UI and responsive research
+
+Research performed **2026-11-05**, before dashboard application code. No AI SDK, Monaco, provider SDK or backend package was installed.
+
+| Topic | Official source | Finding applied to Prompt 3 |
+|---|---|---|
+| Next.js layouts/pages | https://nextjs.org/docs/app/getting-started/layouts-and-pages | Nested layouts preserve shared UI and support isolated dashboard chrome. Dynamic route params are Promises and are awaited. A URL-neutral `(site)` group separates public/auth chrome from `/app`. |
+| Next.js dynamic segments | https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes | Conversation/website params are request values requiring typed lookup and not-found behavior; arbitrary IDs must not fabricate fixture content. |
+| shadcn/ui sidebar | https://ui.shadcn.com/docs/components/base/sidebar | Current composition separates provider, header/content/footer, grouped menus, inset and trigger. Orindle applies the same responsibilities with existing primitives rather than importing a generic admin theme. |
+| shadcn/ui AI Elements | https://ui.shadcn.com/docs/ai-elements/base/prompt-input and https://ui.shadcn.com/docs/ai-elements/base/model-selector | Prompt input and model selection are distinct task components with attachments/actions and registry-driven model information. The dashboard builds these patterns with native accessible controls. |
+| AI SDK UI chatbot | https://ai-sdk.dev/docs/ai-sdk-ui/chatbot | Current UI messages use typed `parts`; statuses distinguish submitted, streaming, ready and error. Stop and regenerate are separate actions, and attachments require explicit file handling. Prompt 3 mirrors state distinctions locally without installing/calling the SDK. |
+| AI SDK UI stream resumption | https://ai-sdk.dev/docs/ai-sdk-ui/chatbot-resume-streams | Aborting a client stream is not necessarily cancelling real generation. Prompt 5 must use an explicit server stop operation where supported; Prompt 3 stop only changes a labelled local preview. |
+| WCAG 2.2 reflow | https://www.w3.org/WAI/WCAG22/Understanding/reflow.html | Content and functionality must remain available at 320 CSS px without two-dimensional page scrolling, except genuinely two-dimensional regions. Dashboard panels stack/switch views and tables use scoped accessible treatment. |
+| OpenAI model registry | https://platform.openai.com/docs/models | `gpt-6.1-sol` and `gpt-image-2.5-sunburst` are documented current IDs at research time. They appear only as catalogue fixtures, not connected Orindle availability. |
+| Anthropic model registry | https://docs.anthropic.com/en/docs/about-claude/models/overview and https://docs.anthropic.com/en/api/models-list | `claude-opus-5-5` is documented with current Claude capabilities; registry display avoids claiming provider access. |
+| Gemini text/image registries | https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash and https://ai.google.dev/gemini-api/docs/models/gemini-3.1-flash-image | `gemini-3.8-flash` and `gemini-3.1-flash-image` are documented IDs with typed modality/context information. Capabilities are presentation data only. |
+| Gemini video registry | https://ai.google.dev/gemini-api/docs/models/gemini-omni-flash | `gemini-omni-1.1-flash` is the current documented video ID; official guidance describes text/image/video input, video output and 3–10s/360p–4K constraints. The fixture duration/resolution options follow these documented bounds without submitting jobs. |
+
+Model IDs and capabilities are date-sensitive research, not live Orindle availability. Prompt 5 must query/revalidate the actual provider/gateway registry and server configuration before integration. Credit estimates in Prompt 3 are deterministic fixture illustrations, not provider prices or server quotes.

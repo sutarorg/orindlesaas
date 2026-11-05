@@ -44,3 +44,24 @@ All authentication routes use one H1, unique noindex metadata, the shared Orindl
 - `/auth/callback`: static processing/error/cancellation presentation only; no token/code reading, session handling or arbitrary redirect.
 
 Detailed copy and preview query URLs are maintained in `authentication-flows.md`.
+
+## Customer application pages
+
+Every `/app` route inherits the unified DashboardShell and noindex metadata. A visible demo-workspace notice, fixture labels and honest action feedback are mandatory. One H1 per view, contextual navigation and responsive keyboard operation are required. No fixture is a real session, account balance, payment, generation or deployment.
+
+- `/app`: personalized fixture greeting, universal balance/buy-credits destination, four product entries, recent projects/generations, suggested actions, model highlights and a compact usage summary. Allowlisted empty/error/session-expired/unauthorized state presentations are documented in `dashboard-navigation.md`.
+- `/app/chat` and `/app/chat/[conversationId]`: conversation history, New chat, typed registry/Auto selector with provider details, attachment-name selection, message composer, safe markdown/code blocks, copy/regenerate/stop, title, empty/error/submitted/streaming states. Unknown conversation IDs return not-found.
+- `/app/image-studio`: prompt, provider-supported negative-prompt treatment, model/reference/ratio/resolution/count/style controls, illustrative estimate, generate preview, fixture image grid/history, full-screen preview and honest download/save/edit/variation behavior.
+- `/app/video-studio`: text/image mode, model/duration/ratio/resolution/reference controls, illustrative estimate, generate preview, queued/processing/completed/failed fixtures, retry and labelled still-frame player; no false readiness or playback.
+- `/app/websites`: project thumbnails, status, updated time, published/unpublished labels, editor destinations and New website CTA.
+- `/app/websites/new`: website brief, business/type/style/reference inputs, suggested sections, estimate and validated non-generating submit.
+- `/app/websites/[projectId]/editor`: page/section navigation, actual responsive local preview, AI editing panel, editable code panel, desktop/tablet/mobile modes, local save status, preview URL, publish preview and settings link.
+- `/app/websites/[projectId]/settings`: website identity/metadata/publishing fields and explicit non-persistent save.
+- `/app/projects`: searchable/filterable projects, create/edit dialogs, project details and related-generation organization.
+- `/app/library`: images/videos/website assets/documents, search/filter, preview, download feedback and confirmed non-deleting action; useful no-results empty state.
+- `/app/history`: generation product, model/provider, fixture credits, date and status with local filters.
+- `/app/credits` and `/app/credits/history`: fixture balance, Creator/Pro/Studio exact one-time packs, purchase/usage history, transaction details and transparent wallet explanation; no real payment history or checkout.
+- `/app/settings`: profile, security, preferences, connected accounts, notifications, deletion-request validation and help links without data mutation.
+- `/app/support`: product/help guidance, public FAQ/contact links and an honest no-live-status statement.
+
+Loading, empty, error and completed-fixture presentations must be inspectable. Controls either navigate, perform a genuine local UI action or return explicit preview/unavailable feedback.

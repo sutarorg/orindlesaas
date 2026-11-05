@@ -55,3 +55,20 @@ Framer Motion provides only a small transform reveal in the current public site;
 ## Responsive behavior
 
 Mobile-first single column; product visuals stack after copy. At 768px navigation and selected two-column layouts expand. At 1024px editorial splits and four-part ecosystem can use full composition. Pricing becomes three columns only when each remains readable. See `responsive-design.md` for acceptance widths.
+
+## Dashboard extension
+
+The application retains the same tokens and typography; no dark admin theme is introduced. Desktop sidebar width is 248px expanded and 76px icon-collapsed. Top-bar controls remain at least 44px where practical. Main content uses 16px mobile, 24px tablet and 32px desktop gutters with a readable maximum width for overview/workspace pages; editor canvases may use the available width without widening text controls.
+
+Dashboard-specific primitives:
+
+- **Page header:** compact eyebrow/breadcrumb, 28–36px Poppins H1, concise description and one contextual primary action.
+- **Panel:** white background, `line` border, 14–18px radius and little/no shadow. Use panels for meaningful regions, not every small statistic.
+- **Status badge:** icon/text plus color for fixture, queued, processing, completed, failed, draft and published states.
+- **Model selector:** native labelled select with provider, capability and fixture-availability details; Auto is clearly a routing option.
+- **Composer/editor:** visible label, generous multiline area, attachment/action row and honest pending/preview feedback.
+- **Empty/error state:** concise title, explanation and recovery action; never fabricated filler activity.
+- **Data display:** desktop tables with real headers; mobile cards or a labelled scroll region where table semantics are necessary.
+- **Dialog/drawer:** labelled title, close control, Escape/focus handling and destructive confirmation where required.
+
+Fixture labels use neutral/dark text with an info icon, not a warning-heavy visual treatment. Demo balances and progress never acquire the appearance of verified live data through copy alone.

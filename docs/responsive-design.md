@@ -23,6 +23,12 @@ Start at 320px with a single-column reading flow, 20px gutters and no fixed-widt
 - Tables: use a labelled horizontal scroll region only when content cannot reflow without losing meaning; page itself never scrolls horizontally.
 - Article: TOC precedes body on mobile and may become a slim sticky rail on wide screens; anchor scrolling respects sticky header and reduced motion.
 - Authentication: the branded product aside is desktop-only; mobile keeps a compact brand mark and single-column form. OAuth buttons stack before email fields, long guidance wraps and all auth controls retain touch-friendly targets.
+- Dashboard shell: persistent 248px sidebar on wide screens; mobile uses a focus-managed drawer. Top-bar actions wrap or simplify without hiding credit/settings access.
+- Dashboard overview: product/action cards move from four/two columns to one, recent-work regions stack and usage remains a compact list rather than a wide chart.
+- Chat: conversation pane becomes a labelled local disclosure; messages/composer retain readable measure and action buttons wrap. No horizontal message/page scrolling.
+- Image/Video Studio: configuration and results stack before wide desktop; galleries use responsive grid tracks and dialogs fit the viewport.
+- Website editor: three work regions appear only on wide screens; smaller layouts stack pages, preview and AI/code controls. Device modes resize the preview inside the available region rather than the page.
+- Workspace data: tables become cards where practical; necessary wide tables use a labelled keyboard-focusable scroll region without page overflow.
 - Footer: columns collapse to 2 and then 1 based on available width.
 
 ## Media and layout stability
