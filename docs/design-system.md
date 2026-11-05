@@ -1,0 +1,57 @@
+# Design system
+
+## Tokens
+
+| Role | Value | Usage |
+|---|---|---|
+| Canvas | `#ffffff` | Main background |
+| Soft surface | `#f7f9f8` | Alternate sections |
+| Subtle surface | `#f1f5f3` | Wells and code/example backgrounds |
+| Ink | `#151918` | Headings and primary text |
+| Body | `#4f5d58` | Paragraphs |
+| Muted | `#64716c` | Supporting text; contrast checked in axe browser audits |
+| Border | `#dfe7e3` | Hairlines and dividers |
+| Mint | `#bdf5dd` | Brand fills and highlights |
+| Mint strong | `#76dfae` | Selected states, not small body text |
+| Teal | `#067a67` | Accessible links/actions on white and tinted surfaces |
+| Teal dark | `#075f51` | Hover states |
+| Cyan | `#e4f6f7` | Chat accent surface |
+| Blue | `#e8f0fc` | Websites accent surface |
+| Purple | `#f0eafb` | Video accent surface |
+| Error | `#b42318` | Errors |
+| Focus | `#067a67` | 2–3px visible focus ring with offset |
+
+## Typography
+
+Poppins is the display face; Inter is body/UI. Both are loaded through `next/font` with sensible fallbacks and only needed weights. Use fluid `clamp()` display sizes, approximately 48–76px homepage hero desktop and 40px narrow mobile, 30–48px section titles, 18–20px lead copy, 16px body and 14px labels. Article body targets 18px/1.75 and 65–75 characters per line. Never embed meaningful page or interface text in AI-generated/raster artwork; the deterministic social-card image is a social-metadata exception, not a substitute for HTML content.
+
+## Spacing and layout
+
+Base spacing unit 4px; common steps 8, 12, 16, 24, 32, 48, 64, 80, 112. Content max width 1200–1280px; reading measure 680–760px. Mobile gutters 20px, tablet 32px, desktop 40px. Section vertical rhythm 72px mobile / 112px desktop. Avoid placing every item in a rounded container.
+
+## Shape, border and elevation
+
+Use 10–16px radii for controls/cards and 20–24px only for major product artboards. Default cards use borders rather than shadows. Shadows are sparse and low-contrast for floating navigation or layered product visuals. Pills are reserved for statuses/tags, not every heading.
+
+## Components
+
+- **Button:** primary dark teal/ink or teal, secondary white bordered, tertiary text link. Minimum 44px height for key actions, visible hover/active/focus/disabled states.
+- **Link:** descriptive text; underline offset in prose; icon arrows are decorative.
+- **Section heading:** small uppercase/ruled eyebrow, strong H2, concise optional lead.
+- **Product visual:** semantic HTML/CSS/SVG with accessible summary and decorative children hidden where redundant.
+- **Accordion:** native button semantics, `aria-expanded`, associated panel and keyboard access.
+- **Form:** persistent visible labels, helpful hints, field-level errors and honest pending/success copy.
+- **Badge:** text plus color; never color-only status.
+- **Table:** real headers, caption where useful, responsive overflow labelled for keyboard users.
+
+## Iconography and assets
+
+Lucide icons use consistent 1.75–2px strokes and are decorative when text duplicates meaning. Original logo is a geometric four-part mark paired with real HTML/SVG wordmark. No emoji icons.
+
+## Motion
+
+Framer Motion provides only a small transform reveal in the current public site; menu/accordion transitions remain brief. Default 160–240ms UI feedback; no perpetual decorative motion. Reveals start visible, and CSS/Framer reduced-motion handling removes nonessential transforms. Content remains visible without JavaScript.
+
+## Responsive behavior
+
+Mobile-first single column; product visuals stack after copy. At 768px navigation and selected two-column layouts expand. At 1024px editorial splits and four-part ecosystem can use full composition. Pricing becomes three columns only when each remains readable. See `responsive-design.md` for acceptance widths.
