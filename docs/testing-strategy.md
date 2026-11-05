@@ -32,6 +32,18 @@ Use Testing Library where useful for accessible names, accordion `aria-expanded`
 - Accessibility/responsive: keyboard-only completion, visible focus, mobile 320/390px layouts, desktop 1440px, and axe scans for every auth route plus error/success-preview states.
 - Regression: Prompt 1 routes, pricing handoff and public navigation remain intact; new auth routes are noindex and absent from sitemap.
 
+## Prompt 3 dashboard tests
+
+- Fixture/registry integrity: unique IDs, exact packs, documented model IDs, valid cross-references, fixture labels and no unexpected production URLs/secrets.
+- Preview adapter: every method returns preview/unavailable, `persisted: false`, `creditsChanged: 0` and no job/payment/save/publish/deletion success.
+- Pure helpers: deterministic image/video/website estimates, active navigation/breadcrumbs, library/project/history filters and website/settings validation.
+- Markdown/components: headings/lists/code render safely, raw HTML remains text, copy reports actual clipboard result, and stop/regenerate only alter labelled local preview state.
+- Shell E2E: every `/app` route and allowlisted dynamic ID, unknown-ID not-found, active navigation, mobile drawer Escape/focus return, notification/profile menus and noindex/robots/sitemap.
+- Product E2E: chat empty/error/streaming/composer, image configuration/gallery/dialog, video job states/retry, website creation/editor device modes/settings and all non-operation feedback.
+- Workspace E2E: local project/library/history filters, empty results, transaction/project/asset details, destructive confirmations and settings validation.
+- Responsive/accessibility: every workspace route at 320, 390 and 1440px, with complex public routes additionally covering 768 and 1024px; keyboard menus/dialogs/editors and axe scans for every workspace route.
+- Regression: Prompt 1 public and Prompt 2 authentication suites remain green after `(site)` chrome separation. No fixture action creates network requests, auth storage, payment/job success or deployed URLs.
+
 ## Build and static checks
 
 Run exact installed-package `tsc --noEmit`, ESLint, unit tests and production build. Check for unsafe `any`, accidental secrets, dead links and large client bundles. Build success alone is not functional sign-off.

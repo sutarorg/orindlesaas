@@ -36,6 +36,16 @@ The callback remains an `app/auth/callback/page.tsx` presentation placeholder. P
 
 See `authentication-design.md` for component responsibilities and `authentication-flows.md` for route/state transitions.
 
+## Prompt 3 dashboard frontend architecture
+
+The customer workspace uses `/app` and a nested `app/app/layout.tsx` with a unified DashboardShell. Existing public/auth routes move under URL-neutral `app/(site)/`; its nested layout owns SiteHeader/SiteFooter/public JSON-LD while the root layout retains only shared metadata/fonts/body. This prevents marketing chrome from entering the application without changing public URLs.
+
+`components/dashboard/` contains task-specific client islands and shared shell/model/message primitives. `lib/contracts/dashboard.ts` defines display-safe workspace, generation, project, asset, wallet, settings and website operations. `lib/dashboard/` owns typed fixtures, documented model registry, navigation and deterministic fixture estimates. `lib/mocks/dashboard-preview.ts` is the only mutation adapter and returns non-persistent preview results with zero credits changed.
+
+Server pages compose fixture content. Local filters, dialogs, editors, clipboard, attachment-name selection and preview state are Client Components. Dynamic conversation/website pages await `params`, look up allowlisted fixture IDs and call not-found for unknown values. No AI SDK, Monaco, charting or backend package is introduced.
+
+All `/app` routes inherit noindex and are excluded from the sitemap/robots-allowed area. The visible demo workspace is not authenticated or authorized. See `dashboard-architecture.md` for component/trust boundaries and `dashboard-navigation.md` for the complete route map.
+
 ## Dependency direction
 
 Routes compose content and components. Content modules do not import React or route code. UI primitives have no product/business rules. Pricing displayed on the public site is presentational typed content; later server configuration becomes authoritative and must be reconciled before checkout. SEO helpers receive explicit canonical paths and never infer request hosts from untrusted headers. JSON-LD is serialized by a small component that escapes `<` to reduce script-breakout risk.

@@ -1,6 +1,6 @@
 # Implementation plan
 
-Status: Prompt 1 and Prompt 2 milestones are complete and evidenced on 2026-11-05. Prompt 2 delivered frontend-only authentication; Prompt 5 still owns real Supabase/session behavior. Later-stage work begins from the relevant handoff, not by treating this plan as provider API verification.
+Status: Prompt 1 and Prompt 2 are merged and validated. Prompt 3’s dashboard frontend and validation milestones are complete. Prompt 4 may refine this baseline and design separate administration UI; Prompt 5 still owns real Supabase/session and backend behavior. Later-stage work begins from the relevant handoff, not by treating this plan as provider API verification.
 
 ## Milestone 0 — Documentation and research (completed)
 
@@ -53,3 +53,23 @@ Implement verification/resend, planned Google/GitHub feedback, static callback a
 ## Prompt 2 Milestone 4 — Validation and Prompt 3 handoff
 
 Run unit/component/E2E, strict typecheck, lint, production build, responsive/axe scans and representative visual review. Synchronize risk copies and finalize research, QA, progress, assets and `handoff-prompt3.md`. Exit: all auth routes and states validated; real Supabase/session limitations are explicit.
+
+## Prompt 3 Milestone 0 — Dashboard documentation and research
+
+Inspect merged implementation and handoffs. Research current nested layouts/dynamic params, shadcn sidebar/AI patterns, AI SDK UI states, WCAG reflow and official model IDs. Finalize dashboard architecture/navigation, fixture trust boundaries, shared docs and Prompt 4 handoff. Exit: documentation-only checkpoint shows every required doc updated and risk copies synchronized.
+
+## Prompt 3 Milestone 1 — Chrome separation, shell and contracts
+
+Move public/auth routes into URL-neutral `(site)`, isolate root/nested layouts and build the `/app` shell. Add navigation, top bar, demo states, typed fixtures/models/estimates and preview adapter. Exit: public/auth regressions and shell unit/component tests pass.
+
+## Prompt 3 Milestone 2 — Overview and Chat
+
+Build the intelligent overview, complete conversation workspace, safe markdown/code rendering, registry/Auto selector, composer, attachments and chat state controls. Exit: new/detail/unknown routes and copy/stop/regenerate/no-request behavior inspected.
+
+## Prompt 3 Milestone 3 — Image, Video and Websites
+
+Build task-specific generation configuration and histories/jobs, then website overview/creation/editor/settings. Add local generated fixture assets, responsive preview and honest mutation feedback. Exit: every product control works locally or explains its unavailable operation.
+
+## Prompt 3 Milestone 4 — Shared workspace and validation
+
+Build Projects, Library, History, Credits/Wallet, Settings and Support. Run unit/component/E2E, strict typecheck, lint, production build, responsive/axe and visual review. Exit: all routes and dynamic IDs pass, Prompt 1/2 regressions remain green and `handoff-prompt4.md` matches actual behavior.

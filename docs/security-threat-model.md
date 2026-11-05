@@ -30,6 +30,22 @@ The public site exposes only static content and public configuration. The main c
 
 No Supabase package, auth cookie, session token, OAuth client secret, email service or real route-protection behavior is introduced in Prompt 2. Frontend validation is a UX control only and must be repeated server-side at integration.
 
+## Prompt 3 dashboard frontend threats
+
+| Threat | Impact | Prompt 3 mitigation | Prompt 5 requirement |
+|---|---|---|---|
+| Fixture workspace mistaken for private account data | User deception and unsafe authorization assumptions | Persistent demo notice, fixture-typed records, no session or ownership claim | Verified server identity and per-object authorization before real data |
+| Mock generation/payment/save/publish/deletion success | False charges, lost work or destructive misunderstanding | Adapter returns preview/unavailable, `persisted: false`, zero credits changed | Success only from verified idempotent server results |
+| XSS through markdown, code or website preview | Script/session compromise | Constrained typed markdown blocks, text-only code, no raw HTML/script execution | Sanitize/validate and isolate untrusted generated code in a researched sandbox |
+| Malicious upload/reference file | Malware, data leakage or storage abuse | Local file-name selection only; no upload/storage/object URL requirement | Type/size validation, scanning as appropriate, ownership and signed storage URLs |
+| Fake job progress/streaming/stop | User believes compute is running or cancelled | Static labelled states, no timers, stop affects local preview only | Real job/status transport and explicit server cancellation semantics |
+| Browser-controlled balance/quote/status | Credit/payment fraud | Fixture estimates labelled non-authoritative; no ledger mutation | Server-issued quotes, verified metering and transactional ledger |
+| Model registry drift or invented IDs | Failed calls and misleading availability | Central date-labelled registry from official docs; `catalog-fixture` status | Revalidate server/gateway registry and allowlist configured models |
+| Dynamic ID data exposure or fabrication | Unauthorized object access or misleading content | Allowlisted fixture lookup and not-found for unknown IDs | Server ownership checks on every object request |
+| Arbitrary preview/publish URL | Phishing or unsafe navigation | No deployed fixture URL; no arbitrary redirect | Validated server-issued URLs and isolated deployment controls |
+
+No real private data, model calls, uploads, storage, payment, ledger, deployment or account mutation is introduced in Prompt 3. Fixture ownership-shaped fields are presentation data only.
+
 ## Future high-priority boundaries
 
 - **Auth:** secure Supabase cookies, server session verification, authorization per object, admin separation and no trust in client profile claims.

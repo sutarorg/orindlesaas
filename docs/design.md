@@ -44,3 +44,13 @@ Prompt 2 extends the same visual language into login, signup, recovery, reset, v
 Trust comes from clarity: persistent labels, visible requirements, honest frontend-preview notices, respectful recovery options and no artificial urgency. Google/GitHub are presented as planned alternatives without implying provider contact. Errors explain a next step without confirming account existence. Password guidance favors a 15+ character passphrase, password managers and paste rather than arbitrary complexity.
 
 Detailed component, responsive and interaction decisions are in `authentication-design.md`; route/state copy is in `authentication-flows.md`.
+
+## Customer application experience
+
+Prompt 3 translates the editorial system into a calm, high-density creative workspace rather than a generic admin template. A slim persistent sidebar organizes only Main, Workspace and Account. The top bar is quiet and contextual, with breadcrumbs, a fixture-labelled universal credit pill, notifications and a demo profile menu. A concise demo notice replaces marketing chrome and prevents fixture data being mistaken for a real account.
+
+The overview prioritizes the next useful action: greeting and balance, four distinct product entries, suggested creation, recent projects/generations and a compact usage summary. It avoids decorative analytics and oversized charts. Product color appears in small icon wells, borders and selection cues rather than full-page gradients.
+
+Chat centers a substantial composer and readable message measure. Image Studio uses a configuration rail beside a generous artboard/contact sheet. Video Studio separates setup from queued/processing/completed/failed jobs. Websites uses an actual responsive HTML preview, page/section rail and contextual AI/code panel. Wallet and history emphasize transparent status and one-time pricing. Empty states use short guidance and a real next action.
+
+Fixture imagery is clearly labelled and meaningful interface copy remains HTML. Dialogs are reserved for focused preview/detail/destructive confirmation. Motion is limited to brief state transitions; static progress never pretends to advance. See `dashboard-architecture.md` and `dashboard-navigation.md` for implementation boundaries.

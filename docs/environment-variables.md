@@ -7,7 +7,7 @@
 | `NEXT_PUBLIC_SITE_URL` | Public build-time | Production | Canonical absolute origin; provisional fallback `https://orindle.com` |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | Public build-time | No | Only set to a verified support inbox; absent contact UI must not invent one |
 
-`.env.example` exists with non-secret public placeholders only. Copy it to `.env.local` for local configuration. Local frontend development requires no secrets. Prompt 2 adds no Supabase/OAuth variables and installs no auth SDK. Never place private API keys in `NEXT_PUBLIC_*` variables.
+`.env.example` exists with non-secret public placeholders only. Copy it to `.env.local` for local configuration. Local frontend development requires no secrets. Prompt 2 adds no Supabase/OAuth variables and installs no auth SDK. Prompt 3 likewise adds no AI/payment/storage/deployment variables or provider SDKs; the dashboard uses local fixtures only. Never place private API keys in `NEXT_PUBLIC_*` variables.
 
 ## Later-stage variables (documented, not implemented)
 

@@ -120,6 +120,32 @@ button, a {
   display: none;
 }
 
+.website-preview {
+  container-type: inline-size;
+}
+
+.website-preview-hero {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+}
+
+@container (max-width: 560px) {
+  .website-preview-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .website-preview-media {
+    order: -1;
+  }
+
+  .website-preview-nav {
+    display: none;
+  }
+
+  .website-preview-title {
+    font-size: 2rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after {

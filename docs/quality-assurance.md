@@ -2,7 +2,7 @@
 
 ## Stage gates
 
-1. **Documentation baseline:** all 37 Markdown files exist and are nonempty; architecture, design, routes and contracts were populated before application code.
+1. **Documentation baseline:** all 39 Markdown files exist and are nonempty; architecture, design, routes and contracts are populated before each stage's application code.
 2. **Foundation:** exact dependencies installed; strict TypeScript, ESLint, brand tokens and shared layout pass inspection.
 3. **Content/routes:** every required page and six substantial articles resolve; `/refund-policy` and unknown slugs return the custom 404.
 4. **Experience:** representative mobile/tablet/desktop inspection, keyboard navigation, reduced motion and honest preview states verified in Chromium.
@@ -79,6 +79,34 @@ These are test-environment settings, not application runtime requirements. No br
 | Dependency/security boundary | Pass | `npm audit --audit-level=high` reported zero vulnerabilities; secret-pattern and auth-side-effect scans passed. No Supabase dependency, auth environment variable, provider secret or real credential source was added. |
 
 Automated axe results are not a WCAG certification. The auth success/expiry states are explicit component previews, not evidence of a real authentication or email operation.
+
+## Prompt 3 QA log — 2026-11-05
+
+| Check | Result | Actual evidence |
+|---|---|---|
+| Documentation inventory and ordering | Pass | 39/39 `docs/*.md` files nonempty. Dashboard research, architecture, navigation, contracts, requirements, design, security, testing, plans, risks and Prompt 4 handoff were updated before application code. Final evidence was reconciled after implementation. |
+| Risk-copy synchronization | Pass | `mistakes-that-may-occur-and-priorities.md` and `mistakesthatmayoccurandpriorty.md` are byte-identical. |
+| `npm run typecheck` | Pass | Strict `tsc --noEmit`; no errors after all implementation and test additions. |
+| `npm run lint` | Pass | ESLint 10.14.0; no warnings or errors. |
+| `npm run test:unit` | Pass | 10 files, **40/40 tests**. New dashboard coverage includes registry/fixture integrity, estimates, navigation, filters, safe markdown, component behavior and every no-operation adapter method. |
+| `npm run build` | Pass | Next 16.4.5 production build; 46-page generation phase, all 16 workspace routes and `/app/[...not-found]`. |
+| Production Playwright | Pass | **77/77 Chromium tests**: 37 dashboard tests plus all 40 Prompt 1/2 regressions. |
+| Workspace axe automation | Pass within limits | 16/16 workspace route scans, zero violations for `wcag2a`, `wcag2aa`, `wcag21aa`, `wcag22aa` in the tested Chromium DOM states. |
+| Workspace responsive overflow | Pass | All 16 workspace routes at 320, 390 and 1440px: **48/48 combinations** without page-level horizontal overflow. |
+| Workspace internal-link audit | Pass | 49 unique internal URLs and 21 fragment URLs collected from all 16 rendered workspace routes; zero non-200 targets or missing fragment IDs. |
+| Keyboard and state behavior | Pass | Mobile drawer Escape/focus return/close-on-navigation, sidebar collapse, notification/profile menus, chat composer/streaming/error, media dialogs, website viewports/code safety, CRUD confirmations, wallet/settings no-operation feedback and unknown-ID 404s. |
+| Representative visual review | Pass with noted limits | Inspected production screenshots of desktop overview, mobile chat, desktop Image Studio, desktop/mobile website editor and mobile Credits. Content was visible and coherent; no page overflow or browser console errors occurred. |
+| Dependency/security boundary | Pass | `npm audit --audit-level=high` reported zero vulnerabilities. Secret-pattern and dashboard `fetch`/storage scans found no matches. No provider SDK, payment, authentication, persistence or deployment credential source was added. |
+
+Automated axe results are not a WCAG certification. They cover the tested route DOM states, not every possible interaction, zoom level or assistive technology.
+
+### Prompt 3 defects found and corrected
+
+- Initial UI code used different helper/type names from the pre-implementation contracts. Strict TypeScript exposed the mismatch; canonical fixture DTOs were retained and concise aliases/detailed intent/estimate types were added rather than weakening typing.
+- File inputs lacked their own accessible labels, several muted preview colors missed contrast, and a dark support-card heading inherited the global heading color. Inputs were labelled, colors darkened and the heading override corrected before rerunning axe.
+- Website settings used an intrinsic implicit grid track that overflowed at 320px. A bounded base grid track and `min-w-0` panel sizing resolved it; all 48 route/viewport combinations then passed.
+- Unmatched `/app/*` initially used marketing 404 chrome. A workspace catch-all restored DashboardShell, but the root streaming `loading.tsx` still produced 200 before dynamic fixture lookup rejected an ID. The loading presentation is now scoped to Image Studio; unknown routes and IDs return actual 404 responses with workspace chrome.
+- Video-mode and estimate/browser tests initially used a hidden-radio click target, ambiguous text and an immediate mid-transition width assertion. Tests now click the visible label, use exact names and poll the actual preview width; application behavior was not bypassed.
 
 ## Remaining validation and launch limits
 

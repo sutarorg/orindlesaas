@@ -4,9 +4,45 @@ Last updated: **2026-11-05**.
 
 ## Current status
 
-**Prompt 1 public frontend is merged and validated. Prompt 2’s frontend-only authentication experience is implemented and validated on branch `arena/f2c65e27-orindlesaas`.** Real Supabase authentication, session/cookie handling, database, payments, credit deductions, AI generation, email delivery and deployment remain unimplemented.
+**Prompt 1 and Prompt 2 are merged and validated. Prompt 3’s complete customer dashboard frontend is implemented and validated on `arena/48bf0838-orindlesaas`.** The customer application remains an explicitly fixture-driven frontend. Real Supabase authentication, session/cookie handling, database, payments, credit deductions, AI generation, uploads, email delivery and deployment remain unimplemented.
 
 The repository began Prompt 1 with only a minimal `README.md`; its 35-file documentation baseline was created before application code. Prompt 2 adds `authentication-design.md` and `authentication-flows.md`, updates the shared architecture/routes/requirements/security docs and creates the Prompt 3 shell handoff before changing auth application code.
+
+## Prompt 3 documentation baseline — completed 2026-11-05
+
+- Inspected the merged Prompt 2 repository, `handoff-prompt3.md` and prior design/architecture/security/testing decisions.
+- Researched current Next.js nested layouts/dynamic params, shadcn sidebar/AI Elements, AI SDK UI message parts/status/stop/regenerate behavior and WCAG 2.2 reflow.
+- Researched official current OpenAI, Anthropic and Gemini model IDs/capabilities for a date-labelled catalogue fixture; no live availability is inferred.
+- Accepted `/app` as the canonical workspace and a URL-neutral `(site)` route group to isolate public/auth chrome from the dashboard shell.
+- Created `dashboard-architecture.md` and `dashboard-navigation.md`; shared requirements/contracts/data/routes/design/accessibility/plans/risks are being updated before application code.
+- Defined the demo-fixture boundary: no authenticated user, real balance/history, AI job, upload, payment, credit change, saved project or deployment. Prompt 5 owns real behavior.
+
+The documentation-only checkpoint includes all 39 shared documents, synchronized risk copies and the completed `handoff-prompt4.md` baseline. Final implementation evidence is recorded separately below.
+
+## Prompt 3 implementation — completed 2026-11-05
+
+- Moved existing public/auth routes into URL-neutral `app/(site)/` without changing URLs. Added the independent noindex `/app` shell, desktop/collapsible sidebar, keyboard-safe mobile drawer, breadcrumbs, fixture wallet indicator, notifications and demo profile menu.
+- Added 16 customer routes: intelligent overview; new/detail chat; Image Studio; Video Studio; website overview/creation/editor/settings; Projects; Library; History; Credits/Wallet and ledger; Settings; and Help & Support. A workspace catch-all and dynamic fixture lookup return real 404s for unknown IDs.
+- Added typed workspace DTOs, six documented model-catalogue fixtures, deterministic illustrative estimates, safe constrained markdown/code rendering, shared fixtures and a single no-operation preview adapter. File inputs retain names only; no provider/network/storage operation exists.
+- Generated and integrated three local labelled media fixtures. Image downloads work as local files; video remains a storyboard still, website code remains text and structured preview/published status stay distinct.
+- Added explicit empty/error/streaming/session/authorization design fixtures, local filters, CRUD/destructive confirmations and honest purchase/save/publish/settings/deletion feedback. No real mutation or credit change occurs.
+- Added 16 dashboard unit/component tests and 37 dashboard Playwright tests while preserving all Prompt 1/2 regressions.
+
+| Prompt 3 check | Result | Evidence |
+|---|---|---|
+| Documentation inventory | Passed | 39/39 `docs/*.md` files nonempty; both risk copies identical after final reconciliation. |
+| Strict TypeScript / ESLint | Passed | `tsc --noEmit` and ESLint completed with no warnings or errors. |
+| Unit/component tests | Passed | 10 files, **40/40 tests**, including 16 new dashboard tests across three suites. |
+| Production build | Passed | Next 16.4.5 build; 46-page generation phase, 16 customer routes and workspace catch-all. |
+| Production Playwright | Passed | **77/77 tests**: 37 dashboard plus all 40 public/auth regressions. |
+| Workspace axe automation | Passed within limits | 16/16 route scans, zero violations for selected WCAG 2/2.1/2.2 A/AA tags. |
+| Workspace responsive overflow | Passed | 16 routes at 320, 390 and 1440px: **48/48 combinations** without page-level overflow. |
+| Workspace internal links | Passed | 49 unique internal URLs and 21 fragment URLs; zero broken targets or missing fragment IDs. |
+| Keyboard and honest behavior | Passed | Mobile drawer Escape/focus return/navigation, dialogs, composer, streaming stop, CRUD confirmations, purchase/save/publish/delete no-operation feedback and real local fixture downloads. |
+| Representative visual review | Passed with noted limits | Inspected desktop overview, mobile chat, desktop Image Studio, desktop/mobile website editor and mobile Credits from production; no console errors. |
+| Dependency/security boundary | Passed | `npm audit --audit-level=high` reports zero vulnerabilities; secret-pattern and dashboard network/storage scans report no matches. |
+
+No Prompt 3 result demonstrates real authentication, authorization, persistence, AI generation, payment, credit mutation, email delivery, deployment or administration readiness.
 
 ## Prompt 2 documentation baseline — completed 2026-11-05
 
@@ -17,7 +53,7 @@ The repository began Prompt 1 with only a minimal `README.md`; its 35-file docum
 - Documented non-enumerating copy, no arbitrary redirects, no token/code rendering, no real session/route protection and no false mock success.
 - Created `handoff-prompt3.md` with application-shell, navigation, user-state, shared-workspace and design-token requirements.
 
-No Prompt 2 application route, component or mock has been marked implemented or tested yet. Validation evidence will be appended only after inspection.
+At that earlier Prompt 2 documentation checkpoint, no auth application route, component or mock had been marked implemented or tested. Final validated results are recorded separately below.
 
 ## Prompt 2 implementation — completed 2026-11-05
 
@@ -94,4 +130,4 @@ See `assumptions-and-open-questions.md`. Canonical origin remains provisionally 
 
 ## Next stage
 
-`handoff-prompt2.md` records the completed Prompt 2 routes/imports, contracts, security boundaries and validation evidence. `handoff-prompt3.md` defines the next application-shell stage. Prompt 5 must re-research current official Supabase SSR and Next.js APIs before implementing real authentication; neither stage may implement fake dashboard, auth or payment success.
+`handoff-prompt4.md` records the implemented Prompt 3 shell, actual validation evidence, Prompt 5 backend contracts and separate administration-UI requirements. Prompt 4 may refine the customer experience and design administration separately; it must not infer roles or operational data from customer fixtures. Prompt 5 must re-research current official Supabase SSR, Next.js and provider APIs before implementing real authentication or backend operations.

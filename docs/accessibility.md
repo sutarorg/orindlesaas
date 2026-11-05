@@ -40,6 +40,19 @@ On 2026-11-05, 24/24 unit/component tests and 40/40 production Playwright tests 
 
 Nested live-region duplication was removed during final review so each mock result has one status/alert region. Automated checks do not establish screen-reader compatibility or WCAG certification; real assistive-technology and 200% zoom review remain open.
 
+## Prompt 3 dashboard requirements
+
+- The mobile sidebar is a labelled modal dialog with Escape/overlay close, focus return and close-on-navigation. Desktop collapse retains accessible names/tooltips for icon-only links.
+- Top-bar menus, notifications, model selectors, dialogs, tabs and device-mode controls use native or Radix keyboard semantics. Focus is not hidden behind sticky bars.
+- Dynamic conversation/website content has one H1 and meaningful breadcrumb labels. Unknown IDs show a workspace-safe not-found view rather than empty anonymous content.
+- Message streaming/status regions announce only meaningful state changes; partial fixture text is not repeatedly announced. Stop, regenerate and copy have stable names and honest results.
+- Code is rendered as text, never raw HTML. Code blocks and message bodies wrap or use scoped scrolling without causing page-level two-dimensional scrolling.
+- File inputs have visible labels and local-only selection feedback; no upload progress is fabricated. Media has useful alt text and full-screen dialogs have accessible titles/descriptions.
+- Queued/processing/completed/failed states use icon and text. Static progress bars expose accurate fixture values and never auto-advance. A still frame is not announced as a playable video.
+- Website page/section/editor controls remain reachable at 320px. Preview resizing does not remove access to settings, save/publish feedback or code controls.
+- Filter/search results and no-results states use polite announcements where useful. Delete/account-deletion requests require clear confirmation and do not report completion.
+- Test every application route at 320, 390, 768, 1024 and 1440px, plus keyboard drawer/menu/dialog operation and axe scans of representative product/editor/error states. Real screen-reader, forced-colors and 200/400% zoom review remain separate limitations.
+
 ## Prompt 1 review evidence
 
 On 2026-11-05, ESLint and Playwright accessible-name/keyboard tests passed, including mobile Escape close and focus return, FAQ state, visible labels and reduced motion. Axe reported zero violations across all 23 rendered public/auth-preview routes for the selected WCAG 2/2.1/2.2 A/AA tags in tested Chromium states. Representative visual review covered mobile, tablet and desktop. Contrast and reduced-motion defects found during inspection were fixed and retested.

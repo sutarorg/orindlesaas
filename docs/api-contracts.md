@@ -64,6 +64,37 @@ Request DTOs contain only the required display-safe fields: name/email/password/
 
 Prompt 5 must map current Supabase responses to these safe UI contracts in server-appropriate adapters, revalidate all inputs, align password policy and never serialize auth tokens, raw provider payloads or secrets. Frontend validation is not authoritative.
 
+## Dashboard frontend contract (Prompt 3)
+
+`lib/contracts/dashboard.ts` defines the provider-neutral workspace boundary. The fixture adapter returns `DashboardPreviewResult` for every mutation-like operation:
+
+```ts
+type DashboardPreviewResult = {
+  status: "preview" | "unavailable";
+  message: string;
+  persisted: false;
+  creditsChanged: 0;
+};
+
+interface DashboardService {
+  generate(request: GenerationIntentRequest): Promise<DashboardPreviewResult>;
+  saveProject(request: SaveProjectRequest): Promise<DashboardPreviewResult>;
+  deleteAsset(request: AssetActionRequest): Promise<DashboardPreviewResult>;
+  downloadAsset(request: AssetActionRequest): Promise<DashboardPreviewResult>;
+  purchaseCredits(request: PurchaseCreditsRequest): Promise<DashboardPreviewResult>;
+  updateSettings(request: UpdateSettingsRequest): Promise<DashboardPreviewResult>;
+  requestAccountDeletion(request: AccountDeletionRequest): Promise<DashboardPreviewResult>;
+  saveWebsite(request: SaveWebsiteRequest): Promise<DashboardPreviewResult>;
+  publishWebsite(request: PublishWebsiteRequest): Promise<DashboardPreviewResult>;
+}
+```
+
+`GenerationIntentRequest` is a discriminated chat/image/video/website intent containing only user-entered configuration and a registry model ID. It has no provider key, authoritative credit price or callback URL. The mock never creates a job or output. `quoteGeneration` is a separate pure fixture estimator returning `kind: "fixture"`; it is not an endpoint or server quote.
+
+Future chat transport maps provider UI message parts to display-safe text/code/file parts and explicit submitted/streaming/ready/error states. Stop/regenerate require real server semantics; client disconnect alone is not represented as cancelled generation. File uploads later require validated type/size, scanning as appropriate, ownership and signed storage URLs.
+
+Future project/asset/wallet/settings/website endpoints must verify identity and per-object authorization, runtime-validate inputs and return safe DTOs. The server issues model availability and quotes, calculates final metered credits, handles idempotent payment fulfillment and controls publish/deployment. Browser fixture values are never accepted as balance, payment, ownership, progress or entitlement evidence.
+
 ## Common error envelope
 
 Future endpoints use a safe error code/message, request correlation ID and appropriate HTTP status. Do not leak stack traces, provider payloads, secrets or internal cost. Mutations require CSRF/origin defenses as applicable, authentication, authorization, validation, rate limits and idempotency.
