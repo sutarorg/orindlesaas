@@ -1,0 +1,134 @@
+import { test, expect } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+
+const publicRoutes = [
+  "/", "/features", "/features/ai-chat", "/features/ai-image-generator", "/features/ai-video-generator", "/features/ai-website-builder",
+  "/pricing", "/models", "/blog", "/blog/best-ai-tools-for-creators", "/blog/gpt-vs-claude-vs-gemini", "/blog/ai-image-generation-guide",
+  "/blog/create-ai-videos", "/blog/build-website-with-ai", "/blog/ai-for-small-business", "/about", "/contact", "/faq", "/privacy", "/terms", "/credits-policy",
+];
+
+test("all required public routes render one H1", async ({ page }) => {
+  for (const route of publicRoutes) {
+    const response = await page.goto(route);
+    expect(response?.status(), route).toBe(200);
+    await expect(page.locator("h1"), route).toHaveCount(1);
+    await expect(page.locator("h1"), route).toBeVisible();
+  }
+});
+
+test("prohibited and unknown routes return not-found UI", async ({ page }) => {
+  for (const route of ["/refund-policy", "/blog/not-a-real-article", "/features/not-a-product"]) {
+    const response = await page.goto(route);
+    expect(response?.status()).toBe(404);
+    await expect(page.getByRole("heading", { name: "This idea took a different direction." })).toBeVisible();
+  }
+});
+
+test("article metadata, canonical and structured data are present", async ({ page }) => {
+  await page.goto("/blog/gpt-vs-claude-vs-gemini");
+  await expect(page).toHaveTitle(/GPT vs Claude vs Gemini/);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /\/blog\/gpt-vs-claude-vs-gemini$/);
+  await expect(page.locator('meta[property="og:type"]')).toHaveAttribute("content", "article");
+  const jsonLd = await page.locator('script[type="application/ld+json"]').allTextContents();
+  expect(jsonLd.join(" ")).toContain('"Article"');
+  expect(jsonLd.join(" ")).toContain('"BreadcrumbList"');
+});
+
+test("sitemap includes articles and excludes account previews", async ({ request }) => {
+  const response = await request.get("/sitemap.xml");
+  expect(response.status()).toBe(200);
+  const text = await response.text();
+  expect(text).toContain("/blog/ai-for-small-business");
+  expect(text).not.toContain("/login");
+  expect(text).not.toContain("/signup");
+});
+
+test("desktop Products menu navigates to a real product", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Products" }).click();
+  await page.getByRole("menuitem").filter({ hasText: "Orindle Chat" }).click();
+  await expect(page).toHaveURL(/\/features\/ai-chat$/);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("A conversation that keeps the work moving.");
+});
+
+test("mobile navigation supports keyboard close and focus return", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const trigger = page.getByRole("button", { name: "Open navigation" });
+  await trigger.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+});
+
+test("pricing offer fragments resolve to the visible pack cards", async ({ page }) => {
+  await page.goto("/pricing");
+  const jsonLd = (await page.locator('script[type="application/ld+json"]').allTextContents()).join(" ");
+  for (const id of ["creator", "pro", "studio"]) {
+    expect(jsonLd).toContain(`/pricing#${id}`);
+    await expect(page.locator(`#${id}`)).toHaveCount(1);
+    await expect(page.locator(`#${id}`).getByRole("heading", { level: 3 })).toBeVisible();
+  }
+});
+
+test("pack handoff never claims payment or credit success", async ({ page }) => {
+  await page.goto("/pricing");
+  await page.getByRole("link", { name: "Choose Pro" }).click();
+  await expect(page).toHaveURL(/\/signup\?pack=pro$/);
+  await expect(page.getByText("Your selected pack")).toBeVisible();
+  await expect(page.getByText(/No checkout has started, no payment has been taken/)).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Pro", exact: true })).toBeVisible();
+});
+
+test("contact preview validates and explicitly does not send", async ({ page }) => {
+  await page.goto("/contact");
+  await page.getByLabel("Name").fill("Asha Rao");
+  await page.getByLabel("Email").fill("asha@example.com");
+  await page.getByLabel("Message").fill("Please explain how shared credits work across products.");
+  await page.getByRole("button", { name: "Preview message" }).click();
+  await expect(page.getByText("Your entries passed local validation. No message was sent or stored.")).toBeVisible();
+});
+
+test("FAQ accordion exposes state", async ({ page }) => {
+  await page.goto("/faq");
+  const trigger = page.getByRole("button", { name: "Is this a monthly subscription?" });
+  await trigger.click();
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await expect(page.getByText(/No. Creator, Pro and Studio are one-time credit packages/)).toBeVisible();
+});
+
+test("complex pages do not overflow target viewports", async ({ page }) => {
+  const routes = ["/", "/pricing", "/models", "/features/ai-image-generator", "/blog/gpt-vs-claude-vs-gemini"];
+  for (const width of [320, 390, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const route of routes) {
+      await page.goto(route);
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+      expect(overflow, `${route} overflows at ${width}px`).toBe(false);
+    }
+  }
+});
+
+for (const route of ["/", "/pricing", "/contact", "/blog/ai-image-generation-guide"]) {
+  test(`axe review: ${route}`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(route);
+    const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+    expect(results.violations).toEqual([]);
+  });
+}
+
+test("reduced motion keeps hero and every revealed section visible", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Everything AI. One Platform." })).toBeVisible();
+  const reveals = page.locator("[data-motion-reveal]");
+  expect(await reveals.count()).toBe(2);
+  await expect.poll(() => reveals.evaluateAll((elements) => elements.every((element) => {
+    const style = getComputedStyle(element);
+    return style.opacity === "1" && style.transform === "none";
+  }))).toBe(true);
+});
