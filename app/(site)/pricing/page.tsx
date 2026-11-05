@@ -28,7 +28,7 @@ export default function PricingPage() {
         "@context": "https://schema.org",
         "@type": "Product",
         name: `Orindle ${pack.name} credit pack`,
-        description: `${formatNumber(pack.credits)} credits for shared usage across Orindle products. One-time purchase; checkout availability is implemented in a later stage.`,
+        description: `${formatNumber(pack.credits)} credits for shared usage across Orindle products. One-time purchase; selecting a pack alone does not process payment or add credits.`,
         category: "AI usage credits",
         brand: { "@type": "Brand", name: "Orindle" },
         offers: {

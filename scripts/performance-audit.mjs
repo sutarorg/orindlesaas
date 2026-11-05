@@ -5,7 +5,7 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 const baseUrl = process.env.PERFORMANCE_BASE_URL ?? "http://127.0.0.1:3000";
-const outputDirectory = path.resolve("test-results/performance");
+const outputDirectory = path.resolve("performance-results");
 const trials = Number(process.env.PERFORMANCE_TRIALS ?? "3");
 const routes = [
   { id: "home", pathname: "/", indexable: true },

@@ -134,7 +134,7 @@ jobs:
         if: always()
         with:
           name: performance-lab
-          path: test-results/performance/
+          path: performance-results/
           if-no-files-found: ignore
           retention-days: 14
 

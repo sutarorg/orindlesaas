@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { articles } from "@/lib/content/articles";
 import { products } from "@/lib/content/products";
+import { creditPacks } from "@/lib/content/pricing";
 
 const publicRoutes = [
   "/",
@@ -51,6 +52,52 @@ test("every indexable route has unique metadata and a verified-origin canonical"
     await expect(page.locator('meta[name="twitter:card"]'), route).toHaveAttribute("content", "summary_large_image");
     await expect(page.locator("h1"), route).toHaveCount(1);
     await expect(page.locator("h1"), route).toBeVisible();
+
+    const structuredData = (await page.locator('script[type="application/ld+json"]').allTextContents()).flatMap((text) => {
+      const parsed: unknown = JSON.parse(text);
+      return Array.isArray(parsed) ? parsed as Array<Record<string, unknown>> : [parsed as Record<string, unknown>];
+    });
+    const types = structuredData.map((entity) => entity["@type"]);
+    expect(types, `${route} shared structured data`).toEqual(expect.arrayContaining(["Organization", "WebSite"]));
+    expect(types, `${route} must not claim reviews or ratings`).not.toEqual(expect.arrayContaining(["AggregateRating", "Review"]));
+
+    if (route === "/") {
+      expect(structuredData).toEqual(expect.arrayContaining([
+        expect.objectContaining({ "@type": "SoftwareApplication", name: "Orindle", url: absolute("/") }),
+      ]));
+    }
+    const product = products.find((item) => item.route === route);
+    if (product) {
+      expect(structuredData).toEqual(expect.arrayContaining([
+        expect.objectContaining({ "@type": "SoftwareApplication", name: product.name, description: product.description, url: absolute(route) }),
+      ]));
+    }
+    const article = articles.find((item) => `/blog/${item.slug}` === route);
+    if (article) {
+      const articleEntity = structuredData.find((entity) => entity["@type"] === "Article");
+      expect(articleEntity).toMatchObject({
+        headline: article.title,
+        description: article.description,
+        mainEntityOfPage: absolute(route),
+        articleSection: article.category,
+      });
+      expect(articleEntity?.wordCount, `${route} article word count`).toBeGreaterThan(1000);
+      expect(types, `${route} article breadcrumbs`).toContain("BreadcrumbList");
+    }
+    if (route === "/pricing") {
+      const packEntities = structuredData.filter((entity) => entity["@type"] === "Product");
+      expect(packEntities).toHaveLength(3);
+      expect(packEntities.map((entity) => {
+        const offer = entity.offers as Record<string, unknown>;
+        return { name: entity.name, description: entity.description, price: offer.price, currency: offer.priceCurrency, url: offer.url };
+      })).toEqual(creditPacks.map((pack) => ({
+        name: `Orindle ${pack.name} credit pack`,
+        description: `${pack.credits.toLocaleString("en-US")} credits for shared usage across Orindle products. One-time purchase; selecting a pack alone does not process payment or add credits.`,
+        price: pack.priceUsd,
+        currency: "USD",
+        url: absolute(`/pricing#${pack.id}`),
+      })));
+    }
   }
 });
 
