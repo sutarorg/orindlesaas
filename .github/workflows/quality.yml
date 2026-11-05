@@ -162,6 +162,34 @@ jobs:
           done
           test "$ready" = 1
           CHROME_PATH="$(node --input-type=module -e "import { chromium } from '@playwright/test'; process.stdout.write(chromium.executablePath())")" npm run test:performance
+      - name: Report failed Lighthouse groups
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("performance-results/performance-summary.json")
+          if not path.exists():
+              print("No Lighthouse summary; inspect the build/server/install step and performance artifact.")
+              raise SystemExit(0)
+          summary = json.loads(path.read_text())
+          groups = summary.get("groups", [])
+          failed = [group for group in groups if not group.get("passed")]
+          print(f"Lighthouse summary: {len(groups) - len(failed)}/{len(groups)} groups passed")
+          for group in failed[:20]:
+              scores = group.get("scores", {})
+              metrics = group.get("metrics", {})
+              details = (
+                  f"performance={scores.get('performance', {}).get('median', 'n/a')} "
+                  f"LCP={metrics.get('lcpMs', {}).get('median', 'n/a')}ms "
+                  f"CLS={metrics.get('cls', {}).get('median', 'n/a')} "
+                  f"TBT={metrics.get('tbtMs', {}).get('median', 'n/a')}ms "
+                  f"SEO={scores.get('seo', {}).get('median', 'n/a')} "
+                  f"reason={group.get('reason', 'budget failure')}"
+              )
+              print(f"::error::Lighthouse {group.get('route')} {group.get('profile')} FAIL: {details}")
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
