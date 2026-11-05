@@ -44,6 +44,17 @@ Use Testing Library where useful for accessible names, accordion `aria-expanded`
 - Responsive/accessibility: every workspace route at 320, 390 and 1440px, with complex public routes additionally covering 768 and 1024px; keyboard menus/dialogs/editors and axe scans for every workspace route.
 - Regression: Prompt 1 public and Prompt 2 authentication suites remain green after `(site)` chrome separation. No fixture action creates network requests, auth storage, payment/job success or deployed URLs.
 
+## Prompt 4 administration tests
+
+- Fixture/contract integrity: 13 navigation routes, unique fictional IDs, exact credit packs, shared model references/modalities, safe diagnostic fields and no secrets/raw customer content.
+- Metric helpers: range filtering, integer money/credit arithmetic, payment/cost/usage/contribution separation, failed/unreconciled usage and zero-active-user handling.
+- Preview adapter: every operation returns preview/unavailable, `persisted: false`, `auditPersisted: false`, no payment change and zero credits; adjustment audit previews are explicitly non-persistent.
+- Pure helpers/components: navigation/breadcrumbs, search/filter/pagination/clamping, formatting, accessible labels, required reasons and numeric/signed-credit validation.
+- Shell E2E: all 13 routes, one H1/noindex/demo notice, global search, breadcrumbs, mobile drawer Escape/focus return/navigation, notification/profile actions and unknown-route real 404s.
+- Feature E2E: user/provider/model/package/payment/job/dispute details and confirmations; table filters/pagination/reset; charts/ranges; usage definitions; adjustment validation/review/audit preview; no operational success claims.
+- Discovery/security boundary: robots disallows `/admin/`, sitemap excludes it, no network/storage side effects and no secret/customer-content fields. Client visibility is not tested as authorization because none exists.
+- Responsive/accessibility: every admin route at 320, 390 and 1440px plus axe scans; keyboard dialogs/menus/forms, named table scroll regions and chart equivalents. Preserve every Prompt 1/2/3 regression.
+
 ## Build and static checks
 
 Run exact installed-package `tsc --noEmit`, ESLint, unit tests and production build. Check for unsafe `any`, accidental secrets, dead links and large client bundles. Build success alone is not functional sign-off.

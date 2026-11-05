@@ -75,3 +75,27 @@
 ## D019 — Preserve real dynamic-fixture 404 responses
 
 **Status:** accepted after production browser QA. A workspace-root `loading.tsx` streamed a 200 shell before awaited dynamic params could reject an unknown fixture. The loading presentation is now scoped to the static Image Studio route, and `/app/[...not-found]` handles unmatched workspace paths. Unknown conversations, websites and workspace paths return actual 404 responses inside DashboardShell. Do not reintroduce a parent streaming boundary without rerunning status-code tests.
+
+## D020 — Separate admin demo shell, never fixture authorization
+
+**Status:** accepted for Prompt 4. `/admin` has an independent noindex operations shell and fictional fixture data. It is not linked as a customer feature and does not have an active role/session. Prompt 5 must enforce verified server permissions before any real admin record is serialized.
+
+## D021 — Native operational tables over incomplete ARIA grids
+
+**Status:** accepted after WAI research. Admin tables use native table/header semantics and normal keyboard-tabbable controls. Wide content uses named scroll regions. `role="grid"` is deferred unless a complete directional focus model is implemented and tested.
+
+## D022 — Integer minor units and explicit financial definitions
+
+**Status:** accepted. Admin money uses integer USD cents and credits use integers. Captured payment value, customer usage value, provider cost and gross contribution are separate. Gross contribution excludes other operating expenses; no fixture is actual company revenue/cost/performance evidence.
+
+## D023 — Reasoned two-step admin previews and ephemeral audit examples
+
+**Status:** accepted. Privileged intents validate input/reason and show a target/consequence review before calling the no-operation adapter. Credit adjustments can render an ephemeral `auditPreview` with `persisted: false`; this demonstrates the UI contract without claiming an audit or balance mutation.
+
+## D024 — No admin-root streaming boundary without 404 regressions
+
+**Status:** accepted from the Prompt 3 defect and validated for Prompt 4. Prompt 4 uses an admin catch-all and no root `loading.tsx`, preserving actual 404 responses for unknown paths. Any future parent loading boundary requires production status-code tests before acceptance.
+
+## D025 — Administration remains a dependency-light fixture frontend
+
+**Status:** accepted and validated on 2026-11-05. Prompt 4 reuses React/Radix/Lucide and shared model fixtures rather than adding a grid, chart, payments, auth or provider SDK. Local SVG trends have exact HTML equivalents, native tables remain keyboard-accessible and every operation uses the typed no-operation adapter. Production validation passed 57/57 unit tests and 91/91 Playwright tests; these results do not alter the Prompt 5 backend/security boundary.

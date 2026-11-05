@@ -53,6 +53,17 @@ Nested live-region duplication was removed during final review so each mock resu
 - Filter/search results and no-results states use polite announcements where useful. Delete/account-deletion requests require clear confirmation and do not report completion.
 - Test every application route at 320, 390, 768, 1024 and 1440px, plus keyboard drawer/menu/dialog operation and axe scans of representative product/editor/error states. Real screen-reader, forced-colors and 200/400% zoom review remain separate limitations.
 
+## Prompt 4 administration requirements
+
+- Use native tables with real headers/captions and ordinary tabbable controls. Do not add `role="grid"` unless the full composite directional-keyboard model is implemented and tested.
+- Wide tables use a named keyboard-focusable scroll region; filter/search controls have persistent labels, result counts are announced politely and pagination has explicit names/state.
+- Charts include readable units, a concise textual summary and an expandable values table. Status and chart series never rely on color alone or hover-only tooltips.
+- Global search, mobile navigation, notifications, profile menus, detail/edit dialogs and two-step confirmations support keyboard operation, Escape and logical focus return.
+- Privileged actions associate reasons/errors with fields, focus invalid input where appropriate and review the exact target/consequence before confirmation. Initial/final focus does not favor destructive completion.
+- Dynamic no-operation/audit-preview feedback uses one appropriate status region and says no real user/payment/provider/job/package/preference/audit/credit change occurred as applicable.
+- Long identifiers, money and diagnostics remain readable at 320px and with text scaling. Customer code/files/secrets are excluded rather than merely visually hidden.
+- Test every admin route at 320, 390 and 1440px, every route with axe, keyboard drawers/dialogs/forms, filtered empty states and actual unknown-route 404 statuses. Real screen-reader, forced-colors, 200/400% zoom and real-device reviews remain separate limits.
+
 ## Prompt 1 review evidence
 
 On 2026-11-05, ESLint and Playwright accessible-name/keyboard tests passed, including mobile Escape close and focus return, FAQ state, visible labels and reduced motion. Axe reported zero violations across all 23 rendered public/auth-preview routes for the selected WCAG 2/2.1/2.2 A/AA tags in tested Chromium states. Representative visual review covered mobile, tablet and desktop. Contrast and reduced-motion defects found during inspection were fixed and retested.

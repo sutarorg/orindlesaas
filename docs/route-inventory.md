@@ -43,6 +43,20 @@ All listed routes are public and indexable unless noted. Future private applicat
 | `/app/settings` | **Noindex** profile/security/preferences/connected-account/deletion-request previews | Validate; no mutation | Prompt 3 frontend |
 | `/app/support` | **Noindex** help, product guidance and real public support links | FAQ/contact/product navigation | Prompt 3 frontend |
 | `/app/*` unmatched | **Noindex** workspace-safe catch-all and unknown-fixture 404 | Return to overview | Prompt 3 frontend |
+| `/admin` | **Noindex** operations-demo metrics, charts and exception discovery | Local range controls / admin navigation | Prompt 4 frontend |
+| `/admin/users` | **Noindex** fictional user search/details/account actions | Local filters and confirmed previews | Prompt 4 frontend |
+| `/admin/models` | **Noindex** model capabilities/modalities/availability | Local filters/configuration previews | Prompt 4 frontend |
+| `/admin/providers` | **Noindex** provider integration/health fixtures | Configuration previews only | Prompt 4 frontend |
+| `/admin/model-pricing` | **Noindex** restricted illustrative model price versions | Validate; no price activated | Prompt 4 frontend |
+| `/admin/credit-packages` | **Noindex** exact pack configuration fixtures | Validate; no package saved | Prompt 4 frontend |
+| `/admin/payments` | **Noindex** payment/webhook/fulfillment fixtures | Local filters/reconciliation preview | Prompt 4 frontend |
+| `/admin/transactions` | **Noindex** transaction/reference ledger fixtures | Local filters/details | Prompt 4 frontend |
+| `/admin/usage` | **Noindex** usage/provider-cost/contribution fixtures | Range/product/model filters | Prompt 4 frontend |
+| `/admin/jobs` | **Noindex** cross-product job and redacted diagnostic fixtures | Local filters/retry preview | Prompt 4 frontend |
+| `/admin/websites` | **Noindex** safe website/deployment metadata | Local filters/details | Prompt 4 frontend |
+| `/admin/adjustments` | **Noindex** credit/dispute intent and audit-preview UI | Validate; no mutation/audit persisted | Prompt 4 frontend |
+| `/admin/settings` | **Noindex** local preference and access-contract presentation | Validate; no settings saved | Prompt 4 frontend |
+| `/admin/*` unmatched | **Noindex** admin-safe catch-all 404 | Return to admin overview | Prompt 4 frontend |
 | `/sitemap.xml` | Canonical public URL discovery | Crawlers | Prompt 1 |
 | `/robots.txt` | Crawl guidance and sitemap location | Crawlers | Prompt 1 |
 | unmatched | Helpful 404 with navigation | Home / Features | Prompt 1 |
@@ -58,4 +72,4 @@ All listed routes are public and indexable unless noted. Future private applicat
 
 ## Reserved future routes
 
-The canonical customer workspace is `/app`; the earlier `/dashboard`, `/projects`, `/assets` and root-level workspace suggestions are superseded. `/admin` remains reserved for a separately authorized administration design and is not created in Prompt 3. All application routes are noindex demo fixtures, excluded from the sitemap and disallowed in robots. They are not protected private pages. Prompt 5 must add verified server sessions and per-object authorization before real data appears, and replace mock auth/callback behavior with researched Supabase SSR.
+The canonical customer workspace is `/app`; the earlier `/dashboard`, `/projects`, `/assets` and root-level workspace suggestions are superseded. `/admin` is the separate Prompt 4 operations-demo root. All customer/admin application routes are noindex demo fixtures, excluded from the sitemap and disallowed in robots. They are not protected private pages. Prompt 5 must add verified server sessions, admin permissions and per-object authorization before real data appears, and replace mock auth/callback behavior with researched Supabase SSR.

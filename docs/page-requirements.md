@@ -65,3 +65,21 @@ Every `/app` route inherits the unified DashboardShell and noindex metadata. A v
 - `/app/support`: product/help guidance, public FAQ/contact links and an honest no-live-status statement.
 
 Loading, empty, error and completed-fixture presentations must be inspectable. Controls either navigate, perform a genuine local UI action or return explicit preview/unavailable feedback.
+
+## Administration pages
+
+Every `/admin` route inherits the separate AdminShell, noindex metadata and a persistent demo-operations notice. All records and health/financial states are fictional fixtures. One H1, contextual breadcrumbs, local discovery, responsive semantic data displays and honest non-persistent actions are mandatory.
+
+- `/admin`: all required user/payment/credit/cost/contribution/failure/job metrics, qualified fixture ranges, accessible charts and exception links.
+- `/admin/users`: search/status filters, pagination, safe account/purchase/usage details and confirmed account-action previews.
+- `/admin/models` and `/admin/providers`: exact model IDs, per-model capabilities/modalities, availability/pricing, integration/health fixtures and configuration previews.
+- `/admin/model-pricing`: restricted illustrative costs, credit-price versions/effective dates and validated configuration previews.
+- `/admin/credit-packages`: exact Creator/Pro/Studio initial packs, edit/configuration forms and two-step confirmation.
+- `/admin/payments` and `/admin/transactions`: payment/webhook/fulfillment/reference states, filters, pagination and safe details.
+- `/admin/usage`: provider cost, credit deductions/usage value, product/model/day/user costs, failed and unreconciled usage and gross contribution with explicit definitions.
+- `/admin/jobs`: all four products, queue/running/completed/failed states, retries/provider/model/duration/IDs and redacted diagnostics.
+- `/admin/websites`: safe owner/project/deployment/domain/failure metadata without customer code or files.
+- `/admin/adjustments`: validated reasoned credit/dispute intents, explicit confirmation and non-persistent audit previews; zero real balance/payment changes.
+- `/admin/settings`: local display/notification preference previews and proposed permission explanations, not role or secret management.
+
+See `admin-requirements.md` for full field and interaction requirements. Unknown `/admin/*` paths return an admin-safe real 404. No route implements authentication or authorization in Prompt 4.

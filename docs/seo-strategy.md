@@ -17,7 +17,7 @@ Orindle's topic cluster addresses the practical problem of moving between AI con
 
 ## Private route requirements
 
-Prompt 2 applies `noindex, nofollow` to `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/verify-email` and `/auth/callback`; all are excluded from the sitemap and disallowed in robots. Prompt 3 applies the same rule to every `/app` demo-workspace route and disallows `/app/`; these routes remain outside the sitemap. Future admin routes require the same discovery discipline plus separate authorization. Authentication/authorization remains mandatory before real private data; noindex and robots rules are not security.
+Prompt 2 applies `noindex, nofollow` to `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/verify-email` and `/auth/callback`; all are excluded from the sitemap and disallowed in robots. Prompt 3 applies the same rule to every `/app` demo-workspace route and disallows `/app/`. Prompt 4 applies it to every `/admin` operations-demo route and disallows `/admin/`; all remain outside the sitemap. Authentication/authorization remains mandatory before real private data; noindex and robots rules are not security.
 
 ## Content and on-page
 

@@ -106,4 +106,35 @@ Status keys: `[ ]` not started, `[~]` in progress, `[x]` implemented and appropr
 - [x] Inspect representative desktop/mobile application views and finalize QA/progress/assets/decisions.
 - [x] Finalize `handoff-prompt4.md` with actual shell, fixture, backend and administration requirements.
 
-Commercial launch tasks remain explicitly open in `production-readiness.md`; this checklist does not claim real backend services, field performance or legal sign-off.
+## Prompt 4 — administration frontend
+
+### Documentation and research
+
+- [x] Inspect the merged repository, all shared docs, Prompt 4 handoff and conceptual database/API contracts; confirm no implemented schema/route handlers/RBAC.
+- [x] Research admin IA, native table/grid semantics, responsive toolbars/pagination, chart accessibility, dialogs/status messages, least privilege and audit logging.
+- [x] Create admin architecture, requirements, permissions, navigation, data-contract and design documents.
+- [x] Update shared architecture/routes/data/API/design/accessibility/security/testing/plans/risks and the Prompt 5 operations handoff before application code.
+
+### Shell and shared contracts
+
+- [x] Implement the independent noindex `/admin` shell, responsive sidebar, top navigation, search, breadcrumbs, notifications/profile and safe catch-all.
+- [x] Add typed fictional operational fixtures, financial/metric helpers, proposed permission maps and a non-persistent admin adapter.
+- [x] Build semantic responsive table/pagination, status, chart, detail and two-step confirmation primitives.
+
+### Administration experiences
+
+- [x] Implement the required overview metrics, accessible range-aware charts and exception navigation.
+- [x] Implement user management, provider/model management and model pricing configuration previews.
+- [x] Implement exact credit packages, payments, transactions and defined usage/cost monitoring.
+- [x] Implement generation-job diagnostics, safe website-project metadata and adjustment/dispute workflows with audit previews.
+- [x] Implement local admin preference previews and the proposed access-model presentation.
+
+### Validation and delivery
+
+- [x] Unit/component tests cover fixtures, metrics, navigation, filters/pagination, validation and every no-operation adapter method.
+- [x] E2E tests cover all 13 routes, search/filter/pagination, dialogs/confirmations, adjustment audit preview, discovery and unknown-route 404s.
+- [x] Verify every admin route at 320/390/1440px and with axe; inspect representative desktop/mobile views and keyboard flows.
+- [x] Strict TypeScript, ESLint, unit tests and production build pass alongside every Prompt 1/2/3 regression.
+- [x] Finalize QA/progress/assets/decisions and `handoff-prompt5.md` with actual operations, permissions, UI contracts and backend expectations.
+
+Commercial launch tasks remain explicitly open in `production-readiness.md`; this checklist does not claim real backend services, admin authorization, field performance or legal sign-off.

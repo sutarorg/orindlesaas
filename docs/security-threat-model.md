@@ -46,9 +46,26 @@ No Supabase package, auth cookie, session token, OAuth client secret, email serv
 
 No real private data, model calls, uploads, storage, payment, ledger, deployment or account mutation is introduced in Prompt 3. Fixture ownership-shaped fields are presentation data only.
 
+## Prompt 4 administration frontend threats
+
+| Threat | Impact | Prompt 4 mitigation | Prompt 5 requirement |
+|---|---|---|---|
+| Visible `/admin` fixture mistaken for protected operations | Unauthorized real access or false security assumption | Persistent demo-admin notice, fictional records and no active role/session; proposed permissions only | Verified server admin membership plus deny-by-default route/action/object/field authorization before restricted data |
+| Mock privileged action presented as real | User/payment/provider/job/credit harm and operator deception | Reasoned two-step UI, adapter returns no persistence/payment/credit/audit change | Step-up, validation, idempotency, current-state checks and confirmed transactional server result before success copy |
+| Demo financial metric treated as actual revenue/cost/profit | False company performance and finance decisions | Fixture labels, integer minor units and explicit payment/usage/provider-cost/contribution definitions | Finance-approved definitions and reconciled server sources; never substitute modeled usage for receipts |
+| Sensitive admin DTO/log exposure | Customer privacy, credential or deployment compromise | Allowlisted safe fixtures; no prompts/files/code/tokens/raw webhooks/secrets/unrestricted IDs | Field-level authorization, redaction, retention and safe error mapping on every response |
+| Browser-controlled price/balance/status or adjustment | Financial fraud and ledger corruption | Fixture intent only; no authoritative browser values or real endpoint | Server price versions, bounded integer validation, transactional ledger, concurrency controls and idempotency |
+| Credit adjustment without attributable audit | Untraceable privileged balance change | Non-persistent `auditPreview` explicitly cannot prove an audit | Actor/permission/reason/reference/correlation/outcome in append-only audit, written with the operation |
+| Fake provider health or job retry presented as live | Incorrect incident response and duplicate charges | Fixture health labels and no-operation retry feedback | Verified health/job sources, retry budgets, provider idempotency and no duplicate credit deduction |
+| Admin global search exposes restricted records | Cross-role data leakage | Local fictional fixture search only | Server permission-filtered queries; do not serialize restricted records for client filtering |
+| Admin unknown path returns 200 before rejection | Incorrect routing/monitoring and inconsistent safe UI | No root loading boundary; catch-all with actual 404 status tests | Preserve status behavior with any future streaming authorization/loading design |
+
+No real admin identity, role, permission, database query, health check, payment, ledger, provider, job, deployment or persistent audit operation is introduced in Prompt 4. Proposed role names and audit previews are design contracts only.
+
 ## Future high-priority boundaries
 
 - **Auth:** secure Supabase cookies, server session verification, authorization per object, admin separation and no trust in client profile claims.
+- **Administration:** least-privilege server permissions, step-up for high-impact actions, field/object scope, idempotency, redacted DTOs and append-only attributable audit; no browser role or menu check is sufficient.
 - **Payments:** verify Dodo webhook signatures against raw payload using current official docs; idempotency by provider event/payment ID; never grant credits from browser redirect.
 - **Credits:** transactionally append ledger/deduct with sufficient balance, concurrency controls and server price versions. Never trust browser metering.
 - **AI/media:** allowlisted server model IDs, output/input limits, malware/content scanning as appropriate, short-lived signed R2 URLs and object ownership checks.

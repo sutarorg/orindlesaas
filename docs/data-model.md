@@ -30,6 +30,18 @@ Authentication form state is ephemeral React state; it is not a database model. 
 
 Mutation requests cover generation intent, project/asset changes, wallet intent, profile/preferences, website save/publish and account-deletion request. `DashboardPreviewResult` returns a safe message, `persisted: false` and zero credit changes. No password, session token, secret object key, provider cost, unrestricted deployment ID or raw provider/webhook payload appears in a fixture DTO.
 
+## Prompt 4 administration fixtures and DTOs (frontend only)
+
+`AdminFixture` is explicitly fictional operational presentation data, not a platform snapshot. It contains safe user/provider/model/price/package/payment/transaction/usage/job/website/dispute/audit-preview records and deterministic trend points. Every admin route remains visibly labelled as demo data.
+
+- Money is integer USD cents and credits are integers; dates are stable ISO values rendered in UTC. Customer usage value, captured payment value, provider cost and gross contribution are separate fields/calculations.
+- Models reuse the shared per-model capability/modality registry. Provider model counts and cost aggregates are derived rather than duplicated where practical.
+- User details contain no credentials/tokens/private files. Jobs contain redacted diagnostic codes/summaries, not prompts or customer content. Website DTOs exclude generated code, secrets and unrestricted deployment identifiers.
+- `AdminPreviewResult` always includes `persisted: false`, `auditPersisted: false`, `paymentChanged: false` and `creditsChanged: 0`. An optional ephemeral credit-adjustment `auditPreview` demonstrates the required record shape but is not a real audit event.
+- Proposed permission names and role bundles are documentation/configuration contracts only. No fixture role grants access or protects data.
+
+`admin-data-contracts.md` is canonical for all fields, formulas and mutation intents. Future production entities add admin memberships/permissions, immutable configuration/price versions, reconciliation records, disputes and append-only admin audit events.
+
 ## Future production entities (contract only)
 
 `users` (Supabase-owned identity), `profiles`, `projects`, `assets`, `conversations`, `generations`, `website_projects`, `wallets`, `credit_ledger_entries`, `credit_purchases`, `usage_events`, `model_prices` and `background_jobs`.

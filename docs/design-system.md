@@ -72,3 +72,18 @@ Dashboard-specific primitives:
 - **Dialog/drawer:** labelled title, close control, Escape/focus handling and destructive confirmation where required.
 
 Fixture labels use neutral/dark text with an info icon, not a warning-heavy visual treatment. Demo balances and progress never acquire the appearance of verified live data through copy alone.
+
+## Administration extension
+
+Admin retains the same color/font/focus tokens and adds a 264px desktop sidebar, compact operational header and data-dense workspace. Numeric columns use tabular numerals and right alignment; identifiers wrap safely. Status colors reuse accessible dark teal, amber-brown, blue-teal, gray and error tokens with text labels.
+
+Admin-specific primitives:
+
+- **Metric:** plain label, fixture value, unit/range and concise definition; no unsupported trend percentages.
+- **Toolbar/results:** visible search/filter labels, filtered item count, reset action and bottom pagination.
+- **Operational table:** native headers/caption, consistent alignment and named keyboard-focusable overflow region; no incomplete ARIA grid.
+- **Trend figure:** readable units/axes, direct series labels or compact legend, concise summary and equivalent values table.
+- **Detail/review dialog:** safe DTO summary, focused task, internal scrolling, Escape/focus return and two-step confirmation for privileged intents.
+- **Preview audit event:** actor/action/target/reason/time with a persistent non-persistent label, visually distinct from operational success.
+
+See `admin-design.md` for hierarchy and content rules.

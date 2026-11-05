@@ -15,6 +15,8 @@ This checklist covers a real commercial launch, not just Prompt 1 acceptance. Cu
 
 - [ ] Supabase Auth sessions, recovery, verification and authorization tests.
 - [ ] Private dashboard/admin routes enforce server authorization and noindex.
+- [ ] Admin roles/permissions are least-privilege, deny-by-default and tested for route/action/object/field bypass; no real admin fixture is treated as protection.
+- [ ] High-impact admin operations require step-up, idempotency, current-state checks and append-only attributable audit; audit failure cannot report success.
 - [ ] Drizzle migrations, backups, retention/deletion and R2 ownership/signed access reviewed.
 - [ ] AI model prices/catalog configured server-side and actual metering reconciled.
 - [ ] Wallet ledger is transactional, auditable and concurrency-safe.
@@ -25,6 +27,7 @@ This checklist covers a real commercial launch, not just Prompt 1 acceptance. Cu
 ## Operational gate
 
 - [ ] Monitoring, alerts, request correlation, incident contacts and rollback tested.
+- [ ] Admin financial metric definitions, provider-cost reconciliation, redacted diagnostics and customer-code/deployment field restrictions reviewed by engineering/finance/security owners.
 - [ ] Dependency/secret scanning and security review completed.
 - [ ] Rate limits, spending quotas and provider outage/degradation UX verified.
 - [ ] Support process for statutory rights, disputes and legally required remedies documented.

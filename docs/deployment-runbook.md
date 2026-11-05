@@ -21,7 +21,7 @@ Prompt 1 does not authorize or perform production deployment.
 
 ## Recovery
 
-For a bad static release, use Vercel's documented rollback to the last known-good immutable deployment. For later payment/credit incidents, stop affected operations, preserve logs/ledger evidence and follow a separately reviewed reconciliation process; never “fix” balances with untracked client/admin edits.
+For a bad static release, use Vercel's documented rollback to the last known-good immutable deployment. For later payment/credit incidents, stop affected operations, preserve logs/ledger evidence and follow a separately reviewed reconciliation process; never “fix” balances with untracked client/admin edits. Prompt 4's admin preview actions are not an operations runbook and must never be connected directly to production credentials without the Prompt 5 permission, step-up, idempotency and audit controls.
 
 ## Launch communications
 

@@ -54,3 +54,11 @@ The overview prioritizes the next useful action: greeting and balance, four dist
 Chat centers a substantial composer and readable message measure. Image Studio uses a configuration rail beside a generous artboard/contact sheet. Video Studio separates setup from queued/processing/completed/failed jobs. Websites uses an actual responsive HTML preview, page/section rail and contextual AI/code panel. Wallet and history emphasize transparent status and one-time pricing. Empty states use short guidance and a real next action.
 
 Fixture imagery is clearly labelled and meaningful interface copy remains HTML. Dialogs are reserved for focused preview/detail/destructive confirmation. Motion is limited to brief state transitions; static progress never pretends to advance. See `dashboard-architecture.md` and `dashboard-navigation.md` for implementation boundaries.
+
+## Administration experience
+
+Prompt 4 translates the same white/charcoal/mint system into calm operational software. A distinct grouped sidebar, compact top navigation, tabular numerals, aligned resource tables and restrained status vocabulary support fast discovery without a dark theme or crowded card wall.
+
+The overview prioritizes a few decision metrics, qualified trends and actionable exceptions. Resource pages keep search/filter/count/pagination beside results and put deeper evidence in accessible dialogs. Charts have units, summaries and tabular equivalents. Privileged flows require reasons and a review step, with explicit non-operation feedback and audit previews where required.
+
+Financial language is deliberately exact: captured payment fixtures, customer usage value, provider cost and gross contribution are not interchangeable. Every operational number is labelled fictional/demo data. See `admin-design.md`, `admin-navigation.md` and `admin-data-contracts.md`.
