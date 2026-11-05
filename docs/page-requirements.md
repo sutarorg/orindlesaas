@@ -31,3 +31,16 @@ About states mission, four-product scope and design/product principles without f
 ## FAQ and policy pages
 
 FAQ covers product, wallet, one-time pricing, usage variability, model choice and account expectations. Privacy/Terms identify their draft/last-updated status and avoid fictional entity/contact data. Credits Policy preserves statutory rights, payment disputes and legally required remedies. There is no refund-policy route.
+
+## Authentication pages
+
+All authentication routes use one H1, unique noindex metadata, the shared Orindle shell, visible frontend-preview disclosure and real internal recovery/navigation links. Forms have persistent labels, appropriate autocomplete, keyboard-operable password visibility, associated inline errors, first-invalid focus, busy feedback and an explicit mock result. No route creates an account/session, sends email, contacts OAuth providers or changes a password.
+
+- `/login`: welcome copy, email/current-password, remember-me choice, forgot-password, login CTA, planned Google/GitHub UI, signup and Terms/Privacy links.
+- `/signup`: name/email/new-password/confirmation, Unicode length guidance, independent visibility controls, unchecked required terms, OAuth UI, sign-in navigation and optional pack-intent display.
+- `/forgot-password`: email validation and a generic no-delivery reset-request result that cannot enumerate accounts.
+- `/reset-password`: new-password/confirmation validation, length guidance and expired-link presentation; no update claim.
+- `/verify-email`: required/success/expired presentation states and resend preview; no verification or email claim.
+- `/auth/callback`: static processing/error/cancellation presentation only; no token/code reading, session handling or arbitrary redirect.
+
+Detailed copy and preview query URLs are maintained in `authentication-flows.md`.

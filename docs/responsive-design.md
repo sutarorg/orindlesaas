@@ -22,6 +22,7 @@ Start at 320px with a single-column reading flow, 20px gutters and no fixed-widt
 - Pricing: cards stack on mobile, may use 3 columns from desktop; pack price/credits remain adjacent.
 - Tables: use a labelled horizontal scroll region only when content cannot reflow without losing meaning; page itself never scrolls horizontally.
 - Article: TOC precedes body on mobile and may become a slim sticky rail on wide screens; anchor scrolling respects sticky header and reduced motion.
+- Authentication: the branded product aside is desktop-only; mobile keeps a compact brand mark and single-column form. OAuth buttons stack before email fields, long guidance wraps and all auth controls retain touch-friendly targets.
 - Footer: columns collapse to 2 and then 1 based on available width.
 
 ## Media and layout stability
@@ -32,4 +33,6 @@ Explicit dimensions/aspect ratios prevent CLS. Fonts use fallbacks with similar 
 
 On 2026-11-05, Playwright asserted `document.documentElement.scrollWidth <= window.innerWidth` on `/`, `/pricing`, `/models`, `/features/ai-image-generator` and `/blog/gpt-vs-claude-vs-gemini` at 320, 390, 768, 1024 and 1440px: all 25 combinations passed. Narrow CTA/table defects found by this test were corrected with wrapping and constrained grid tracks rather than hiding page overflow.
 
-Representative visual inspection covered the homepage at 1440 and 390px, full mobile pricing at 390px, desktop article at 1440px, models at 768px and Image Studio at 390px. Product visuals remained readable and content followed the intended stacking order. Additional 360/430/834/1280/1920 widths, 200% zoom and real-device testing remain launch-stage checks; no untested width is claimed as manually inspected.
+Representative visual inspection covered the homepage at 1440 and 390px, full mobile pricing at 390px, desktop article at 1440px, models at 768px and Image Studio at 390px. Product visuals remained readable and content followed the intended stacking order.
+
+Prompt 2 added nine authentication routes/states at 320, 390 and 1440px: all 27 combinations passed the same page-overflow assertion. Visual inspection covered desktop login, mobile signup with pack intent, desktop verification success and mobile callback error. Additional 360/430/834/1280/1920 widths, 200% zoom and real-device testing remain launch-stage checks; no untested width is claimed as manually inspected.

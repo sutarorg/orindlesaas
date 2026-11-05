@@ -47,4 +47,32 @@ Status keys: `[ ]` not started, `[~]` in progress, `[x]` implemented and appropr
 - [x] Documentation/progress/decisions/assets updated with evidence.
 - [x] `handoff-prompt2.md` completed for authentication stage.
 
+## Prompt 2 — authentication frontend
+
+### Documentation and research
+
+- [x] Inspect the merged Prompt 1 repository, auth previews, contracts and relevant documentation.
+- [x] Research current official Supabase password/OAuth/redirect/SSR guidance, Next 16 routing/Proxy, WCAG/WAI authentication forms and NIST password UX.
+- [x] Create `authentication-design.md` and `authentication-flows.md`; update architecture, routes, requirements, accessibility and security baseline before code.
+- [x] Clarify staging: Prompt 2 is frontend-only; Prompt 5 owns real Supabase/session behavior.
+- [x] Create the Prompt 3 application-shell handoff baseline.
+
+### Implementation
+
+- [x] Build shared auth shell and reusable input/label/checkbox/password/alert components.
+- [x] Implement `/login` and `/signup` forms, validation, password visibility, remember-me/terms and planned OAuth feedback.
+- [x] Implement `/forgot-password`, `/reset-password`, `/verify-email` and `/auth/callback` presentations.
+- [x] Add typed signup/login/logout/reset/verification/OAuth/session/route-protection contracts and preview-only mock adapters.
+- [x] Implement all required allowlisted error, loading, cancellation, verification and expiry states without account enumeration or false success.
+- [x] Preserve pack display intent, noindex metadata, sitemap exclusion and public visual tokens.
+
+### Validation and delivery
+
+- [x] Unit tests cover validation, state parsing and every mock method's non-operational result.
+- [x] Component/E2E tests cover invalid input, mismatch, loading, visibility, keyboard access, OAuth feedback and no-success claims.
+- [x] Every auth route and presentation state renders at mobile/desktop widths without overflow or serious axe violations.
+- [x] Strict TypeScript, ESLint and production build pass alongside Prompt 1 regressions.
+- [x] Inspect representative auth pages visually and update QA/progress/assets/decisions with actual evidence.
+- [x] Finalize `handoff-prompt3.md` with exact implemented imports, user-state assumptions and shell requirements.
+
 Commercial launch tasks remain explicitly open in `production-readiness.md`; this checklist does not claim real backend services, field performance or legal sign-off.

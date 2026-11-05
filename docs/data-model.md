@@ -10,6 +10,12 @@ No production database exists in this stage. Typed local data is the only conten
 - `ArticleSection`: `id`, title and discriminated `ArticleBlock` values for paragraphs, H3 headings, ordered/unordered lists, examples, callouts, tables and workflows. Rich text distinguishes internal/external links.
 - `ModelFamily`: display name, provider, summary, useful-for tasks and `status: "Planned for launch"`. Prompt 1 has no `verified` or connected availability state.
 
+## Prompt 2 authentication DTOs (frontend only)
+
+Authentication form state is ephemeral React state; it is not a database model. Typed requests cover signup (name/email/password/confirmation/terms), login (email/password/remember-me), reset/resend (email), password update (new password/confirmation), OAuth provider/intent and future callback/access inputs. Password length is evaluated as 15–128 Unicode code points; passwords are never trimmed, logged or persisted.
+
+`AuthenticationResult` distinguishes future success/safe error from current preview. `SessionSnapshot` may later contain only a display-safe user ID/email/name, verification status and expiry; never access/refresh tokens. The mock snapshot is unavailable and has no user. `RouteAccessResult` is similarly unavailable and cannot authorize rendering. No profile, account, session or verification record is created locally.
+
 ## Future production entities (contract only)
 
 `users` (Supabase-owned identity), `profiles`, `projects`, `assets`, `conversations`, `generations`, `website_projects`, `wallets`, `credit_ledger_entries`, `credit_purchases`, `usage_events`, `model_prices` and `background_jobs`.

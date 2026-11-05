@@ -5,7 +5,13 @@
 | P0 | Implying a mock signup, contact or purchase succeeded | Label preview behavior; avoid success toasts for unperformed actions | Remove the claim, correct UI and add regression test |
 | P0 | Browser-controlled credit price/deduction | Keep arithmetic and provider cost server-only in later stages | Disable affected flow, reconcile ledger server-side |
 | P0 | Secret exposed through public env or source | No secrets in Prompt 1; server-only later integrations | Rotate immediately and purge exposed artifacts |
+| P0 | Mock auth/email/OAuth/callback presented as real success | Preview-only adapter results and persistent no-operation notices | Remove claim, correct UI and add auth regression tests |
+| P0 | Password, auth code, token or provider secret logged/persisted | No auth network/storage/logging in Prompt 2; server-only exchange later | Stop the flow, rotate affected credentials/tokens and purge logs |
 | P0 | Unsupported payment/refund legal statement | Qualified legal review; preserve statutory rights and disputes | Correct copy before enabling commerce |
+| P1 | Signup/reset response enables account enumeration | Generic reset copy and non-confirming registered-account presentation | Map outcomes to safe copy and test differing inputs |
+| P1 | Arbitrary auth `next`/callback redirect | Ignore return/code parameters now; exact allowlists in Prompt 5 | Remove redirect, allowlist safe paths and retest |
+| P1 | Client mock guard mistaken for authorization | Unavailable session/access results only; no private data | Enforce verified server claims and object authorization before data |
+| P1 | Auth form blocks password managers or keyboard use | Standard autocomplete, paste, native controls, labels and visibility buttons | Restore native behavior and rerun accessibility tests |
 | P1 | Model catalog presented as live availability | Distinguish planned from connected; verify IDs at integration | Qualify/remove claim and update source |
 | P1 | Metadata canonical host wrong | Central site URL helper and deployment checklist | Set env, rebuild, inspect tags/sitemap |
 | P1 | Mobile navigation traps or loses focus | Semantic button, Escape/focus handling and keyboard E2E | Fix disclosure and rerun keyboard tests |

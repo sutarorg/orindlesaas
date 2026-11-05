@@ -36,6 +36,34 @@ type GenerationAccepted = { jobId: string; status: 'queued' };
 
 A quote is informational and server-issued. Final deduction uses actual verified metered usage and the applicable server price version. The client cannot set credits, provider cost or model markup. Generation responses are job handles, not fabricated output.
 
+## Authentication frontend contract (Prompt 2)
+
+`lib/contracts/authentication.ts` is the provider-neutral boundary for the following operations:
+
+```ts
+interface AuthenticationService {
+  signUp(request: SignUpRequest): Promise<AuthenticationResult>;
+  signIn(request: SignInRequest): Promise<AuthenticationResult>;
+  signOut(): Promise<AuthenticationResult>;
+  requestPasswordReset(request: PasswordResetRequest): Promise<AuthenticationResult>;
+  updatePassword(request: PasswordUpdateRequest): Promise<AuthenticationResult>;
+  requestEmailVerification(request: EmailVerificationRequest): Promise<AuthenticationResult>;
+  completeEmailVerification(request: AuthCallbackRequest): Promise<AuthenticationResult>;
+  beginOAuth(request: OAuthRequest): Promise<OAuthStartResult>;
+  completeOAuthCallback(request: AuthCallbackRequest): Promise<AuthenticationResult>;
+  getSession(): Promise<SessionSnapshot>;
+  requireRouteAccess(request: RouteAccessRequest): Promise<RouteAccessResult>;
+}
+```
+
+Request DTOs contain only the required display-safe fields: name/email/password/confirmation/terms for signup; email/password/remember-me for login; email for reset/resend; new password/confirmation for update; provider + intended operation for OAuth; and an allowlisted internal path for future route access. Callback DTOs define optional code/next values for the future server adapter, but the Prompt 2 page/mock does not read, store or log them.
+
+`AuthenticationResult` is a discriminated union of future `success`, safe `error` and current `preview` results. The mock returns only `preview`, with `session: null`. OAuth has a separate future `redirect` result whose URL must be validated server-side; the mock never returns it. Errors use safe codes such as `invalid_credentials`, `network_failure`, `verification_expired`, `reset_expired`, `oauth_cancelled` and `session_expired`, not raw provider messages.
+
+`SessionSnapshot` distinguishes authenticated (future display-safe user/expiry), anonymous, expired and unavailable states. The mock returns unavailable without a user. `RouteAccessResult` distinguishes future allowed/denied/expired outcomes from current unavailable; an unavailable/mock result is not permission to render private data.
+
+Prompt 5 must map current Supabase responses to these safe UI contracts in server-appropriate adapters, revalidate all inputs, align password policy and never serialize auth tokens, raw provider payloads or secrets. Frontend validation is not authoritative.
+
 ## Common error envelope
 
 Future endpoints use a safe error code/message, request correlation ID and appropriate HTTP status. Do not leak stack traces, provider payloads, secrets or internal cost. Mutations require CSRF/origin defenses as applicable, authentication, authorization, validation, rate limits and idempotency.

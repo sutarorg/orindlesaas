@@ -20,8 +20,12 @@ All listed routes are public and indexable unless noted. Future private applicat
 | `/privacy` | Frontend-stage privacy disclosure | Contact | Prompt 1 |
 | `/terms` | Frontend-stage terms and acceptable use | Credits Policy | Prompt 1 |
 | `/credits-policy` | Pack, wallet, usage and consumer-rights terms | Pricing | Prompt 1 |
-| `/login` | **Noindex** account-access preview; no form or login attempt | Explore Products / Get Started | Prompt 1 |
-| `/signup` | **Noindex** account/pack-selection preview; optional display-safe `?pack=` intent | Explore Products / Login | Prompt 1 |
+| `/login` | **Noindex** login UI with local validation and explicit mock result | Login preview / recovery / signup | Prompt 2 frontend |
+| `/signup` | **Noindex** signup UI; optional allowlisted `?pack=` display intent | Signup preview / login | Prompt 2 frontend |
+| `/forgot-password` | **Noindex** generic password-reset request preview | Validate locally; never claim email delivery | Prompt 2 frontend |
+| `/reset-password` | **Noindex** new-password and expired-link presentations | Validate locally; never claim password update | Prompt 2 frontend |
+| `/verify-email` | **Noindex** verification-required/success/expired presentations and resend preview | Verification preview; no email operation | Prompt 2 frontend |
+| `/auth/callback` | **Noindex** static callback presentation; no code exchange/session | Return to login/home | Prompt 2 frontend |
 | `/sitemap.xml` | Canonical public URL discovery | Crawlers | Prompt 1 |
 | `/robots.txt` | Crawl guidance and sitemap location | Crawlers | Prompt 1 |
 | unmatched | Helpful 404 with navigation | Home / Features | Prompt 1 |
@@ -37,4 +41,4 @@ All listed routes are public and indexable unless noted. Future private applicat
 
 ## Reserved future routes
 
-`/dashboard`, `/projects`, `/assets`, `/history`, `/settings`, `/admin` and product workspace routes belong to later stages. Private variants must ship `noindex, nofollow` metadata and server authorization. Prompt 1 does not create placeholder private pages. The public `/login` and `/signup` previews listed above are noindex, excluded from the sitemap and contain no fake account form; Prompt 2 replaces them with researched real auth flows.
+`/dashboard`, `/projects`, `/assets`, `/history`, `/settings`, `/admin` and product workspace routes belong to later stages. Private variants must ship `noindex, nofollow` metadata and, once real data exists, server authorization. Prompt 1/2 do not create placeholder private application pages. All authentication routes listed above are noindex, excluded from the sitemap and frontend-only. Prompt 5 replaces mock auth and the callback presentation with researched Supabase SSR behavior and real route protection.

@@ -42,4 +42,16 @@
 
 ## D011 — Honest noindex auth previews
 
-**Status:** accepted for Prompt 1 only. `/login` and `/signup` are real noindex routes that explain the unavailable service instead of producing dead CTAs or fake success. `/signup?pack=...` may display a recognized pack as intent, but it never starts checkout or grants credits. Prompt 2 replaces these previews only with real researched authentication behavior.
+**Status:** accepted for Prompt 1 only. `/login` and `/signup` are real noindex routes that explain the unavailable service instead of producing dead CTAs or fake success. `/signup?pack=...` may display a recognized pack as intent, but it never starts checkout or grants credits. Prompt 2 replaces these static previews with complete frontend authentication experiences; Prompt 5 owns real authentication behavior.
+
+## D012 — Authentication staging clarified
+
+**Status:** accepted for the current Prompt 2 requirement, superseding the earlier real-auth-in-Prompt-2 plan. Prompt 2 delivers the complete authentication frontend, local validation, typed provider-neutral contracts and explicit mocks. Prompt 5 owns Supabase, OAuth provider redirects, email delivery, callback code exchange, cookies, sessions and server route protection. No auth SDK or secret is added in Prompt 2.
+
+## D013 — Passphrase-oriented password UX
+
+**Status:** accepted after current NIST research. Frontend signup/reset validation uses 15–128 Unicode code points, preserves password whitespace, supports paste/password managers and imposes no arbitrary character-composition rules. Confirmation prevents mismatch; independent visibility controls aid correction. Prompt 5 must align the actual provider/server policy and revalidate all inputs.
+
+## D014 — Allowlisted presentation states
+
+**Status:** accepted. Required server/error designs are inspectable through documented `state`/provider query values parsed against explicit allowlists. Callback/token-like parameters and arbitrary return URLs are ignored. Success-state designs always retain a visible preview disclaimer so they cannot be mistaken for real verification, email or session operations.
