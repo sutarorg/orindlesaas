@@ -4,7 +4,7 @@ Last updated: **2026-11-05**.
 
 ## Current status
 
-**Prompt 6 independent execution and report reconciliation are complete for the available local/disposable-CI scope; release remains NO-GO.** Final application revision is `3c0f0f5c6bff7dbb6bc3baa552b62be3263de51d`, with bounded workflow revision `9e84adca291ca9e38f376132f0af91fd5e4275c6`. Final application CI run `42074366023` passed all nine jobs. Later documentation/CI-only HEAD checks are indexed by the branch/PR checks; application evidence remains tied to these revisions, and failed WebKit attempt `42076622840` is retained in `failure-report.md`.
+**Prompt 6 independent execution and report reconciliation are complete for the available local/disposable-CI scope; release remains NO-GO.** Final application revision is `3c0f0f5c6bff7dbb6bc3baa552b62be3263de51d`, with bounded workflow revision `9e84adca291ca9e38f376132f0af91fd5e4275c6`. Final application CI run `42074366023` passed all nine jobs. Later documentation/CI-only HEAD checks are indexed by the branch/PR checks; application evidence remains tied to these revisions, and later failed WebKit/performance attempts, including TEST-007, are retained in `failure-report.md`.
 
 ## Prompt 6 observed execution — 2026-11-05
 

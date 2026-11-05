@@ -101,10 +101,14 @@ jobs:
             echo "Playwright ${{ matrix.browser }} installation attempt ${attempt}/2"
             if timeout 10m npx playwright install --with-deps "${{ matrix.browser }}"; then
               exit 0
+            else
+              status=$?
             fi
             if [ "${attempt}" -eq 2 ]; then
-              exit 1
+              echo "::error::Playwright ${{ matrix.browser }} installation failed on both bounded attempts (last exit ${status})"
+              exit "${status}"
             fi
+            echo "::warning::Playwright ${{ matrix.browser }} installation attempt ${attempt} failed with exit ${status}; one retry remains"
           done
       - run: npx playwright test --project=${{ matrix.project }}
       - name: Report failed browser test names
@@ -188,7 +192,18 @@ jobs:
                   f"SEO={scores.get('seo', {}).get('median', 'n/a')} "
                   f"reason={group.get('reason', 'budget failure')}"
               )
-              print(f"::error::Lighthouse {group.get('route')} {group.get('profile')} FAIL: {details}")
+              trials = [
+                  run for run in summary.get("runs", [])
+                  if run.get("route") == group.get("route") and run.get("profile") == group.get("profile")
+              ]
+              trial_details = "; ".join(
+                  f"trial {run.get('trial')}: "
+                  f"performance={run.get('scores', {}).get('performance', 'n/a')} "
+                  f"LCP={run.get('metrics', {}).get('lcpMs', 'n/a')}ms "
+                  f"TBT={run.get('metrics', {}).get('tbtMs', 'n/a')}ms"
+                  for run in trials
+              )
+              print(f"::error::Lighthouse {group.get('route')} {group.get('profile')} FAIL: {details}; {trial_details}")
           PY
       - uses: actions/upload-artifact@v4
         if: always()

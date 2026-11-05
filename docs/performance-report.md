@@ -1,6 +1,6 @@
 # Performance evaluation report
 
-Status: **repeated key-route Lighthouse lab gate passed after QA-010 correction; field Core Web Vitals and private/provider performance are not available**. Final detailed local matrix: application revision `3c0f0f5c6bff7dbb6bc3baa552b62be3263de51d`, **24/24 PASS**. Final CI status is indexed in `handoff-final.md`.
+Status: **local and final-application CI lab gates passed after QA-010; a later final-HEAD attempt exposed TEST-007 and requires a green retest**. Field Core Web Vitals and private/provider performance remain unavailable. Final detailed local matrix: application revision `3c0f0f5c6bff7dbb6bc3baa552b62be3263de51d`, **24/24 PASS**.
 
 ## Method and environment
 
@@ -37,6 +37,7 @@ Every indexable route met SEO 100. `/login` is intentionally noindex; every logi
 - All groups met median performance ≥90, accessibility/best-practices ≥95, indexable SEO ≥95, LCP ≤2.5s, CLS ≤0.1 and TBT ≤200ms budgets.
 - Mobile LCP medians were **768.1–917.5ms**, desktop **220.6–278.2ms**; mobile TBT medians **51–117ms**, desktop **0ms**.
 - An earlier harness-budget error treated intentional noindex `/login` like an indexable page. It was corrected without hiding its SEO 66, and the full matrix was rerun. Separately, Playwright had deleted Lighthouse output under `test-results/`; the dedicated artifact directory and CI path now preserve reports (TEST-006).
+- Later CI-only HEAD run `42082108844` failed `/pricing` mobile at median **TBT 202ms** versus the unchanged 200ms budget (performance 97, LCP 912.8ms, CLS 0, SEO 100). Six additional same-application local pricing/mobile audits passed with TBT **45.5–59ms**. TEST-007 remains open pending a complete final-HEAD retest with per-trial CI annotations; neither the breach nor the conflicting local result is discarded.
 
 ## Limits and remaining gates
 
@@ -44,4 +45,4 @@ TBT is not INP. These are simulated lab results, not a production speed guarante
 
 ## Decision
 
-**Repeated public-route Lighthouse and observed-resource gate: PASS locally and in final application CI run `42074366023`. Overall performance/field-monitoring launch gate: NOT MET.** A local 99–100 score does not substitute for interaction, private/provider, field-CWV or operational monitoring evidence.
+**Local and final-application-run Lighthouse/resource gates: PASS in run `42074366023`. Current final-HEAD gate: OPEN pending TEST-007 retest. Overall performance/field-monitoring launch gate: NOT MET.** A local 99–100 score does not substitute for interaction, private/provider, field-CWV or operational monitoring evidence.
