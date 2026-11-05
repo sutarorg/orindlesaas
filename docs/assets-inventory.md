@@ -4,7 +4,9 @@ No brand assets existed in the initial repository (only `README.md`). All implem
 
 | Asset | Implementation path | Type / purpose | Source / license | Status |
 |---|---|---|---|---|
-| Orindle four-part mark and wordmark | `components/layout/logo.tsx` | Inline SVG/component for header, footer and auth preview | Original geometric SVG; real HTML wordmark | Implemented |
+| Orindle four-part mark and wordmark | `components/layout/logo.tsx` | Inline SVG/component for header, footer and auth shell | Original geometric SVG; real HTML wordmark | Implemented |
+| Auth brand/product composition | `components/auth/auth-shell.tsx` | Responsive auth workspace and desktop product aside | Original HTML/CSS, existing Orindle mark and Lucide icons | Implemented |
+| Google/GitHub provider symbols | `components/brand/provider-icons.tsx` | Inline SVG symbols for planned OAuth controls | Inline provider-brand symbols; no remote requests or raster assets | Implemented |
 | Favicon/app icon | `app/icon.svg` | Four-part browser/app mark | Original SVG | Implemented |
 | Hero ecosystem composition | `components/marketing/product-visuals.tsx` (`EcosystemVisual`) | Semantic HTML/CSS/SVG explaining four connected products | Original conceptual workflow; meaningful labels are HTML | Implemented |
 | Chat conversation visual | `components/marketing/product-visuals.tsx` (`ChatVisual`) | Conversation-to-brief product chapter | Original conceptual interface, not live telemetry | Implemented |

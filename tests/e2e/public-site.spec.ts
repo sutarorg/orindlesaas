@@ -34,13 +34,20 @@ test("article metadata, canonical and structured data are present", async ({ pag
   expect(jsonLd.join(" ")).toContain('"BreadcrumbList"');
 });
 
-test("sitemap includes articles and excludes account previews", async ({ request }) => {
+test("sitemap and robots exclude authentication routes", async ({ request }) => {
   const response = await request.get("/sitemap.xml");
   expect(response.status()).toBe(200);
   const text = await response.text();
   expect(text).toContain("/blog/ai-for-small-business");
-  expect(text).not.toContain("/login");
-  expect(text).not.toContain("/signup");
+  for (const route of ["/login", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/auth/callback"]) {
+    expect(text).not.toContain(route);
+  }
+  const robotsResponse = await request.get("/robots.txt");
+  expect(robotsResponse.status()).toBe(200);
+  const robots = await robotsResponse.text();
+  for (const route of ["/login", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/auth/"]) {
+    expect(robots).toContain(`Disallow: ${route}`);
+  }
 });
 
 test("desktop Products menu navigates to a real product", async ({ page }) => {
@@ -78,9 +85,9 @@ test("pack handoff never claims payment or credit success", async ({ page }) => 
   await page.goto("/pricing");
   await page.getByRole("link", { name: "Choose Pro" }).click();
   await expect(page).toHaveURL(/\/signup\?pack=pro$/);
-  await expect(page.getByText("Your selected pack")).toBeVisible();
-  await expect(page.getByText(/No checkout has started, no payment has been taken/)).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "Pro", exact: true })).toBeVisible();
+  await expect(page.getByText("Pro selected for later")).toBeVisible();
+  await expect(page.getByText(/No payment or entitlement is created here/)).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Start with your next idea." })).toBeVisible();
 });
 
 test("contact preview validates and explicitly does not send", async ({ page }) => {

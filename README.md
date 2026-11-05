@@ -2,7 +2,7 @@
 
 **Everything AI. One Platform.**
 
-Premium-white public website for Orindle Chat, Image Studio, Video Studio and Websites. Built with Next.js App Router, React, strict TypeScript, Tailwind CSS, shadcn/ui patterns, Radix primitives, Lucide and Framer Motion.
+Premium-white public website and authentication frontend for Orindle Chat, Image Studio, Video Studio and Websites. Built with Next.js App Router, React, strict TypeScript, Tailwind CSS, shadcn/ui patterns, Radix primitives, Lucide and Framer Motion.
 
 ## Develop
 
@@ -11,6 +11,10 @@ npm ci
 cp .env.example .env.local
 npm run dev
 ```
+
+## Authentication frontend
+
+The noindex routes `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/verify-email` and `/auth/callback` provide local validation, accessible password controls and explicitly preview-only states. They do not create accounts/sessions, contact OAuth providers, send email or change passwords. Real Supabase and server authorization belong to Prompt 5.
 
 ## Validate
 
@@ -32,4 +36,4 @@ npm run test:e2e
 
 See `docs/quality-assurance.md` for the optional npm-packaged Chromium fallback used in this sandbox and the final validation evidence.
 
-This stage is frontend-only. It does not implement authentication, payments, real credit deductions, AI generation, database writes or deployment. See [`docs/README.md`](docs/README.md) for architecture, design, requirements, research and validation evidence.
+This stage is frontend-only. It does not implement real authentication/session handling, payments, credit deductions, AI generation, database writes, email delivery or deployment. See [`docs/README.md`](docs/README.md) for architecture, design, requirements, research and validation evidence.

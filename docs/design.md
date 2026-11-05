@@ -36,3 +36,11 @@ Articles open with a direct answer, include a contents nav when long, use descri
 ## Footer and navigation
 
 Desktop navigation is compact with a keyboard-accessible Products menu. Mobile uses a labelled button, focus-managed disclosure and large touch targets. The footer includes all products, company/help routes, legal/credits routes and a concise platform description. No dead social icons are added without real destinations.
+
+## Authentication experience
+
+Prompt 2 extends the same visual language into login, signup, recovery, reset, verification and callback presentations. A shared bordered white workspace sits on the off-white canvas; a charcoal desktop aside explains the one-account/four-product model with original brand geometry and real HTML labels. Mobile removes the aside and prioritizes the form. There is no separate auth theme or decorative stock imagery.
+
+Trust comes from clarity: persistent labels, visible requirements, honest frontend-preview notices, respectful recovery options and no artificial urgency. Google/GitHub are presented as planned alternatives without implying provider contact. Errors explain a next step without confirming account existence. Password guidance favors a 15+ character passphrase, password managers and paste rather than arbitrary complexity.
+
+Detailed component, responsive and interaction decisions are in `authentication-design.md`; route/state copy is in `authentication-flows.md`.

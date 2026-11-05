@@ -22,6 +22,16 @@ Use Testing Library where useful for accessible names, accordion `aria-expanded`
 - No horizontal overflow at 320, 390, 768, 1024 and 1440 on representative complex routes.
 - Metadata/canonical/OG tags and JSON-LD visible in rendered HTML.
 
+## Prompt 2 authentication tests
+
+- Pure validation: valid/invalid email, name, 15/128-code-point boundaries (including Unicode), mismatch and required terms; passwords are not trimmed.
+- Preview-state parsing: every documented state/provider/pack is allowlisted; unknown state, code, token and arbitrary next values are ignored.
+- Mock contract: every method returns preview/unavailable only, no authenticated user, redirect, account/email/password success or storage side effect.
+- Components: labels/autocomplete, field errors/descriptions, first-invalid focus, terms/remember-me native toggles, show/hide password accessible name and preserved value.
+- E2E: all six auth routes, login/signup validation and loading, generic reset result, verification/expiry/callback states, planned OAuth feedback and no false success.
+- Accessibility/responsive: keyboard-only completion, visible focus, mobile 320/390px layouts, desktop 1440px, and axe scans for every auth route plus error/success-preview states.
+- Regression: Prompt 1 routes, pricing handoff and public navigation remain intact; new auth routes are noindex and absent from sitemap.
+
 ## Build and static checks
 
 Run exact installed-package `tsc --noEmit`, ESLint, unit tests and production build. Check for unsafe `any`, accidental secrets, dead links and large client bundles. Build success alone is not functional sign-off.

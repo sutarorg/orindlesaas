@@ -13,6 +13,15 @@ Orindle provides exactly four primary products under one account and workspace: 
 - Provide unique metadata, canonical URLs, Open Graph, sitemap, robots, semantic content and truthful JSON-LD.
 - Include usable mobile layouts, visible focus, reduced-motion handling, accessible controls and useful not-found/error states.
 
+## Prompt 2 authentication frontend requirements
+
+- Deliver `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/verify-email` and `/auth/callback` using the established premium-white design system.
+- Provide complete email/password signup/login UX, password visibility/guidance, remember-me where appropriate, required terms consent, planned Google/GitHub UI and clear sign-in/signup/recovery navigation.
+- Support respectful invalid-email, weak-password, mismatch, invalid-credential, registered-account, verification, reset, network, loading, OAuth-cancellation and session-expired states without account enumeration.
+- Use provider-neutral typed contracts and explicit preview-only mock adapters for signup, login, logout, reset, verification, OAuth, session and route protection.
+- Do not install/connect Supabase, send email, redirect to OAuth, read/exchange auth codes, create cookies/sessions, store credentials or claim account/password/verification success.
+- Keep every auth route noindex and outside the sitemap. Actual session handling and server route protection belong to Prompt 5.
+
 ## Pricing truth
 
 | Pack | One-time price | Credits |

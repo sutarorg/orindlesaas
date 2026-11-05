@@ -2,7 +2,7 @@
 
 ## Stage gates
 
-1. **Documentation baseline:** all 35 Markdown files exist and are nonempty; architecture, design, routes and contracts were populated before application code.
+1. **Documentation baseline:** all 37 Markdown files exist and are nonempty; architecture, design, routes and contracts were populated before application code.
 2. **Foundation:** exact dependencies installed; strict TypeScript, ESLint, brand tokens and shared layout pass inspection.
 3. **Content/routes:** every required page and six substantial articles resolve; `/refund-policy` and unknown slugs return the custom 404.
 4. **Experience:** representative mobile/tablet/desktop inspection, keyboard navigation, reduced motion and honest preview states verified in Chromium.
@@ -42,7 +42,8 @@ Automated axe results are not a WCAG certification. They cover the tested DOM/vi
 The production server ran with `npm run start` on `0.0.0.0:3000`. The standard local path is `npx playwright install chromium` followed by `npm run test:e2e`. The CDN download was unavailable here, so the optional dev-only npm Chromium package was used:
 
 ```bash
-node -e "(async()=>{const c=require('@sparticuz/chromium'); await c.executablePath(); await c.inflate('node_modules/@sparticuz/chromium/bin/al2023.tar.br')})()"
+node --input-type=module -e "import c from '@sparticuz/chromium'; c.setGraphicsMode=false; await c.executablePath();"
+node --input-type=module -e "import { inflate } from './node_modules/@sparticuz/chromium/build/lambdafs.js'; await inflate('node_modules/@sparticuz/chromium/bin/al2023.tar.br');"
 LD_LIBRARY_PATH=/tmp/al2023/lib \
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/tmp/chromium \
 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000 \
@@ -55,9 +56,29 @@ These are test-environment settings, not application runtime requirements. No br
 
 - Contact submission performs local validation and explicitly states that no message was sent or stored.
 - Pack selection opens `/signup?pack=...`; it does not start checkout, take payment or grant credits.
-- Login/signup pages are noindex previews with no submit form and no account-success claim.
-- No AI generation, database write, email delivery, deployment or real authentication exists.
+- All six authentication routes are noindex frontend previews. Forms validate locally and explicitly state that no account, session, email, preference or password operation occurred.
+- OAuth controls never contact a provider or redirect; callback presentations ignore code/token/next values. Reset/resend responses do not reveal account existence.
+- No AI generation, database write, email delivery, deployment or real authentication/session handling exists.
 - No testimonials, customer logos, ratings, savings claims, scarcity or fabricated model availability appears.
+
+## Prompt 2 QA log — 2026-11-05
+
+| Check | Result | Actual evidence |
+|---|---|---|
+| Documentation inventory and ordering | Pass | 37/37 `docs/*.md` files nonempty. Research, auth design/flows, architecture, contracts, requirements, security and Prompt 3 handoff were updated before application code; only docs changed at the checkpoint. |
+| Risk-copy synchronization | Pass | `mistakes-that-may-occur-and-priorities.md` and `mistakesthatmayoccurandpriorty.md` are byte-identical. |
+| `npm run typecheck` | Pass | Strict `tsc --noEmit`; no errors after implementation and test additions. |
+| `npm run lint` | Pass | ESLint 10.14.0; no warnings or errors. |
+| `npm run test:unit` | Pass | 7 files, 24/24 tests. New coverage includes Unicode password limits, state allowlists, every mock method, generic reset responses, labels/errors/focus, visibility and OAuth feedback. |
+| `npm run build` | Pass | Next 16.4.5 production build; 33-page static-generation phase. Login/signup/reset/verify/callback are request-time routes; forgot-password is static. |
+| Production Playwright | Pass | 40/40 Chromium tests: 24 authentication tests plus 16 Prompt 1 regressions. |
+| Auth axe automation | Pass within limits | 13 auth routes/states, zero violations for `wcag2a`, `wcag2aa`, `wcag21aa`, `wcag22aa` in the tested Chromium DOM states. |
+| Auth responsive overflow | Pass | Nine auth routes/states at 320, 390 and 1440px: 27/27 combinations with no page-level horizontal overflow. |
+| Keyboard and state behavior | Pass | First-invalid focus, Enter/Space password/checkbox controls, loading feedback, mismatch/terms, all required server-state designs, no callback reflection and no auth-like storage keys tested. |
+| Representative visual review | Pass with noted limits | Inspected login at 1440px, Pro signup at 390px, verification success at 1280px and callback error at 390px from the production build. |
+| Dependency/security boundary | Pass | `npm audit --audit-level=high` reported zero vulnerabilities; secret-pattern and auth-side-effect scans passed. No Supabase dependency, auth environment variable, provider secret or real credential source was added. |
+
+Automated axe results are not a WCAG certification. The auth success/expiry states are explicit component previews, not evidence of a real authentication or email operation.
 
 ## Remaining validation and launch limits
 

@@ -19,7 +19,7 @@ The environment provides repository inspection/editing, shell, web research, ima
 | Sitemap metadata | https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap | `app/sitemap.ts` returns typed route entries from the same public content source. |
 | Font optimization | https://nextjs.org/docs/app/getting-started/fonts | `next/font` self-hosts font assets and avoids runtime third-party font requests. |
 | Image optimization | https://nextjs.org/docs/app/api-reference/components/image | Reserve dimensions and provide meaningful alternatives; semantic visuals avoid unnecessary raster payloads. |
-| Supabase SSR for the next stage | https://supabase.com/docs/guides/auth/auth-helpers/nextjs?language=ts and https://supabase.com/docs/guides/auth/choosing-a-server-package | Legacy Auth Helpers are deprecated; Prompt 2 must research and install current `@supabase/ssr` APIs rather than copying legacy examples. |
+| Supabase SSR for the next stage | https://supabase.com/docs/guides/auth/auth-helpers/nextjs?language=ts and https://supabase.com/docs/guides/auth/choosing-a-server-package | Legacy Auth Helpers are deprecated; Prompt 5 must research and install current `@supabase/ssr` APIs rather than copying legacy examples. |
 | Core Web Vitals | https://web.dev/articles/vitals | Good 75th-percentile field targets: LCP <=2.5s, INP <=200ms, CLS <=0.1, segmented for mobile and desktop. |
 | WCAG 2.2 | https://www.w3.org/TR/WCAG22/ | Semantic structure, keyboard access, visible focus, sufficient contrast and reduced-motion support guide implementation. |
 | Target size | https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html | WCAG 2.2 AA target-size minimum is 24x24 CSS px with exceptions; Orindle aims for 44px primary controls. |
@@ -72,3 +72,26 @@ The six implemented articles use task-based model evaluation rather than a timel
 ## Frontend-stage provider boundary
 
 Supabase, Drizzle, Vercel AI Gateway/SDK, R2, Inngest, E2B, Vercel deployment, Dodo Payments, Upstash and Resend remain later-stage integrations. None is integrated in Prompt 1. No provider API field, model ID, webhook field or metered price is guessed. Public CTAs use real local destinations or explicit preview behavior; they do not simulate successful account creation, payment, email delivery or AI generation.
+
+## Prompt 2 authentication UX and routing research
+
+Research performed **2026-11-05**, before authentication application code. Supabase packages were not installed and no provider integration was made.
+
+| Topic | Official source | Finding applied to the frontend contract |
+|---|---|---|
+| Supabase password auth | https://supabase.com/docs/guides/auth/passwords | Hosted email confirmation is configurable/default-on; SSR uses PKCE. Reset requests deliberately do not reveal whether an account exists. Reset and signup emails require real email infrastructure; this stage cannot claim delivery. |
+| Supabase general configuration | https://supabase.com/docs/guides/auth/general-configuration | Email confirmation behavior is a project setting, so verification UI must handle required/success/expired states without assuming a fixed backend configuration. |
+| Supabase auth testing | https://supabase.com/docs/guides/auth/testing-auth-flows | Local/test email behavior and rate limits differ from hosted projects. Prompt 5 must use safe local/test projects rather than fake delivery in the public frontend. |
+| Google OAuth | https://supabase.com/docs/guides/auth/social-sign-in/auth-google | OAuth requires real provider setup, allowlisted redirects and a server code-exchange step for PKCE. Google UI is retained as planned only. |
+| GitHub OAuth and sign-out | https://supabase.com/docs/guides/auth/social-sign-in/auth-github | GitHub has equivalent provider/callback requirements; its official guide also documents real sign-out. GitHub UI remains a mock with no redirect. |
+| Redirect URLs | https://supabase.com/docs/guides/auth/redirect-urls | Email/OAuth redirect targets must match configured allowlists; exact production paths are preferred. Arbitrary `next` URLs are not accepted by the presentation layer. |
+| Supabase SSR for Next.js | https://supabase.com/docs/guides/auth/server-side/creating-a-client?queryGroups=framework&framework=nextjs | Current guidance uses `@supabase/ssr` + `supabase-js`, cookie-based sessions and Next 16 `proxy.ts` for refresh. Server protection uses verified claims; do not trust cookie reads or Proxy alone. Implementation is deferred to Prompt 5. |
+| Next.js page `searchParams` | https://nextjs.org/docs/app/api-reference/file-conventions/page | In the installed Next 16 line, page `searchParams` is a Promise/request-time API. Server pages await it and allowlist only presentation-state values. |
+| Next.js Route Handlers | https://nextjs.org/docs/app/api-reference/file-conventions/route | Real future callback work belongs in a verified Route Handler; the Prompt 2 `page.tsx` is only a placeholder and does not exchange codes. |
+| Next.js 16 Proxy | https://nextjs.org/docs/app/getting-started/proxy | Middleware is now called Proxy. Proxy can help with request handling but is not a complete session-management or authorization solution. |
+| WCAG 2.2 Accessible Authentication | https://www.w3.org/WAI/WCAG22/Understanding/accessible-authentication-minimum.html | Password-manager autofill and copy/paste are valid mechanisms to reduce cognitive burden. No CAPTCHA, puzzle, transcription requirement or disabled paste is introduced; planned OAuth offers an alternative once connected. |
+| WAI form instructions | https://www.w3.org/WAI/tutorials/forms/instructions/ | Persistent labels and instructions associated through `aria-describedby` are required; placeholder text is not a label. |
+| WAI validation and notifications | https://www.w3.org/WAI/tutorials/forms/validation/ and https://www.w3.org/WAI/tutorials/forms/notifications/ | Client validation improves UX but does not replace future server validation. Errors need clear correction guidance, field association, prominent notification and first-invalid-focus behavior. |
+| NIST SP 800-63B-4 | https://pages.nist.gov/800-63-4/sp800-63b.html | Current final guidance requires 15 characters for a password used as a single factor, permits at least 64, supports printing characters/spaces/Unicode and requires password-manager/autofill support. Orindle adopts a 15–128 Unicode-code-point frontend guide with no composition rules; Prompt 5 must align server policy. |
+
+The staging in the earlier handoff has been clarified by the current requirement: **Prompt 2 is frontend-only; Prompt 5 owns actual Supabase authentication and session handling**. The research above informs contracts and UX only; no Supabase method, environment variable, callback field or cookie behavior is implemented by assumption.

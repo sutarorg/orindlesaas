@@ -10,14 +10,14 @@ Orindle's topic cluster addresses the practical problem of moving between AI con
 - Unique title and description per static page; `generateMetadata` for article slugs.
 - Canonical absolute URLs from one site URL helper.
 - `app/sitemap.ts` enumerates all public static and article routes; no future private routes.
-- `app/robots.txt` generated through `app/robots.ts`, with sitemap URL and disallow guidance for future private paths.
+- `app/robots.txt` generated through `app/robots.ts`, with sitemap URL and disallow guidance for authentication and future private paths.
 - Server-rendered semantic article content, descriptive anchors, breadcrumb navigation and crawlable internal links.
 - Truthful JSON-LD: Organization/WebSite globally, SoftwareApplication where accurate, Article + BreadcrumbList on articles, Product/Offer only for visible one-time packs without ratings/reviews.
 - Custom not-found page and no fabricated thin slug pages.
 
 ## Private route requirements
 
-Prompts 3 and 5 must apply `robots: { index: false, follow: false }` to login-adjacent private app, dashboard, projects, assets, history, settings and admin routes as appropriate. Authentication/authorization remains mandatory; noindex is not security. Keep private URLs out of the sitemap. Signup/login indexing can be decided separately, but private app content is always noindex.
+Prompt 2 applies `noindex, nofollow` to `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/verify-email` and `/auth/callback`; all are excluded from the sitemap and disallowed in robots. Prompts 3 and 5 must apply the same metadata discipline to dashboard, projects, assets, history, settings and admin routes as appropriate. Authentication/authorization remains mandatory; noindex and robots rules are not security. Keep private URLs out of the sitemap.
 
 ## Content and on-page
 
