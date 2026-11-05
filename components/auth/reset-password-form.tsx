@@ -9,7 +9,7 @@ import { PasswordGuidance } from "@/components/auth/password-guidance";
 import { PasswordInput } from "@/components/auth/password-input";
 import { Button } from "@/components/ui/button";
 import { validatePasswordUpdate, type PasswordUpdateField, type ValidationErrors } from "@/lib/auth/validation";
-import { mockAuthenticationService } from "@/lib/mocks/authentication-preview";
+import { authenticationService } from "@/lib/auth/supabase-service";
 
 export function ResetPasswordForm() {
   const [password, setPassword] = useState("");
@@ -33,9 +33,14 @@ export function ResetPasswordForm() {
       return;
     }
     setPending(true);
-    const response = await mockAuthenticationService.updatePassword({ password, confirmPassword });
-    setResult(response.message);
-    setPending(false);
+    try {
+      const response = await authenticationService.updatePassword({ password, confirmPassword });
+      setResult(response.message);
+    } catch {
+      setResult("The password update could not be reached. No change was confirmed; try again.");
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -50,10 +55,10 @@ export function ResetPasswordForm() {
       </div>
       <Button type="submit" size="lg" className="mt-6 w-full" disabled={pending}>
         {pending ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : <KeyRound aria-hidden="true" />}
-        {pending ? "Checking locally…" : "Update password"}
+        {pending ? "Updating password…" : "Update password"}
       </Button>
       <div>
-        {result && <AuthAlert tone="info" title="Password update preview" body={result} className="mt-5" />}
+        {result && <AuthAlert tone="info" title="Password update status" body={result} className="mt-5" />}
       </div>
     </form>
   );

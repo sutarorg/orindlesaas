@@ -31,16 +31,16 @@ test("login validates, focuses the first error and preserves password visibility
   await expect(page.getByRole("checkbox")).toBeChecked();
 });
 
-test("login exposes loading and explicitly creates no session or preference", async ({ page }) => {
+test("login fails closed without Supabase and creates no session or preference", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Email address", { exact: true }).fill("asha@example.com");
   await page.getByLabel("Password", { exact: true }).fill("a private passphrase");
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "Log in", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Checking locally…" })).toBeVisible();
-  await expect(page.getByText(/No login request was sent, no remember-me preference was stored and no session was created/)).toBeVisible();
+  await expect(page.getByText("Authentication is not configured. No account or session change was made.")).toBeVisible();
   const authStorage = await page.evaluate(() => [...Object.keys(localStorage), ...Object.keys(sessionStorage)].filter((key) => /supabase|auth|password|remember/i.test(key)));
   expect(authStorage).toEqual([]);
+  expect((await page.context().cookies()).some((cookie) => cookie.name === "orindle_session_policy")).toBe(false);
 });
 
 test("signup explains weak and mismatched passwords, terms and honest completion", async ({ page }) => {
@@ -57,7 +57,7 @@ test("signup explains weak and mismatched passwords, terms and honest completion
   await page.getByLabel("Confirm password", { exact: true }).fill("a long private passphrase");
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "Create account" }).click();
-  await expect(page.getByText(/No account was created, no verification email was sent and no credits were added/)).toBeVisible();
+  await expect(page.getByText("Authentication is not configured. No account or session change was made.")).toBeVisible();
 });
 
 test("forgot-password validates and returns generic no-delivery feedback", async ({ page }) => {
@@ -67,8 +67,8 @@ test("forgot-password validates and returns generic no-delivery feedback", async
   await expect(page.getByText(/Enter a valid email address/)).toBeVisible();
   await page.getByLabel("Email address", { exact: true }).fill("asha@example.com");
   await page.getByRole("button", { name: "Request reset link" }).click();
-  await expect(page.getByText(/No reset request was submitted and no email was sent/)).toBeVisible();
-  await expect(page.getByText(/whether or not an account exists/)).toBeVisible();
+  await expect(page.getByText("Authentication is not configured. No account or session change was made.")).toBeVisible();
+  await expect(page.getByText(/reset link has been requested/i)).toHaveCount(0);
 });
 
 test("password update validates and expired reset offers a real recovery route", async ({ page }) => {
@@ -79,63 +79,57 @@ test("password update validates and expired reset offers a real recovery route",
   await expect(page.getByText(/Passwords don’t match/)).toBeVisible();
   await page.getByLabel("Confirm new password").fill("a long private passphrase");
   await page.getByRole("button", { name: "Update password" }).click();
-  await expect(page.getByText(/No password was updated and no recovery session was created/)).toBeVisible();
+  await expect(page.getByText("Authentication is not configured. No account or session change was made.")).toBeVisible();
   await page.goto("/reset-password?state=expired");
-  await expect(page.getByText("This reset link has expired", { exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Request a new reset link" })).toHaveAttribute("href", "/forgot-password");
-  await expect(page.getByLabel("New password", { exact: true })).toHaveCount(0);
+  await expect(page.getByLabel("New password", { exact: true })).toBeVisible();
+  await expect(page.getByText("This reset link has expired", { exact: true })).toHaveCount(0);
 });
 
-test("verification covers required, success, expired and no-delivery resend states", async ({ page }) => {
+test("verification fails closed and query strings cannot spoof success or expiry", async ({ page }) => {
   await page.goto("/verify-email");
   await expect(page.getByText("Confirm your email", { exact: true })).toBeVisible();
   await page.getByLabel("Email address", { exact: true }).fill("asha@example.com");
-  await page.getByRole("button", { name: "Preview resend" }).click();
-  await expect(page.getByText(/No verification request was submitted and no email was sent/)).toBeVisible();
-  await page.goto("/verify-email?state=success");
-  await expect(page.getByText("Your email is verified", { exact: true })).toBeVisible();
-  await expect(page.getByText(/Component preview: no email has been verified/)).toBeVisible();
-  await page.goto("/verify-email?state=expired");
-  await expect(page.getByText("This verification link has expired", { exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Preview resend" })).toBeVisible();
+  await page.getByRole("button", { name: "Request verification email" }).click();
+  await expect(page.getByText("Authentication is not configured. No account or session change was made.")).toBeVisible();
+  for (const state of ["success", "expired"]) {
+    await page.goto(`/verify-email?state=${state}`);
+    await expect(page.getByText("Confirm your email", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Request verification email" })).toBeVisible();
+    await expect(page.getByText("Your email is verified", { exact: true })).toHaveCount(0);
+  }
 });
 
-test("OAuth controls and cancellation never imply provider contact", async ({ page }) => {
+test("OAuth controls fail closed without implying provider contact", async ({ page }) => {
   await page.goto("/login");
   await page.getByRole("button", { name: "Continue with GitHub" }).click();
-  await expect(page.getByText(/GitHub is a planned integration/)).toBeVisible();
-  await expect(page.getByText(/No provider was contacted, no consent screen opened, no redirect occurred/)).toBeVisible();
+  await expect(page.getByText("Authentication is not configured. No account or session change was made.")).toBeVisible();
+  await expect(page).toHaveURL(/\/login$/);
   await page.goto("/login?state=oauth-cancelled&provider=github");
-  await expect(page.getByText("GitHub sign-in was cancelled", { exact: true })).toBeVisible();
-  await expect(page.getByText(/This is a cancellation-state preview; no provider was contacted/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Log in", exact: true })).toBeVisible();
+  await expect(page.getByText("GitHub sign-in was cancelled", { exact: true })).toHaveCount(0);
 });
 
-test("login and signup render all documented safe server-state designs", async ({ page }) => {
-  const loginStates = [
-    ["/login?state=invalid-credentials", "We couldn’t sign you in"],
-    ["/login?state=network-failure", "The connection didn’t get through"],
-    ["/login?state=session-expired", "Your session has expired"],
-  ] as const;
-  for (const [route, copy] of loginStates) {
+test("login and signup ignore visitor-supplied account state", async ({ page }) => {
+  for (const route of ["/login?state=invalid-credentials", "/login?state=network-failure", "/login?state=session-expired"]) {
     await page.goto(route);
-    await expect(page.getByText(copy, { exact: true })).toBeVisible();
-    await expect(page.getByText(/This is .*preview|no credentials were checked|no network request was made/i).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Log in", exact: true })).toBeVisible();
+    await expect(page.getByText(/presentation preview|expiry-state preview|no credentials were checked/i)).toHaveCount(0);
   }
-  for (const [route, copy] of [["/signup?state=already-registered", "Try another way to continue"], ["/signup?state=verification-required", "Confirm your email to continue"]] as const) {
+  for (const route of ["/signup?state=already-registered", "/signup?state=verification-required"]) {
     await page.goto(route);
-    await expect(page.getByText(copy, { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Create account" })).toBeVisible();
+    await expect(page.getByText(/This email may already be registered|No account was created and no verification email was sent in this preview/)).toHaveCount(0);
   }
 });
 
-test("callback is presentation-only and never reflects code or arbitrary next values", async ({ page }) => {
+test("callback requires a real code exchange and never reflects secrets or arbitrary next values", async ({ page }) => {
   await page.goto("/auth/callback");
-  await expect(page.getByText("Finishing your sign-in", { exact: true })).toBeVisible();
-  await expect(page.getByText(/No authorization code was exchanged/)).toBeVisible();
-  await page.goto("/auth/callback?state=cancelled");
-  await expect(page.getByText("Sign-in was cancelled", { exact: true })).toBeVisible();
-  await page.goto("/auth/callback?state=error&code=do-not-reflect-this&next=https%3A%2F%2Fmalicious.invalid");
+  await expect(page.getByText("This sign-in link could not be used", { exact: true })).toBeVisible();
+  await page.goto("/auth/callback?error=access_denied");
+  await expect(page.getByText("This sign-in link could not be used", { exact: true })).toBeVisible();
+  await page.goto("/auth/callback?code=do-not-reflect-this&next=https%3A%2F%2Fmalicious.invalid");
   await expect(page).toHaveURL(/\/auth\/callback\?/);
-  await expect(page.getByText("We couldn’t complete sign-in", { exact: true })).toBeVisible();
+  await expect(page.getByText("Authentication is not configured", { exact: true })).toBeVisible();
   expect(await page.locator("body").innerText()).not.toContain("do-not-reflect-this");
   expect(await page.locator("body").innerText()).not.toContain("malicious.invalid");
 });

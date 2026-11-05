@@ -1,69 +1,48 @@
 "use client";
 
-import { ArrowLeft, ExternalLink, Globe2, Save, Search, UploadCloud } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import { ActionFeedback, DemoBadge, InlineNotice, PageHeader, Panel } from "@/components/dashboard/ui";
+import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+import { ExternalLink, Rocket, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { DashboardPreviewResult, WebsiteProject } from "@/lib/contracts/dashboard";
-import { previewDashboardService } from "@/lib/mocks/dashboard-preview";
+import { InlineNotice, PageHeader, Panel } from "@/components/dashboard/ui";
+import type { OwnedWebsite } from "@/lib/server/websites/projects";
 
-export function WebsiteSettings({ website }: { website: WebsiteProject }) {
-  const [name, setName] = useState(website.name);
-  const [description, setDescription] = useState(website.description);
-  const [slug, setSlug] = useState(website.id.replace(/^site-/, ""));
-  const [seoTitle, setSeoTitle] = useState(`${website.name} · ${website.previewHeadline}`);
-  const [seoDescription, setSeoDescription] = useState(website.previewDescription);
-  const [visibility, setVisibility] = useState("private");
-  const [result, setResult] = useState<DashboardPreviewResult | null>(null);
-  const [validationError, setValidationError] = useState("");
-
-  async function save() {
-    if (name.trim().length < 2) {
-      setValidationError("Enter a website name of at least 2 characters.");
-      return;
-    }
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-      setValidationError("Use lowercase letters, numbers and single hyphens for the local slug.");
-      return;
-    }
-    setValidationError("");
-    const response = await previewDashboardService.updateSettings({ section: "website", values: { projectId: website.id, name, description, slug, seoTitle, seoDescription, visibility } });
-    setResult({ ...response, message: "Website settings were validated locally. No name, slug, SEO field, visibility setting or project record was saved." });
+export function WebsiteSettings({ website }: { website: OwnedWebsite }) {
+  const router = useRouter();
+  const [name, setName] = useState(website.project.name);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
+  const [deploymentMessage, setDeploymentMessage] = useState("");
+  const deploymentKey = useRef<string | null>(null);
+  const canDeploy = website.builds.some((build) => build.status === "passed" && build.sourceSha256 === website.currentSourceSha256);
+  async function deployPreview() {
+    setBusy(true); setError(""); setDeploymentMessage("");
+    deploymentKey.current ??= crypto.randomUUID();
+    try {
+      const response = await fetch(`/api/v1/websites/${website.project.id}/deployments`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ target: "preview", idempotencyKey: deploymentKey.current }) });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body?.error?.message ?? "The preview deployment could not be queued.");
+      deploymentKey.current = null;
+      setDeploymentMessage("Preview deployment accepted. Its provider status will appear here as it progresses; no production domain has been changed.");
+      router.refresh();
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Deployment request failed"); }
+    finally { setBusy(false); }
   }
-
-  async function publish() {
-    const response = await previewDashboardService.publishWebsite({ projectId: website.id });
-    setResult({ ...response, status: "unavailable", message: "No deployment or preview URL service is connected. The illustrative publish status and URL remain unchanged." });
+  async function rename() {
+    setBusy(true); setError(""); setSaved(false);
+    try {
+      const response = await fetch(`/api/v1/websites/${website.project.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body?.error?.message ?? "The project could not be renamed.");
+      setSaved(true); router.refresh();
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Rename failed"); }
+    finally { setBusy(false); }
   }
-
-  return (
-    <>
-      <PageHeader eyebrow="Websites · Project settings" title={`${website.name} settings`} description="Review general, search and publishing controls for this website fixture. Every save and publish action is non-persistent." actions={<><DemoBadge /><Button asChild variant="secondary"><Link href={`/app/websites/${website.id}/editor`}><ArrowLeft aria-hidden="true" />Back to editor</Link></Button></>} />
-      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="min-w-0 space-y-6">
-          <Panel>
-            <div className="mb-5 flex items-center gap-2"><Globe2 className="size-5 text-teal" aria-hidden="true" /><h2 className="text-lg font-semibold tracking-[-0.025em]">General</h2></div>
-            <div className="space-y-5"><div><label htmlFor="settings-site-name" className="mb-2 block text-sm font-semibold text-ink">Website name</label><input id="settings-site-name" value={name} onChange={(event) => setName(event.target.value)} maxLength={80} className="min-h-12 w-full rounded-xl border border-line px-4 text-[15px] text-ink outline-none focus:border-teal focus:ring-2 focus:ring-teal/15" /></div><div><label htmlFor="settings-site-description" className="mb-2 block text-sm font-semibold text-ink">Project description</label><textarea id="settings-site-description" value={description} onChange={(event) => setDescription(event.target.value)} maxLength={300} rows={3} className="w-full resize-y rounded-xl border border-line px-4 py-3 text-sm leading-6 text-ink outline-none focus:border-teal focus:ring-2 focus:ring-teal/15" /></div><div><label htmlFor="settings-site-slug" className="mb-2 block text-sm font-semibold text-ink">Local URL slug</label><div className="flex min-h-12 items-center rounded-xl border border-line focus-within:border-teal focus-within:ring-2 focus-within:ring-teal/15"><span className="pl-4 text-sm text-muted">orindle.local/</span><input id="settings-site-slug" value={slug} onChange={(event) => setSlug(event.target.value)} maxLength={60} className="min-w-0 flex-1 bg-transparent px-1 py-3 text-sm text-ink outline-none" /></div><p className="mt-2 text-xs text-muted">A display field only. No DNS, domain or route is created.</p></div></div>
-          </Panel>
-          <Panel>
-            <div className="mb-5 flex items-center gap-2"><Search className="size-5 text-teal" aria-hidden="true" /><h2 className="text-lg font-semibold tracking-[-0.025em]">Search presentation</h2></div>
-            <div className="space-y-5"><div><label htmlFor="settings-seo-title" className="mb-2 block text-sm font-semibold text-ink">SEO title</label><input id="settings-seo-title" value={seoTitle} onChange={(event) => setSeoTitle(event.target.value)} maxLength={100} className="min-h-12 w-full rounded-xl border border-line px-4 text-[15px] text-ink outline-none focus:border-teal focus:ring-2 focus:ring-teal/15" /></div><div><label htmlFor="settings-seo-description" className="mb-2 block text-sm font-semibold text-ink">SEO description</label><textarea id="settings-seo-description" value={seoDescription} onChange={(event) => setSeoDescription(event.target.value)} maxLength={240} rows={4} className="w-full resize-y rounded-xl border border-line px-4 py-3 text-sm leading-6 text-ink outline-none focus:border-teal focus:ring-2 focus:ring-teal/15" /></div><InlineNotice title="Metadata fixture">These fields are not applied to the workspace metadata or any published website.</InlineNotice></div>
-          </Panel>
-        </div>
-        <div className="space-y-4 xl:sticky xl:top-32">
-          <Panel>
-            <h2 className="mb-4 text-lg font-semibold tracking-[-0.025em]">Publishing</h2>
-            <label htmlFor="site-visibility" className="mb-2 block text-sm font-semibold text-ink">Preview visibility</label><select id="site-visibility" value={visibility} onChange={(event) => setVisibility(event.target.value)} className="min-h-12 w-full rounded-xl border border-line bg-white px-3 text-sm text-ink outline-none focus:border-teal"><option value="private">Private · planned</option><option value="unlisted">Unlisted · planned</option></select>
-            <div className="my-5 rounded-2xl bg-soft p-4"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Current fixture</p><p className="mt-2 text-sm font-semibold capitalize text-ink">{website.publishStatus} status</p><p className="mt-1 text-xs leading-5 text-body">Preview URL: not assigned. No deployed output exists.</p></div>
-            <Button type="button" variant="secondary" className="w-full" onClick={() => void publish()}><ExternalLink aria-hidden="true" />Request preview URL</Button>
-            <Button type="button" className="mt-2 w-full" onClick={() => void publish()}><UploadCloud aria-hidden="true" />Publish preview</Button>
-          </Panel>
-          {validationError && <p role="alert" className="rounded-2xl border border-error/20 bg-[#fff5f3] p-4 text-sm font-medium text-error">{validationError}</p>}
-          <ActionFeedback result={result} />
-          <Button type="button" size="lg" className="w-full" onClick={() => void save()}><Save aria-hidden="true" />Save settings preview</Button>
-        </div>
-      </div>
-    </>
-  );
+  return <><PageHeader eyebrow="Websites · Settings" title={website.project.name} description="Manage the real project record and inspect its validation and deployment history." actions={<Button asChild variant="secondary"><Link href={`/app/websites/${website.project.id}/editor`}>Open editor</Link></Button>} />
+    <div className="grid gap-6 lg:grid-cols-2"><Panel><h2 className="mb-4 text-lg font-semibold">Project details</h2><label htmlFor="project-name" className="mb-2 block text-sm font-semibold">Name</label><input id="project-name" value={name} onChange={(event) => setName(event.target.value)} minLength={2} maxLength={80} className="min-h-11 w-full rounded-xl border border-line px-3 text-sm" /><p className="mt-3 text-xs text-muted">Slug: {website.project.slug}</p><p className="mt-1 text-xs capitalize text-muted">Status: {website.project.status}</p><Button type="button" className="mt-5" onClick={() => void rename()} disabled={busy || name.trim().length < 2}><Save />{busy ? "Saving…" : "Save name"}</Button>{saved && <div className="mt-4"><InlineNotice title="Project renamed">The database record has been updated.</InlineNotice></div>}{error && <p role="alert" className="mt-4 text-sm text-error">{error}</p>}</Panel>
+      <Panel><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold">Deployment history</h2><Button type="button" size="sm" onClick={() => void deployPreview()} disabled={busy || !canDeploy} title={canDeploy ? "Deploy the validated source to a scoped Vercel preview" : "Save and pass validation for the current source first"}><Rocket />Deploy preview</Button></div>{!canDeploy && <p className="mb-4 text-xs leading-5 text-muted">The current saved source needs a passing validation build before preview deployment.</p>}{deploymentMessage && <div className="mb-4"><InlineNotice title="Deployment queued">{deploymentMessage}</InlineNotice></div>}{website.deployments.length ? <ul className="divide-y divide-line">{website.deployments.map((deployment) => <li key={deployment.id} className="py-3"><div className="flex justify-between gap-3"><span className="text-sm font-semibold capitalize">{deployment.target}</span><span className="text-xs capitalize">{deployment.status}</span></div>{deployment.url && <a href={deployment.url} target="_blank" rel="noreferrer" className="mt-2 flex items-center gap-1 break-all text-xs text-teal-dark">{deployment.url}<ExternalLink className="size-3 shrink-0" /></a>}<p className="mt-1 text-[11px] text-muted">{new Date(deployment.createdAt).toLocaleString()}</p></li>)}</ul> : <p className="text-sm leading-6 text-muted">No Vercel deployments have been created. A passing validation build is required before deployment.</p>}</Panel></div>
+    <Panel className="mt-6"><h2 className="mb-4 text-lg font-semibold">Latest validation</h2>{website.builds[0] ? <dl className="grid gap-3 text-sm sm:grid-cols-2"><div><dt className="text-muted">Build ID</dt><dd className="mt-1 break-all font-mono text-xs">{website.builds[0].id}</dd></div><div><dt className="text-muted">Status</dt><dd className="mt-1 capitalize">{website.builds[0].status}</dd></div><div><dt className="text-muted">Source SHA-256</dt><dd className="mt-1 break-all font-mono text-xs">{website.builds[0].sourceSha256}</dd></div></dl> : <p className="text-sm text-muted">No validation build is recorded.</p>}</Panel>
+  </>;
 }

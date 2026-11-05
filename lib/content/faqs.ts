@@ -35,7 +35,7 @@ export const accountFaqs = [
   {
     question: "Can I try the live products on this website?",
     answer:
-      "This stage is the public frontend only. It does not execute AI generation, create accounts or process payments. Account and checkout destinations explain their preview status instead of simulating success.",
+      "Public pages explain the product without executing AI or taking payment. Authenticated generation and hosted checkout depend on the deployed provider configuration; checkout returns alone never grant credits.",
   },
   {
     question: "Will my projects work across products?",

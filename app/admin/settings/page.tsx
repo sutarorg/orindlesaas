@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { SettingsWorkspace } from "@/components/admin/settings-workspace";
+import { RealAdminWorkspace } from "@/components/admin/real-admin-workspace";
 
 export const metadata: Metadata = { title: "Admin Settings" };
+export const dynamic = "force-dynamic";
 
 export default function AdminSettingsPage() {
-  return <SettingsWorkspace />;
+  return <RealAdminWorkspace section="settings" />;
 }

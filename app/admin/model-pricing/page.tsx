@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { ModelPricingWorkspace } from "@/components/admin/model-pricing-workspace";
+import { RealAdminWorkspace } from "@/components/admin/real-admin-workspace";
 
 export const metadata: Metadata = { title: "Model Pricing" };
+export const dynamic = "force-dynamic";
 
 export default function AdminModelPricingPage() {
-  return <ModelPricingWorkspace />;
+  return <RealAdminWorkspace section="pricing" />;
 }

@@ -12,9 +12,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import type { AuthStateContent } from "@/lib/auth/preview-states";
 import { validateLogin, type LoginField, type ValidationErrors } from "@/lib/auth/validation";
-import { mockAuthenticationService } from "@/lib/mocks/authentication-preview";
+import { authenticationService } from "@/lib/auth/supabase-service";
 
-export function LoginForm({ initialState }: { initialState: AuthStateContent | null }) {
+export function LoginForm({ initialState, nextPath = "/app" }: { initialState: AuthStateContent | null; nextPath?: string }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -37,9 +37,15 @@ export function LoginForm({ initialState }: { initialState: AuthStateContent | n
       return;
     }
     setPending(true);
-    const response = await mockAuthenticationService.signIn({ email: email.trim(), password, rememberMe });
-    setResult(response.message);
-    setPending(false);
+    try {
+      const response = await authenticationService.signIn({ email: email.trim(), password, rememberMe });
+      setResult(response.message);
+      if (response.status === "success") window.location.assign(nextPath);
+    } catch {
+      setResult("Authentication could not be reached. No session change was confirmed; try again.");
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -59,14 +65,14 @@ export function LoginForm({ initialState }: { initialState: AuthStateContent | n
             <Checkbox id="login-remember" name="rememberMe" checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} aria-describedby="login-remember-hint" />
             <span>Keep me logged in on this device</span>
           </label>
-          <p id="login-remember-hint" className="mb-0 ml-8 text-[11px] leading-5 text-muted">Use only on a private device. This preview does not store the choice.</p>
+          <p id="login-remember-hint" className="mb-0 ml-8 text-[11px] leading-5 text-muted">Use only on a private device. Otherwise the saved-session policy lasts up to 12 hours; this option extends it to 30 days.</p>
         </div>
         <Button type="submit" size="lg" className="mt-6 w-full" disabled={pending}>
           {pending ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : <LogIn aria-hidden="true" />}
-          {pending ? "Checking locally…" : "Log in"}
+          {pending ? "Logging in…" : "Log in"}
         </Button>
         <div>
-          {result && <AuthAlert tone="info" title="Login preview" body={result} className="mt-5" />}
+          {result && <AuthAlert tone="info" title="Login status" body={result} className="mt-5" />}
         </div>
       </form>
     </div>

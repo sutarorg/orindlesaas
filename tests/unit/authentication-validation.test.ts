@@ -8,15 +8,7 @@ import {
   validatePasswordUpdate,
   validateSignUp,
 } from "@/lib/auth/validation";
-import {
-  getCallbackPreviewState,
-  getLoginPreviewState,
-  getResetPreviewState,
-  getSignupPreviewState,
-  getVerificationPreviewState,
-  parseOAuthProvider,
-  parsePackId,
-} from "@/lib/auth/preview-states";
+import { parsePackId } from "@/lib/auth/preview-states";
 
 describe("authentication validation", () => {
   it("validates email without persisting or transforming the source value", () => {
@@ -54,29 +46,8 @@ describe("authentication validation", () => {
   });
 });
 
-describe("authentication presentation-state allowlists", () => {
-  it("returns only documented route states", () => {
-    expect(getLoginPreviewState("invalid-credentials")?.tone).toBe("error");
-    expect(getLoginPreviewState("oauth-cancelled", "github")?.title).toContain("GitHub");
-    expect(getLoginPreviewState("unexpected")).toBeNull();
-    expect(getLoginPreviewState(["invalid-credentials"])).toBeNull();
-    expect(getSignupPreviewState("already-registered")?.body).toContain("may already");
-    expect(getResetPreviewState("expired")?.title).toContain("expired");
-    expect(getResetPreviewState("other")).toBeNull();
-  });
-
-  it("keeps verification and callback success explicitly presentational", () => {
-    expect(getVerificationPreviewState("success").body).toContain("no email has been verified");
-    expect(getVerificationPreviewState("expired").tone).toBe("error");
-    expect(getVerificationPreviewState("other").title).toBe("Confirm your email");
-    expect(getCallbackPreviewState(undefined).body).toContain("No authorization code was exchanged");
-    expect(getCallbackPreviewState("cancelled").title).toContain("cancelled");
-    expect(getCallbackPreviewState("unexpected").title).toBe("Finishing your sign-in");
-  });
-
-  it("allowlists providers and pack display intent", () => {
-    expect(parseOAuthProvider("github")).toBe("github");
-    expect(parseOAuthProvider("unknown")).toBe("google");
+describe("authentication display intent", () => {
+  it("allowlists pack intent without accepting arbitrary state or provider input", () => {
     expect(parsePackId("pro")).toBe("pro");
     expect(parsePackId("enterprise")).toBeUndefined();
     expect(parsePackId(["pro"])).toBeUndefined();

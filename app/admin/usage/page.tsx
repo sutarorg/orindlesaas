@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { UsageWorkspace } from "@/components/admin/usage-workspace";
+import { RealAdminWorkspace } from "@/components/admin/real-admin-workspace";
 
 export const metadata: Metadata = { title: "AI Usage & Costs" };
+export const dynamic = "force-dynamic";
 
 export default function AdminUsagePage() {
-  return <UsageWorkspace />;
+  return <RealAdminWorkspace section="usage" />;
 }

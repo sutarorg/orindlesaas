@@ -1,12 +1,7 @@
 import type { Metadata } from "next";
 import { ProjectsWorkspace } from "@/components/dashboard/projects-workspace";
-import { workspaceFixture } from "@/lib/dashboard/fixtures";
-
+import { requireUser } from "@/lib/server/auth/guards";
+import { getWorkspaceSnapshot } from "@/lib/server/workspace/queries";
 export const metadata: Metadata = { title: "Projects" };
-
-export default async function ProjectsPage({ searchParams }: { searchParams: Promise<{ project?: string | string[] }> }) {
-  const { project: value } = await searchParams;
-  const projectId = Array.isArray(value) ? value[0] : value;
-  const validProjectId = workspaceFixture.projects.some((project) => project.id === projectId) ? projectId : undefined;
-  return <ProjectsWorkspace initialProjectId={validProjectId} />;
-}
+export const dynamic = "force-dynamic";
+export default async function ProjectsPage() { const identity = await requireUser(); return <ProjectsWorkspace data={await getWorkspaceSnapshot(identity.userId)} />; }

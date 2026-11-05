@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { WebsitesWorkspace } from "@/components/admin/websites-workspace";
+import { RealAdminWorkspace } from "@/components/admin/real-admin-workspace";
 
 export const metadata: Metadata = { title: "Website Projects" };
+export const dynamic = "force-dynamic";
 
 export default function AdminWebsitesPage() {
-  return <WebsitesWorkspace />;
+  return <RealAdminWorkspace section="websites" />;
 }

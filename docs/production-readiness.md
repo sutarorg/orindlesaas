@@ -1,17 +1,17 @@
 # Production readiness
 
-This checklist covers a real commercial launch, not just Prompt 1 acceptance. Current status: **not production ready** because the repository is frontend-only and core services are intentionally absent.
+This checklist covers a real commercial launch, not just frontend or local backend acceptance. Current status: **not production ready**. Prompt 5 implementation and local checks are complete (106/106 unit tests, 50/50 production Playwright tests, strict checks and a 45-page build), but no live migration, RLS/concurrency test, credentialed provider journey, or production deployment has occurred. Source code and fakes are not operational proof.
 
 ## Public website gate
 
-- [x] All required routes/content/SEO checks pass — final build, 16 E2E tests and 105-link audit passed on 2026-11-05 (`quality-assurance.md`).
+- [x] Required public routes/content/SEO regressions pass — Prompt 5 production build and 17 public E2E tests passed on 2026-11-05; the earlier frontend-stage 105-link audit is retained in `quality-assurance.md`.
 - [x] Representative accessibility/keyboard and responsive visual review completed; zero violations in the tested axe states across 23 routes. Full AT, 200% zoom and real-device coverage remain explicitly open below/in `assumptions-and-open-questions.md`.
 - [ ] Verified production origin, support contact and legal entity details replace assumptions.
 - [ ] Qualified legal review of Privacy, Terms and Credits Policy.
 - [ ] All provider/model availability statements verified against launch configuration.
 - [ ] Real field Core Web Vitals monitored after sufficient traffic; lab checks alone not treated as compliance.
 
-## Account and application gate (later stages)
+## Account and application gate (implemented locally; live evidence still required)
 
 - [ ] Supabase Auth sessions, recovery, verification and authorization tests.
 - [ ] Private dashboard/admin routes enforce server authorization and noindex.

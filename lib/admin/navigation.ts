@@ -21,7 +21,7 @@ export const adminNavigation: readonly AdminNavigationGroup[] = [
     label: "AI operations",
     items: [
       { label: "AI Models", href: "/admin/models", description: "Capabilities and availability" },
-      { label: "Providers", href: "/admin/providers", description: "Integrations and health fixtures" },
+      { label: "Providers", href: "/admin/providers", description: "Catalog enablement and configuration" },
       { label: "Model Pricing", href: "/admin/model-pricing", description: "Cost and credit price versions" },
       { label: "AI Usage & Costs", href: "/admin/usage", description: "Usage value and provider costs" },
       { label: "Generation Jobs", href: "/admin/jobs", description: "Queues and redacted diagnostics" },

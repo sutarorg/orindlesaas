@@ -55,6 +55,24 @@ Use Testing Library where useful for accessible names, accordion `aria-expanded`
 - Discovery/security boundary: robots disallows `/admin/`, sitemap excludes it, no network/storage side effects and no secret/customer-content fields. Client visibility is not tested as authorization because none exists.
 - Responsive/accessibility: every admin route at 320, 390 and 1440px plus axe scans; keyboard dialogs/menus/forms, named table scroll regions and chart equivalents. Preserve every Prompt 1/2/3 regression.
 
+## Prompt 5 backend and security tests
+
+- Environment/API: valid/invalid configuration, strict runtime bodies, body/content-type limits, safe error envelopes, request IDs, Origin rejection and no stack/provider leakage.
+- Auth: SSR cookie behavior through adapter fakes, verified-user guards, generic reset/resend, safe callbacks/redirects, anonymous/non-admin/wrong-role/AAL2 denial.
+- Database/RLS: isolated migration tests, two-customer read/write denial, parent ownership, exposed-table policies and explicit direct-connection owner predicates. A write test asserts returned rows rather than accepting zero-row success.
+- Ledger: exact purchase/hold/release/settlement/compensation/adjustment arithmetic, idempotency request-hash conflicts, stale states, parallel holds/settlements, insufficient funds, no negative counters and ledger/wallet reconciliation.
+- Dodo: raw-body signature adapter, missing/invalid headers, replay, same-ID/different-body conflict, wrong purchase/user/product/quantity/currency/pre-tax amount/subscription, exactly-once fulfillment and post-commit email outbox. Never use unsigned payloads in route tests as accepted production events.
+- AI/jobs: model capability/price allowlists, actual-vs-estimated cost parsing and ceiling arithmetic, missing cost reconciliation, unknown submission timeout, no blind charged retry, outbox recovery and per-user concurrency.
+- Storage/website: owner-signed URL checks, key/content validation, SSRF/host policy, generated path/dependency/size rejection, no app-server execution, build-required publish and preview/team/project scoping.
+- Admin: every action's permission, object/field scope, current state, AAL2, reason/reference, idempotency, redaction and atomic audit; audit failure rolls back the local mutation.
+- Smoke: real route status/envelopes with injected test services; live-provider smoke scripts are separate, credentialed, non-destructive and never claimed when skipped.
+
+### Prompt 5 evidence status — 2026-11-05
+
+The final local run passed **21 files/106 unit tests**, **50/50 production Playwright tests**, strict TypeScript, ESLint, Drizzle migration-chain check and the 45-page production build. Coverage includes exact arithmetic, direct overdraft rejection, same-cost settlement recovery, raw-body webhook adapter fakes, payment mismatches, mocked permission/expiry/recent-AAL2 guards, provider submission retry fakes, source validation and credential-free API denial. Browser suites no longer use demo authenticated workspaces.
+
+Not executed: real PostgreSQL migration/RLS/grant tests, parallel database ledger/webhook/admin races, or credentialed Supabase/Dodo/Gateway/R2/Inngest/E2B/Vercel/Upstash/Resend journeys. Those items above remain required launch tests; unit fakes, anonymous 503 responses and build success do not mark them passed.
+
 ## Build and static checks
 
 Run exact installed-package `tsc --noEmit`, ESLint, unit tests and production build. Check for unsafe `any`, accidental secrets, dead links and large client bundles. Build success alone is not functional sign-off.

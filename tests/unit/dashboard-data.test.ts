@@ -85,14 +85,14 @@ describe("illustrative generation estimates", () => {
 });
 
 describe("navigation, filters and safe markdown", () => {
-  it("derives active navigation and useful fixture breadcrumbs", () => {
+  it("derives active navigation and non-fixture breadcrumbs", () => {
     const overview = allNavItems.find((item) => item.href === "/app")!;
     const chat = allNavItems.find((item) => item.href === "/app/chat")!;
     expect(isNavItemActive(overview, "/app")).toBe(true);
     expect(isNavItemActive(overview, "/app/chat")).toBe(false);
     expect(isNavItemActive(chat, "/app/chat/conv-campaign")).toBe(true);
-    expect(getAppBreadcrumbs("/app/chat/conv-campaign").map((item) => item.label)).toEqual(["Chat", "Launch campaign direction"]);
-    expect(getAppBreadcrumbs("/app/websites/site-stillwater/settings").map((item) => item.label)).toEqual(["Websites", "Stillwater Retreat", "Settings"]);
+    expect(getAppBreadcrumbs("/app/chat/conv-campaign").map((item) => item.label)).toEqual(["Chat", "Conversation"]);
+    expect(getAppBreadcrumbs("/app/websites/site-stillwater/settings").map((item) => item.label)).toEqual(["Websites", "Website", "Settings"]);
   });
 
   it("filters shared records and normalizes download names", () => {

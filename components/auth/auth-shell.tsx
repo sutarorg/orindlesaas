@@ -58,7 +58,7 @@ export function AuthShell({ eyebrow, title, description, children, footer }: {
               </div>
               <div className="mt-6 flex gap-3 rounded-xl bg-soft p-4 text-xs leading-5 text-body">
                 <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-teal" />
-                <p className="m-0"><strong className="font-semibold text-ink">Frontend preview:</strong> local interactions only. No account, email, OAuth provider or session service is connected.</p>
+                <p className="m-0"><strong className="font-semibold text-ink">Secure account access:</strong> authentication uses the configured Supabase service. If it is unavailable, Orindle reports that no account or session change was made.</p>
               </div>
               <div className="mt-7">{children}</div>
               {footer && <div className="mt-7 border-t border-line pt-6">{footer}</div>}

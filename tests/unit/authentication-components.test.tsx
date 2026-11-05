@@ -40,10 +40,10 @@ describe("authentication form accessibility and feedback", () => {
     expect(screen.queryByText(/account was created/i)).not.toBeInTheDocument();
   });
 
-  it("reports that OAuth is planned rather than contacting a provider", async () => {
+  it("reports an unconfigured OAuth integration without claiming a redirect", async () => {
     render(<OAuthButtons intent="login" />);
     fireEvent.click(screen.getByRole("button", { name: "Continue with Google" }));
-    expect(await screen.findByText(/Google is a planned integration/)).toBeInTheDocument();
-    expect(screen.getByText(/No provider was contacted/)).toBeInTheDocument();
+    expect(await screen.findByText(/Authentication is not configured/)).toBeInTheDocument();
+    expect(screen.getByText(/No account or session change was made/)).toBeInTheDocument();
   });
 });

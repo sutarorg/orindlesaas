@@ -22,7 +22,7 @@ export default function CreditsPolicyPage() {
             <tbody className="divide-y divide-line">{creditPacks.map((pack) => <tr key={pack.id}><th scope="row" className="px-4 py-3 font-semibold text-ink">{pack.name}</th><td className="px-4 py-3">${pack.priceUsd} USD</td><td className="px-4 py-3">{formatNumber(pack.credits)}</td></tr>)}</tbody>
           </table>
         </div>
-        <p>The current frontend does not process payments or grant credits. Before production checkout, the final price, applicable taxes, pack terms and any regional requirements must be presented clearly.</p>
+        <p>Hosted Dodo checkout presents the final total and applicable taxes. Credits are granted only after a signed webhook passes purchase, product, amount, currency and fulfillment validation; returning from checkout alone grants nothing.</p>
       </LegalSection>
       <LegalSection id="wallet" title="2. One universal wallet">
         <p>Credits are designed to be used across Orindle Chat, Image Studio, Video Studio and Websites under one Orindle account. There are no separate product-specific wallets or required monthly plans in this model.</p>
@@ -44,7 +44,7 @@ export default function CreditsPolicyPage() {
       <LegalSection id="rights" title="6. Consumer rights, refunds and payment disputes">
         <p>Applicable statutory consumer rights, cancellation or withdrawal rights, payment dispute mechanisms and legally required remedies remain available where they apply. This policy does not claim that every purchase is final or that a refund is never possible.</p>
         <p>Eligibility and process can depend on factors such as local law, whether digital content or services have been supplied with required consent, the amount used, technical defects and the circumstances of the request. Any discretionary refund or credit correction process must be explained separately and must not reduce mandatory rights.</p>
-        <p>If you believe a charge is unauthorized or incorrect, use the verified support or payment dispute channel that will be published at launch. You may also have rights through your payment provider or card issuer. A verified support channel is not connected to this frontend yet.</p>
+        <p>If you believe a charge is unauthorized or incorrect, contact support with the purchase reference and do not include full payment details. You may also have rights through your payment provider or card issuer.</p>
       </LegalSection>
       <LegalSection id="changes" title="7. Changes and related terms">
         <p>Changes to credit pricing or terms should be dated and communicated appropriately. They must not undermine already purchased rights contrary to law. Server-side historical price versions and ledger records should preserve the ability to explain past transactions.</p>

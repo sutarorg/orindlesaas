@@ -37,11 +37,12 @@ export type AuthenticationPreviewResult = {
 };
 
 export type AuthenticationResult =
-  | { status: "success"; operation: AuthenticationOperation; next: AuthenticationNextStep }
+  | { status: "success"; operation: AuthenticationOperation; next: AuthenticationNextStep; message: string }
   | {
       status: "error";
       operation: AuthenticationOperation;
       error: { code: AuthenticationErrorCode; field?: AuthenticationField };
+      message: string;
     }
   | AuthenticationPreviewResult;
 
@@ -71,7 +72,7 @@ export type OAuthProvider = "google" | "github";
 export type OAuthRequest = { provider: OAuthProvider; intent: "login" | "signup" };
 
 export type OAuthStartResult =
-  | { status: "redirect"; operation: "oauth"; url: string }
+  | { status: "redirect"; operation: "oauth"; url: string; message: string }
   | Exclude<AuthenticationResult, { status: "success" }>;
 
 export type DisplayAuthUser = {

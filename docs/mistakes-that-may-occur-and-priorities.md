@@ -42,6 +42,22 @@
 | P2 | Motion causes discomfort or layout shift | Transform/opacity only and reduced-motion fallback | Disable nonessential motion |
 | P3 | Over-abstract component system | Compose only repeated patterns; keep editorial sections specific | Inline one-off abstractions |
 
+## Prompt 5 residual risks and release priorities
+
+The frontend-stage risks above remain useful history, but their preview/mock controls are not the current backend controls. The following residual risks govern the implemented Prompt 5 source.
+
+| Priority | Risk | Current control | Required remediation/gate |
+|---|---|---|---|
+| P0 | Treating local fakes/build success as live auth, payment, ledger or AI proof | Handoff explicitly separates 106 unit and 50 browser tests from live evidence | Apply migrations to disposable PostgreSQL and pass credentialed end-to-end/RLS/concurrency/replay tests before launch |
+| P0 | Duplicate charge, credit grant or overdraft during a database race | Wallet/reservation locks, unique idempotency, exact same-cost checks, non-negative counters and no blind provider retry | Prove parallel holds/settlements/purchases/adjustments and webhook replay on real PostgreSQL; disable affected flow on mismatch |
+| P0 | Privilege escalation or internal-field exposure through direct Data API | Verified active profile/permissions/recent TOTP; reviewed SELECT revocations and server DTOs | Verify actual GRANTs/RLS with two users and wrong/expired roles; bootstrap first admin only through approved operator procedure |
+| P0 | Uncertain paid provider submission retried blindly | Submission states block automatic retry and preserve reconciliation state | Recover provider reference and actual cost before any mutation; never release/resubmit merely to clear a queue |
+| P1 | R2/provider postprocessing partially succeeds and leaves orphan/duplicate objects or an unsettled hold | Ownership keys, size/checksum limits, reconciliation states and no fake success | Add/run live failure-injection and orphan-object reconciliation; do not claim R2 and PostgreSQL commit atomically |
+| P1 | Vercel create succeeds but response/local persistence is lost | Preview-only target, claimed create, and error-without-ID blocks another automatic create | Reconcile by team/project/provider evidence before retry; run authorized preview failure tests |
+| P1 | Scheduled or concurrent price sync produces overlapping history | Immutable closure trigger, model lock and one-open-interval unique index; future versions are skipped by sync | Execute concurrent sync/admin tests on PostgreSQL and reconcile any pre-existing duplicate open intervals before migration |
+| P1 | Dependency advisories remain unresolved | No blind force upgrade or untested major Zod override | Re-audit, test a supported Inngest/Zod remediation and document accepted residual risk before launch |
+| P1 | Documentation or UI overstates delivery/payment/deployment | Contact says queue acceptance, checkout return grants nothing, preview target is enforced, unsupported admin actions stay read-only | Preserve truthful copy and add live evidence only after actual provider confirmation |
+
 ## Prioritization
 
 P0 blocks any real transaction or deployment. P1 blocks stage acceptance. P2 requires resolution before content/launch sign-off unless explicitly recorded. P3 is maintainability polish. Findings are not considered resolved until inspected and tested.

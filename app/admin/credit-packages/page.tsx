@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { CreditPackagesWorkspace } from "@/components/admin/credit-packages-workspace";
+import { RealAdminWorkspace } from "@/components/admin/real-admin-workspace";
 
 export const metadata: Metadata = { title: "Credit Packages" };
+export const dynamic = "force-dynamic";
 
 export default function AdminCreditPackagesPage() {
-  return <CreditPackagesWorkspace />;
+  return <RealAdminWorkspace section="packs" />;
 }

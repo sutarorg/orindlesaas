@@ -138,3 +138,32 @@ Status keys: `[ ]` not started, `[~]` in progress, `[x]` implemented and appropr
 - [x] Finalize QA/progress/assets/decisions and `handoff-prompt5.md` with actual operations, permissions, UI contracts and backend expectations.
 
 Commercial launch tasks remain explicitly open in `production-readiness.md`; this checklist does not claim real backend services, admin authorization, field performance or legal sign-off.
+
+## Prompt 5 — production backend integration
+
+### Documentation and research
+
+- [x] Inspect the inherited routes, contracts, fixtures/mocks, environment template and all documentation inventories; confirm no backend handlers/schema/authz exist.
+- [x] Research current official Next.js, Supabase SSR/RLS, Drizzle, AI SDK/Gateway, R2, Inngest, E2B, Vercel API, Upstash and Resend guidance.
+- [x] Inspect official Dodo checkout/webhook/credit/framework/testing skills and installed-target SDK declarations; select Checkout Sessions and raw-body `webhooks.unwrap()`.
+- [x] Define architecture, database/RLS/migrations, versioned API, payment/ledger, AI/metering/jobs, storage/sandbox, authorization, redaction/observability and verification contracts before backend code.
+
+### Implementation
+
+- [~] Add validated server environment, Drizzle schema/migrations/seeds and real Supabase cookie authentication/route protection. Code/local fail-closed tests are complete; live migration and Supabase journeys are blocked.
+- [~] Add versioned validated APIs, safe errors, request correlation, same-origin/CSRF controls, Upstash limits and Resend delivery. Implementation and abuse-control tests pass; live Upstash/Resend delivery is unverified.
+- [~] Implement atomic wallet/ledger/reservations/settlement/compensation/reconciliation and concurrency/idempotency tests. Exact arithmetic and same-cost/idempotency units pass; real PostgreSQL races remain required.
+- [~] Implement exact Dodo one-time checkout and verified raw-body exactly-once webhooks with product/amount/currency/purchase validation. Adapter/validation tests pass; live signature/replay/fulfillment races remain required.
+- [~] Implement actual AI chat/image/video/website operations, model/capability/price sync, actual-cost metering and durable jobs/outbox. Code/provider fakes pass; no live Gateway/Inngest operation was attempted.
+- [~] Implement R2 ownership/signed access, E2B build isolation and scoped Vercel preview deployment without app-server execution. Code/static tests pass; live storage/sandbox/deployment is unverified.
+- [~] Replace mock adapters with real services and implement deny-by-default admin reads/actions, recent AAL2 step-up and append-only audit. Routed demo workspaces are removed; credentialed role/action tests remain required.
+
+### Validation and delivery
+
+- [~] Unit/security/smoke tests cover local authz, validation, webhook mismatch, exact-cost and insufficient-balance logic; real RLS, replay/duplicate fulfillment and concurrent-credit integration evidence is still blocked.
+- [x] Provider fakes prove job retry/idempotency/uncertain-state behavior; no fake is silently used in production.
+- [x] Preserve public UX and run strict typecheck/lint/build plus feasible browser/accessibility/responsive regressions: 106/106 unit, 50/50 production Playwright, clean checks and 45-page build.
+- [x] Reconcile documentation and record actual evidence, credential blockers, migration/setup steps and production-readiness limits in `handoff-prompt6.md`.
+- [x] Do not run paid providers, live deployment or destructive production migration without explicit authorization; none was run.
+
+Prompt 5 source implementation/local validation is complete, but the `[~]` items prevent a live-backend or commercial-launch completion claim. See `handoff-prompt6.md` for the exact release gates.

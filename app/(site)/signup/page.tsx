@@ -3,18 +3,18 @@ import Link from "next/link";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthDivider, OAuthButtons } from "@/components/auth/oauth-buttons";
 import { SignupForm } from "@/components/auth/signup-form";
-import { getSignupPreviewState, parsePackId } from "@/lib/auth/preview-states";
+import { parsePackId } from "@/lib/auth/preview-states";
 import { getCreditPack } from "@/lib/content/pricing";
 import { createMetadata } from "@/lib/site";
 
 export const metadata: Metadata = createMetadata({
   title: "Create your account",
-  description: "Create one Orindle account for Chat, Image Studio, Video Studio and Websites. Frontend authentication preview.",
+  description: "Create one secure Orindle account for Chat, Image Studio, Video Studio and Websites.",
   path: "/signup",
   noindex: true,
 });
 
-type SignupPageProps = { searchParams: Promise<{ state?: string | string[]; pack?: string | string[] }> };
+type SignupPageProps = { searchParams: Promise<{ pack?: string | string[] }> };
 
 export default async function SignupPage({ searchParams }: SignupPageProps) {
   const query = await searchParams;
@@ -30,7 +30,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
     >
       <OAuthButtons intent="signup" />
       <AuthDivider />
-      <SignupForm initialState={getSignupPreviewState(query.state)} pack={pack} />
+      <SignupForm initialState={null} pack={pack} />
     </AuthShell>
   );
 }

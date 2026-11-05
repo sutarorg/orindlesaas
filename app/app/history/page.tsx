@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { z } from "zod";
 import { HistoryWorkspace } from "@/components/dashboard/history-workspace";
-import { workspaceFixture } from "@/lib/dashboard/fixtures";
-
+import { requireUser } from "@/lib/server/auth/guards";
+import { getWorkspaceSnapshot } from "@/lib/server/workspace/queries";
 export const metadata: Metadata = { title: "Generation History" };
-
-export default async function HistoryPage({ searchParams }: { searchParams: Promise<{ project?: string | string[] }> }) {
-  const { project: value } = await searchParams;
-  const projectId = Array.isArray(value) ? value[0] : value;
-  const validProjectId = workspaceFixture.projects.some((project) => project.id === projectId) ? projectId : undefined;
-  return <HistoryWorkspace initialProjectId={validProjectId} />;
+export const dynamic = "force-dynamic";
+export default async function HistoryPage({ searchParams }: { searchParams: Promise<{ job?: string | string[] }> }) {
+  const identity = await requireUser();
+  const [{ job }, data] = await Promise.all([searchParams, getWorkspaceSnapshot(identity.userId)]);
+  const value = Array.isArray(job) ? job[0] : job;
+  const initialJobId = value && z.uuid().safeParse(value).success && data.jobs.some((item) => item.id === value) ? value : undefined;
+  return <HistoryWorkspace data={data} initialJobId={initialJobId} />;
 }

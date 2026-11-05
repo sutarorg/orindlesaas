@@ -3,21 +3,24 @@ import Link from "next/link";
 import { AuthDivider, OAuthButtons } from "@/components/auth/oauth-buttons";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/auth/login-form";
-import { getLoginPreviewState } from "@/lib/auth/preview-states";
 import { createMetadata } from "@/lib/site";
+import { safeNextPath } from "@/lib/server/auth/safe-redirect";
 
 export const metadata: Metadata = createMetadata({
   title: "Log in",
-  description: "Log in to your Orindle workspace. Frontend authentication preview.",
+  description: "Log in securely to your Orindle workspace.",
   path: "/login",
   noindex: true,
 });
 
-type LoginPageProps = { searchParams: Promise<{ state?: string | string[]; provider?: string | string[] }> };
+type LoginPageProps = { searchParams: Promise<{ next?: string | string[]; reason?: string | string[] }> };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const query = await searchParams;
-  const initialState = getLoginPreviewState(query.state, query.provider);
+  const initialState = query.reason === "configuration"
+    ? { tone: "info" as const, title: "Authentication is not configured", body: "This environment has no Supabase connection. No login or account change can be completed yet." }
+    : null;
+  const nextPath = safeNextPath(typeof query.next === "string" ? query.next : null);
 
   return (
     <AuthShell
@@ -33,7 +36,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     >
       <OAuthButtons intent="login" />
       <AuthDivider />
-      <LoginForm initialState={initialState} />
+      <LoginForm initialState={initialState} nextPath={nextPath} />
     </AuthShell>
   );
 }
