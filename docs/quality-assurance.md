@@ -1,5 +1,13 @@
 # Quality assurance
 
+## Prompt 6 current verification summary — 2026-11-05
+
+The historical stage logs below are retained for traceability, but their then-current limits are superseded by the Prompt 6 reports. Fresh execution now includes 25 unit files/124 tests, a 45-page build, local production Chromium 80/80, five managed CI browser projects, disposable PostgreSQL 16 integration tests, all-route structured-data checks, dependency/secret/artifact/mock-import scans, and a retained repeated Lighthouse matrix.
+
+QA-001 through QA-010 are reconciled in `bug-register.md`; test/infrastructure incidents and all CI runs are in `failure-report.md`. In particular, a later home/mobile LCP failure was corrected and retested rather than hidden by an earlier green run. Current authoritative outcomes are in `final-qa-report.md`, `test-matrix.md`, `release-checklist.md` and `handoff-final.md`.
+
+**Current release recommendation: NO-GO.** Hosted Supabase/Dodo/providers, staging recovery, physical-device/named-AT and complete manual accessibility, field monitoring and owner approvals remain unavailable. Historical statements such as “Lighthouse not run” or “live database not tested” apply only to their labelled earlier stages; Prompt 6 lab and disposable-PostgreSQL results do not remove hosted/field gates.
+
 ## Stage gates
 
 1. **Documentation baseline:** all 45 Markdown files exist and are nonempty; architecture, design, routes and contracts are populated before each stage's application code.
@@ -173,10 +181,10 @@ Automated axe results are not a WCAG certification. They cover the tested route 
 - Added the single-open-price database invariant, future-price catalog-sync protection, exact stored-cost settlement checks, and reconciliation usage evidence.
 - Added bounded R2 streaming and preserved failed provider outcomes through later metering recovery. Provider/storage postprocessing remains subject to live integration testing.
 
-## Remaining validation and launch limits
+## Prompt 5 historical remaining validation and launch limits
 
 - Real screen-reader/assistive-technology testing, full 200% zoom/reflow review and real-device testing remain launch-stage work.
-- Lighthouse/throttled lab profiling and representative 75th-percentile field Core Web Vitals were not run; no CWV compliance claim is made.
+- At that Prompt 5 checkpoint, Lighthouse/throttled lab profiling and representative 75th-percentile field Core Web Vitals had not run; Prompt 6 lab evidence is now recorded above, while field CWV remains unclaimed.
 - External primary-source links were reviewed during research, but this audit does not guarantee their future availability. Earlier internal-link results remain frontend-stage evidence.
 - Final production hostname, verified support inbox, legal entity/governing law and qualified policy review remain unresolved.
 - **Commercial/backend launch remains blocked** until migrations and seed/catalog setup are reviewed on a disposable real database; RLS/grants, concurrent ledger/idempotency, webhook replay/fulfillment, and all credentialed customer/admin/provider journeys pass; operational reconciliation/runbooks and dependency-risk review are complete.

@@ -1,6 +1,6 @@
 # Mobile and cross-browser compatibility plan
 
-Status: **pre-execution**. Emulated browsers/viewports and physical-device results are reported separately.
+Status: **five-project managed-browser/emulation matrix executed; physical devices remain blocked**. Results and timing corrections are in `failure-report.md` and `final-qa-report.md`. Emulated browsers/viewports and physical-device results are reported separately.
 
 ## Supported evidence matrix
 

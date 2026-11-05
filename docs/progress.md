@@ -4,17 +4,18 @@ Last updated: **2026-11-05**.
 
 ## Current status
 
-**Prompt 6 independent verification is in the execution phase; the release recommendation remains NO-GO.** The documentation-first review is complete: all 54 inherited docs and the root README were read before tests or application edits, followed by 25 new matrix, scenario, security/financial/provider, browser/accessibility/SEO/performance, defect/failure, release/report and handoff documents. No Prompt 6 test result or defect closure is claimed yet. Real PostgreSQL/RLS/concurrency and credentialed provider/operational evidence remain launch blockers.
+**Prompt 6 independent execution and report reconciliation are complete for the available local/disposable-CI scope; release remains NO-GO.** Final application revision is `3c0f0f5c6bff7dbb6bc3baa552b62be3263de51d`, with bounded workflow revision `9e84adca291ca9e38f376132f0af91fd5e4275c6`. Final application CI run `42074366023` passed all nine jobs. Any later docs-only HEAD check is indexed by the branch/PR checks; application evidence remains tied to these revisions.
 
-## Prompt 6 documentation baseline — completed 2026-11-05
+## Prompt 6 observed execution — 2026-11-05
 
-- Reviewed all 54 inherited Markdown documents plus the root README and independently inventoried routes, tests, server modules, migrations and environment/runtime availability before test execution.
-- Refreshed current official Next.js, Playwright, Vitest, WCAG/WAI, OWASP, Supabase RLS/grants and PostgreSQL locking guidance; preserved ASVS/WSTG version references and lab-versus-field limits.
-- Created the independent `test-matrix.md`, `test-scenarios.md`, specialized security/credit/payment/AI/mobile/accessibility/SEO/performance plans, bug/failure registers, release checklist/readiness, deployment/rollback procedures, domain reports, final QA and final handoff.
-- Recorded audit hypotheses for direct website-preview isolation, restricted website DTO fields, credit-adjustment idempotency scope, non-success webhook matching, request-ID handling and configuration-mode validation. They are not counted as reproduced or fixed defects yet.
-- Confirmed local provider credential names and PostgreSQL/container runtimes are unavailable. No fake, unconfigured 503, historical result or local build is treated as live-provider, financial, accessibility-conformance, field-performance or production evidence.
+- Reviewed all 54 inherited Markdown documents plus the root README and independently inventoried routes, tests, server modules, migrations and runtime availability before test execution; created the independent matrix, scenarios, specialized plans, registers, runbooks and domain reports.
+- Reproduced and corrected QA-001 through QA-010 with scoped regressions: website isolation/DTOs, admin/payment/request/environment controls, dependency/social/structured-data consistency, and intermittent home/mobile late-font LCP.
+- Local gates passed: typecheck, ESLint, diff check, Drizzle check, 45-page production build, **25 unit files/124 tests**, production Chromium **80/80**, zero-finding dependency audit, reviewed secret/artifact/mock-import scans, and final retained Lighthouse **24/24** after QA-010.
+- CI run `42069035875` passed all nine jobs for `7ba4bc7`. Later run `42071353363` failed performance and stalled during WebKit installation, leading to QA-010 and bounded job timeouts rather than being hidden by the earlier green result.
+- Disposable PostgreSQL 16 supplied real migration/seed/grant/RLS/lock/race evidence. It is not hosted Supabase. Managed Firefox/WebKit and mobile profiles are browser automation/emulation, not physical devices.
+- No live payment, production deployment, unrestricted AI or destructive production test occurred. Hosted Supabase/Dodo/Gateway/R2/Inngest/E2B/Vercel/Upstash/Resend, staging recovery, complete manual WCAG/AT/physical-device, field monitoring and owner approvals remain blockers.
 
-The initial NO-GO is an evidence gate, not a final QA result. All new plan/report files are nonempty; current results and blockers will be reconciled after fresh execution.
+Detailed outcomes and residual boundaries are authoritative in `test-matrix.md`, `bug-register.md`, `failure-report.md`, `final-qa-report.md` and `handoff-final.md`. Earlier stage results below are historical context only.
 
 ## Prompt 5 implementation and local validation — 2026-11-05
 

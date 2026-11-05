@@ -1,6 +1,6 @@
 # Performance and Core Web Vitals test plan
 
-Status: **pre-execution**. Local/CI Lighthouse is diagnostic lab evidence only. Field Core Web Vitals require representative real-user 75th-percentile data segmented by mobile/desktop and cannot be claimed from this plan.
+Status: **repeated public-route Lighthouse/resource scope executed; field and private/provider performance remain unavailable**. Results are in `performance-report.md`. Local/CI Lighthouse is diagnostic lab evidence only. Field Core Web Vitals require representative real-user 75th-percentile data segmented by mobile/desktop and cannot be claimed from this plan.
 
 ## Routes and environments
 

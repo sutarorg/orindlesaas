@@ -1,6 +1,6 @@
 # Technical SEO and content verification plan
 
-Status: **pre-execution**. The goal is crawlable, truthful, useful content. No ranking, indexing, rich-result, AI-search placement, or organic-traffic outcome is guaranteed by these tests.
+Status: **production-build technical crawl executed; production indexing/Search Console remains unavailable**. Results are in `seo-report.md`. The goal is crawlable, truthful, useful content. No ranking, indexing, rich-result, AI-search placement, or organic-traffic outcome is guaranteed by these tests.
 
 ## Inventory and metadata
 

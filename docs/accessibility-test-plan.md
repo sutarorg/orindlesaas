@@ -1,6 +1,6 @@
 # WCAG 2.2 AA accessibility verification plan
 
-Status: **pre-execution; target, not certification**. WCAG 2.2 is the normative target. W3C explicitly notes that no tool alone determines accessibility; axe, Lighthouse, and browser assertions are combined with knowledgeable manual review and named assistive technology when available.
+Status: **automated browser/keyboard/reflow scope executed; complete manual WCAG and named-AT review remains blocked; target, not certification**. Observed results are in `accessibility-report.md`. WCAG 2.2 is the normative target. W3C explicitly notes that no tool alone determines accessibility; axe, Lighthouse, and browser assertions are combined with knowledgeable manual review and named assistive technology when available.
 
 ## Route/state sample
 

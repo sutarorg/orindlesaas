@@ -1,39 +1,51 @@
 # Production readiness
 
-This checklist covers a real commercial launch, not just frontend or local backend acceptance. Current status: **not production ready / NO-GO**. Prompt 6 documentation-first review is complete and independent execution is pending; its authoritative evidence/status files are `test-matrix.md`, `release-checklist.md`, `launch-readiness.md` and `final-qa-report.md`. Prompt 5 implementation and local checks are retained only as historical context (106/106 unit tests, 50/50 production Playwright tests, strict checks and a 45-page build), not reused as Prompt 6 release evidence. No live migration, RLS/concurrency test, credentialed provider journey, or production deployment has occurred. Source code and fakes are not operational proof.
+Current status: **not production ready / NO-GO**. This checklist concerns a real commercial launch, not frontend or local backend acceptance. Authoritative detail: `test-matrix.md`, `release-checklist.md`, `launch-readiness.md`, `final-qa-report.md` and `handoff-final.md`.
 
-## Public website gate
+## Evidence now established
 
-- [x] Required public routes/content/SEO regressions pass — Prompt 5 production build and 17 public E2E tests passed on 2026-11-05; the earlier frontend-stage 105-link audit is retained in `quality-assurance.md`.
-- [x] Representative accessibility/keyboard and responsive visual review completed; zero violations in the tested axe states across 23 routes. Full AT, 200% zoom and real-device coverage remain explicitly open below/in `assumptions-and-open-questions.md`.
-- [ ] Verified production origin, support contact and legal entity details replace assumptions.
-- [ ] Qualified legal review of Privacy, Terms and Credits Policy.
-- [ ] All provider/model availability statements verified against launch configuration.
-- [ ] Real field Core Web Vitals monitored after sufficient traffic; lab checks alone not treated as compliance.
+- [x] Fresh local static/component/build checks: strict TypeScript, ESLint, Drizzle migration-chain check, 25 unit files/124 tests and 45-page production build.
+- [x] Public production browser corpus: 21 indexable routes, four products, six articles, metadata/sitemap/internal links/JSON-LD, navigation/forms, fail-closed auth and private-route boundaries.
+- [x] Five managed browser/emulation projects passed in CI run `42069035875`; later failures and the final application run are preserved in `failure-report.md` rather than hidden.
+- [x] Automated public accessibility/reflow scope: 21-route axe corpus, four core widths and scripted keyboard/focus/reduced-motion checks. This is not WCAG certification.
+- [x] Disposable PostgreSQL 16 migration/seed/grant/RLS/concurrency/replay tests, explicitly separate from hosted Supabase.
+- [x] Security/financial corrections QA-001–QA-009 and performance correction QA-010 have scoped local regressions; `bug-register.md` retains boundaries.
+- [x] Repeated Lighthouse lab matrix passed after the home/mobile LCP correction; JSON/HTML reports persist in `performance-results/` and are uploaded by CI.
+- [x] Dependency audit, high-confidence secret/artifact scan and production mock-import scan were reviewed with no unaccepted local release finding.
 
-## Account and application gate (implemented locally; live evidence still required)
+## Public website and content gate
 
-- [ ] Supabase Auth sessions, recovery, verification and authorization tests.
-- [ ] Private dashboard/admin routes enforce server authorization and noindex.
-- [ ] Admin roles/permissions are least-privilege, deny-by-default and tested for route/action/object/field bypass; no real admin fixture is treated as protection.
-- [ ] High-impact admin operations require step-up, idempotency, current-state checks and append-only attributable audit; audit failure cannot report success.
-- [ ] Drizzle migrations, backups, retention/deletion and R2 ownership/signed access reviewed.
-- [ ] AI model prices/catalog configured server-side and actual metering reconciled.
-- [ ] Wallet ledger is transactional, auditable and concurrency-safe.
-- [ ] Dodo checkout/webhooks verified, idempotent and tested without browser-trusted fulfillment.
-- [ ] Inngest retries/idempotency and E2B/Vercel sandbox/deployment limits tested.
-- [ ] Upstash abuse controls and Resend delivery/suppression handling configured.
+- [ ] Deployment owner verifies the real production origin, DNS/HTTPS/redirects, support contact and legal entity details.
+- [ ] Qualified legal review approves Privacy, Terms, Credits Policy and statutory remedy/support procedures.
+- [ ] Provider/model availability statements match the actual launch configuration.
+- [ ] External structured-data validation and owner-controlled Search Console/index monitoring are established where claimed.
+- [ ] Privacy-approved field Core Web Vitals monitoring has representative real-user p75 data; lab scores are not treated as field compliance.
 
-## Operational gate
+## Account, application and financial gate
 
-- [ ] Monitoring, alerts, request correlation, incident contacts and rollback tested.
-- [ ] Admin financial metric definitions, provider-cost reconciliation, redacted diagnostics and customer-code/deployment field restrictions reviewed by engineering/finance/security owners.
-- [ ] Dependency/secret scanning and security review completed.
-- [ ] Rate limits, spending quotas and provider outage/degradation UX verified.
-- [ ] Support process for statutory rights, disputes and legally required remedies documented.
-- [ ] Backup restoration and reconciliation drill performed with authorization.
-- [ ] Production deployment explicitly authorized; no destructive action taken by default.
+- [ ] Hosted Supabase signup/verification/login/refresh/logout/recovery/OAuth, active-profile, inactive/expired-session and two-user ownership tests pass.
+- [ ] Every admin route/action/field denies wrong role/permission and stale step-up; recent AAL2/TOTP is proven for high-impact actions.
+- [ ] Dodo test-mode checkout/webhook/signature/replay/mismatch/exactly-once/receipt behavior passes with safe test records and no real money.
+- [ ] Gateway actual cost/metering, Inngest recovery, R2 ownership/failures, E2B/Vercel sandbox/deployment, Upstash limits and Resend delivery are tested in authorized intended environments.
+- [ ] Backup restoration, crash/recovery injection and wallet/ledger/payment/provider reconciliation pass without untracked balance repair.
+- [ ] Finance/security owners review admin metric definitions, redacted diagnostics and customer-code/deployment field restrictions in the real environment.
 
-## Evidence rule
+## Accessibility and support gate
 
-Every checked item needs linked test/runbook evidence and a date. Marketing polish does not compensate for missing payment, identity, ledger or security controls.
+- [ ] Complete knowledgeable WCAG 2.2 AA review covers public and authenticated states, 200/400% zoom, text spacing, forced colors and remaining manual criteria.
+- [ ] Named NVDA/VoiceOver/TalkBack and physical iOS/Android journeys pass according to the support policy.
+- [ ] Support owner approves device/browser accessibility scope; no automated result is described as certification.
+
+## Operational and release gate
+
+- [ ] Monitoring, redacted hosted logs, alerts, spending quotas, incident contacts and rollback are tested on authorized staging.
+- [x] Final application revision completed all nine CI jobs with usable artifacts in run `42074366023`; no known open reproduced P0/P1 defect remains in the available local/CI scope.
+- [ ] All blocked critical cases in `test-matrix.md` are resolved with genuine evidence; blocked is never counted as passed.
+- [ ] Legal, support, finance, security and operations owners explicitly approve the release.
+- [ ] Production deployment is explicitly authorized for target/revision/schema/provider modes/time window; post-deployment smoke and rollback watch complete.
+
+## Evidence rule and decision
+
+Every checked item above links to current observed local/CI evidence through the domain reports. Historical Prompt 1–5 results remain context only. Marketing polish, mocks, anonymous 503s and green local builds do not compensate for missing hosted payment, identity, accessibility, recovery or approval controls.
+
+**Production readiness remains NO-GO.**

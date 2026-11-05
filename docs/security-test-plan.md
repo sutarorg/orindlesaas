@@ -1,6 +1,6 @@
 # Security verification plan
 
-Status: **Prompt 6 pre-execution plan**. Framework: OWASP ASVS 5.0.0 and WSTG 4.2 as verification guidance, plus current Supabase RLS/grant documentation. This is not an ASVS certification or a destructive penetration-test authorization.
+Status: **executed within the available local/CI scope; hosted/staging security evidence remains blocked**. Results and remediations are in `security-report.md`, `bug-register.md` and `failure-report.md`. Framework: OWASP ASVS 5.0.0 and WSTG 4.2 as verification guidance, plus current Supabase RLS/grant documentation. This is not an ASVS certification or a destructive penetration-test authorization.
 
 ## Scope and rules of engagement
 

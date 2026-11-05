@@ -1,6 +1,6 @@
 # Credit engine and financial concurrency test plan
 
-Status: **pre-execution**. The wallet and append-only ledger are authoritative; Dodo entitlement meters are not a second balance. All money/credit calculations use integers or decimal strings, never binary floating-point ledger arithmetic.
+Status: **unit and disposable real-PostgreSQL core executed; hosted financial/provider/operational evidence remains blocked**. Observed results are in `financial-accuracy-report.md`. The wallet and append-only ledger are authoritative; Dodo entitlement meters are not a second balance. All money/credit calculations use integers or decimal strings, never binary floating-point ledger arithmetic.
 
 ## Invariants under test
 

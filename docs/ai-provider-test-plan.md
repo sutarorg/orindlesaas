@@ -1,6 +1,6 @@
 # AI Gateway, generation, and durable-job test plan
 
-Status: **pre-execution; routine automation uses provider fakes**. Vercel AI Gateway remains the required AI provider boundary. No unrestricted live AI is permitted in CI.
+Status: **fake-provider/unit scope executed; authorized live Gateway/Inngest/storage/generation evidence remains blocked; routine automation uses provider fakes**. Vercel AI Gateway remains the required AI provider boundary. No unrestricted live AI is permitted in CI.
 
 ## Model and price controls
 

@@ -1,6 +1,6 @@
 # Defect register
 
-Status: **Prompt 6 execution reconciled; no known open reproduced product defect in the local/CI scope**. Exact code and CI revisions are indexed in `handoff-final.md`. This does not close hosted-provider, physical-device/AT, staging, or owner-approval gates. Overall release recommendation remains **NO-GO**.
+Status: **Prompt 6 execution reconciled; no known open reproduced product defect in the available local/CI scope**. Exact code and CI revisions are indexed in `handoff-final.md`; final application run `42074366023` passed all nine jobs. This does not close hosted-provider, physical-device/AT, staging, or owner-approval gates. Overall release recommendation remains **NO-GO**.
 
 ## Severity and states
 
@@ -24,6 +24,7 @@ States: `Hypothesis` → `Reproduced` → `Fix in progress` → `Retest` → `Cl
 | QA-007 | P2 | Explicit page metadata omitted Open Graph/Twitter images even though the generated social image existed | Shared absolute 1200×630 social-image descriptor in root and per-route metadata | All 21 indexable routes assert absolute OG and Twitter image URLs in production browser tests; metadata/content unit tests pass | Closed |
 | QA-008 | P2 | Fresh dependency audit initially reported 11 findings, including two high-severity transitive advisories | Direct `tsx`/coverage tooling update and narrow reviewed overrides for Zod, esbuild, glob and rimraf; no blind force upgrade | Clean `npm ci`, `npm audit --audit-level=moderate` reports zero, Zod v3/v4 import smoke and Inngest construction pass, Drizzle check/lint/typecheck/unit/build and CI dependency-audit pass | Closed for current lockfile; peer/deprecation warnings remain non-vulnerability maintenance work |
 | QA-009 | P2 | Pricing Product JSON-LD retained an obsolete “later stage” checkout statement that conflicted with the visible checkout note and implemented backend | Replace it with the visible one-time/no-automatic-payment-or-credit wording | All-route production JSON-LD parsing now verifies exact three-pack names, descriptions, USD prices and fragment URLs; final local Chromium passed 80/80 | Closed |
+| QA-010 | P1 | Home/mobile Lighthouse intermittently moved the largest text paint to about 3.3s after FCP; late `font-display: swap` rendering permitted a font-driven LCP update. Two of three trials failed the 2.5s budget | Use `display: optional` for the local Inter body font so a late font cannot replace the initially rendered fallback | Corrected code passed two complete 24/24 local matrices and the independent performance job in final application CI run `42074366023`; revision-labelled reports are retained | Closed for observed lab scope; field LCP remains unverified |
 
 ## Residual verification boundaries
 

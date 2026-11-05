@@ -1,41 +1,44 @@
 # Launch readiness assessment
 
-Current recommendation: **NO-GO** as of the Prompt 6 documentation baseline on 2026-11-05. This is an evidence assessment, not a deployment approval.
+Current recommendation: **NO-GO** as of 2026-11-05. This is an evidence assessment, not a deployment approval. Exact application/CI revisions are indexed in `handoff-final.md`.
 
 ## Decision summary
 
-| Gate | State | Reason |
+| Gate | State | Observed reason |
 |---|---|---|
-| Documentation/test strategy | Baseline complete | Independent matrix/plans/registers now exist; results are not yet filled |
-| Static/local implementation evidence | Not revalidated | Prompt 5 results are not reused; fresh checks are pending |
-| Real PostgreSQL/RLS/concurrency | Blocked locally | No local runtime/credentials; isolated CI database suite is planned |
-| Supabase customer/admin journeys | Blocked | No disposable project/credentials/test email/MFA/OAuth evidence |
-| Dodo payment and exact ledger | Blocked live; local pending | No test products/keys/webhook or real replay/race evidence yet |
-| AI/Gateway/jobs/storage/website providers | Blocked live; fakes pending | No authorized credentials/spend envelope or durable provider evidence |
-| Security and financial defect closure | Open | Audit hypotheses require reproduction; zero-defect closure is not claimed |
-| Cross-browser/mobile/WCAG | Pending/blocked subsets | Firefox/WebKit not revalidated; physical devices and named AT unavailable |
-| SEO/performance | Pending | No Prompt 6 production crawl/Lighthouse runs; field/indexing evidence unavailable |
-| Operations/legal/deployment | Blocked | No staging drills, owner approvals, explicit production authorization, or tested live rollback |
+| Documentation/test strategy | COMPLETE | Independent matrix, scenarios, plans, registers, runbooks and domain reports reconciled to observed execution |
+| Static/local implementation evidence | PASS in available scope | Typecheck, ESLint, Drizzle check, 45-page build, 25 unit files/124 tests and local Chromium 80/80; final application CI is separately indexed |
+| Dependency/secret/release hygiene | PASS for current tree | Zero audit findings; reviewed secret/artifact/mock-import scans; retained CI artifacts and bounded jobs |
+| Real PostgreSQL/RLS/concurrency | PASS in disposable CI; hosted BLOCKED | Seven integration tests cover migrations/seed, grants/RLS, locks, wallet/webhook/admin races and append-only price history; not hosted Supabase evidence |
+| Supabase customer/admin journeys | BLOCKED | No disposable hosted project, test email, MFA/OAuth or credentialed two-user lifecycle |
+| Dodo payment and exact ledger | Partial PASS; provider BLOCKED | Exact local/disposable financial controls and synthetic webhook race pass; Dodo test-mode products/signatures/receipts unavailable |
+| AI/Gateway/jobs/storage/providers | Partial PASS; live BLOCKED | Unit/fake and fail-closed controls only; no authorized Gateway/Inngest/R2/E2B/Vercel/Upstash/Resend execution |
+| Security/financial defect closure | Scoped corrections PASS | QA-001–QA-010 have reproduction/remediation records; final CI retest and hosted boundaries remain explicit |
+| Cross-browser/mobile | PASS in managed emulation; physical BLOCKED | Five projects passed run `42069035875`; final run required. No physical iOS/Android evidence |
+| Accessibility | Automated public scope PASS; launch BLOCKED | 21-route axe corpus and scripted keyboard/reflow checks pass; complete manual WCAG, zoom/forced-colors, named AT and private states are incomplete |
+| Technical SEO | Local PASS; production search NOT EVALUATED | All-route metadata/sitemap/links/JSON-LD regressions pass; live origin/Search Console/indexing unavailable |
+| Performance | Repeated local lab PASS after QA-010; field BLOCKED | Retained 24/24 final local matrix; interaction/private/provider and real-user p75 monitoring unavailable |
+| Operations/legal/deployment | BLOCKED | No staging drills, owner approvals, explicit production authorization or tested rollback |
 
 ## Non-negotiable launch conditions
 
-1. All P0/P1 cases in `test-matrix.md` pass against the release revision, or the corresponding feature remains disabled and out of the launch scope by explicit product/security/finance approval.
-2. Zero open P0/P1 defects; every fix has original and related regression evidence.
-3. Real database locks/grants/RLS and exactly-once financial behavior are proven; mocks are supplementary.
-4. Supabase and Dodo test-mode critical journeys pass. Gateway/R2/Inngest/E2B/Vercel/Upstash/Resend launch features have authorized evidence or remain explicitly unavailable without false success.
-5. Untrusted website code is isolated in direct and embedded execution; no production website deployment is enabled by the test process.
-6. Required browser/accessibility/SEO/performance checks pass with limitations accurately stated. Field CWV and rankings are not invented.
-7. Legal/support/finance/security/operations owners approve their domains, monitoring and spending controls are active, backup/rollback/reconciliation drills pass, and explicit production authorization is recorded.
+1. All P0/P1 cases in `test-matrix.md` pass against the release revision, or the corresponding feature remains disabled and outside launch scope by explicit product/security/finance approval.
+2. Zero open P0/P1 defects; every fix has original and related regression evidence on the final application revision.
+3. Real database locks/grants/RLS and exactly-once financial behavior are proven, followed by hosted Supabase and Dodo test-mode critical journeys.
+4. Gateway/R2/Inngest/E2B/Vercel/Upstash/Resend launch features have authorized evidence or remain explicitly unavailable without false success.
+5. Untrusted website code remains isolated in direct and embedded execution; no production website deployment is enabled by testing.
+6. Required physical/manual accessibility and operational checks pass. Field CWV, rankings and certification are never invented.
+7. Legal/support/finance/security/operations owners approve their domains; monitoring/spending controls, backup/rollback/reconciliation drills and explicit production authorization are recorded.
 
 ## Current risk acceptance
 
-No risk acceptance is inferred from silence, local build success, or prior frontend polish. A blocked critical control cannot be reclassified as accepted by this document. Any proposed exception requires the affected owner, expiry, compensating control, exact scope, and a still-valid prohibition on real money/customer harm.
+No risk acceptance is inferred from silence, local build success or prior frontend polish. A blocked critical control cannot be reclassified as accepted by this document. Any exception requires an affected owner, expiry, compensating control and exact scope, and cannot authorize customer or financial harm.
 
 ## Evidence index
 
-- Requirements and status: `test-matrix.md`, `release-checklist.md`.
+- Requirements/status: `test-matrix.md`, `test-scenarios.md`, `release-checklist.md`.
 - Failures/defects: `failure-report.md`, `bug-register.md`.
 - Final evaluations: `final-qa-report.md`, `security-report.md`, `financial-accuracy-report.md`, `accessibility-report.md`, `seo-report.md`, `performance-report.md`, `deployment-report.md`, `launch-report.md`.
-- Operational recovery: `deployment-runbook.md`, `rollback-runbook.md`.
+- Operational recovery: `deployment-runbook.md`, `rollback-runbook.md`, `rollback-report.md`.
 
-These documents will be reconciled after execution. Until then the platform is not commercially production ready.
+**Overall launch readiness remains NO-GO until the blocked critical evidence and owner approvals exist.**

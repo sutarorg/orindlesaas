@@ -1,6 +1,6 @@
 # Release test scenarios and data controls
 
-Status: **defined before Prompt 6 execution**. Scenario IDs map to `test-matrix.md`. Expected results are requirements, not observed outcomes.
+Status: **defined before Prompt 6 execution; available local/CI scenarios have now run and are reconciled in `test-matrix.md`**. Scenario IDs remain the executable requirements map. Expected results below are requirements, not observed outcomes by themselves; domain reports contain actual evidence and blocked boundaries.
 
 ## Evidence and fixture protocol
 

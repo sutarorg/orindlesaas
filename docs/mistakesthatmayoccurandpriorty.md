@@ -58,6 +58,21 @@ The frontend-stage risks above remain useful history, but their preview/mock con
 | P1 | Dependency advisories remain unresolved | No blind force upgrade or untested major Zod override | Re-audit, test a supported Inngest/Zod remediation and document accepted residual risk before launch |
 | P1 | Documentation or UI overstates delivery/payment/deployment | Contact says queue acceptance, checkout return grants nothing, preview target is enforced, unsupported admin actions stay read-only | Preserve truthful copy and add live evidence only after actual provider confirmation |
 
+## Prompt 6 current residual risks and release priorities
+
+The Prompt 5 dependency and local-database risks now have fresh remediation evidence: the current audit is clean, disposable PostgreSQL concurrency/grant tests pass, and QA-001 through QA-010 have scoped corrections. Those results do not eliminate the following residual risks.
+
+| Priority | Residual risk | Current observed control | Required gate |
+|---|---|---|---|
+| P0 | Treating disposable PostgreSQL, fakes or anonymous 503s as hosted customer/payment proof | Domain reports and test matrix separate local, CI and hosted evidence | Hosted Supabase two-user/auth/admin and Dodo test-mode journeys before launch |
+| P0 | Uncertain real provider/financial effects cannot be restored or reconciled | No blind retry; synthetic/disposable reconciliation tests; no live operation attempted | Authorized backup restoration, incident and provider/finance reconciliation drills |
+| P1 | Generated website/provider behavior differs in real E2B/Vercel/R2 environments | QA-001/002 local isolation and DTO regressions; fixed-command/static controls | Authorized sandbox/storage/deployment failure and cleanup tests |
+| P1 | Automated accessibility green is mistaken for WCAG conformance | Public axe/scripted keyboard/reflow results explicitly scoped | Complete manual WCAG, named AT, physical devices and authenticated states |
+| P1 | Lab performance is mistaken for field responsiveness | QA-010 repeated 24/24 local matrix; no TBT-as-INP or field claim | Interaction/private/provider traces and privacy-approved real-user p75 monitoring |
+| P1 | CI stalls or artifact cleanup hides a failure | Dedicated `performance-results/`, retained failure history and bounded job timeouts | Final HEAD run and artifact inspection; never substitute an older green revision |
+| P2 | Documentation drifts from exact application evidence | Application revision `3c0f0f5`, workflow revision `9e84adc`, run index and domain reports reconciled | Preserve docs-only versus application evidence distinction and require final HEAD checks |
+| P2 | Dependency maintenance warnings become future vulnerabilities | Zero current moderate+ audit findings and narrow tested overrides | Re-audit on dependency changes; review peer/deprecation maintenance without blind upgrades |
+
 ## Prioritization
 
-P0 blocks any real transaction or deployment. P1 blocks stage acceptance. P2 requires resolution before content/launch sign-off unless explicitly recorded. P3 is maintainability polish. Findings are not considered resolved until inspected and tested.
+P0 blocks any real transaction or deployment. P1 blocks stage acceptance. P2 requires resolution before content/launch sign-off unless explicitly recorded. P3 is maintainability polish. Findings are not considered resolved until inspected and tested. Blocked critical evidence is not accepted risk.

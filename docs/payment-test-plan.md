@@ -1,6 +1,6 @@
 # Dodo checkout, webhook, and reconciliation test plan
 
-Status: **pre-execution; no payment performed**. Dodo Payments remains the required provider. Automated payment tests use fakes or explicitly configured **test_mode** only. Live mode, real cards/customers, real money, refunds, and disputes are not authorized.
+Status: **synthetic and disposable-PostgreSQL webhook scope executed; Dodo test-mode connection remains blocked; no payment performed**. Results are in `financial-accuracy-report.md`. Dodo Payments remains the required provider. Automated payment tests use fakes or explicitly configured **test_mode** only. Live mode, real cards/customers, real money, refunds, and disputes are not authorized.
 
 ## Exact pack and environment matrix
 
