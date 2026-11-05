@@ -15,7 +15,9 @@ These are arithmetic examples, not claims about the price of any particular mode
 
 ## Implementation boundary
 
-Model prices, markup policy and credit packs must be configurable server-side. The browser may display server-issued estimates but cannot determine final cost or deduction. Final usage comes from verified provider metering; reconcile estimated reservation with actual deduction through a transactional ledger. Do not expose internal provider costs in customer responses or public copy.
+Model prices, markup policy and credit packs must be configurable server-side within the fixed pack contract. The browser may display server-issued estimates but cannot determine final cost or deduction. Final usage comes from verified provider metering; reconcile estimated reservation with actual deduction through a transactional ledger. Do not expose internal provider costs in customer responses or public copy.
+
+Prompt 5 stores actual AI cost as non-negative decimal nanodollars and computes the exact integer equivalent of `ceil(actual_metered_ai_cost_usd × 200)`. Estimated cost/credits and actual cost/credits are independent fields. A reservation is not a final deduction, and an actual value that cannot yet be reconciled is never replaced by an estimate labelled as actual. Purchased credits have no arbitrary application expiry. Overdrafts and silent undercharging are prohibited; an actual amount above available funds enters explicit reconciliation.
 
 ## User-facing transparency
 

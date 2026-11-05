@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { ProvidersWorkspace } from "@/components/admin/providers-workspace";
+import { RealAdminWorkspace } from "@/components/admin/real-admin-workspace";
 
 export const metadata: Metadata = { title: "Providers" };
+export const dynamic = "force-dynamic";
 
 export default function AdminProvidersPage() {
-  return <ProvidersWorkspace />;
+  return <RealAdminWorkspace section="providers" />;
 }

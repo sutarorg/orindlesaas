@@ -217,7 +217,7 @@ export default function HomePage() {
             <Button asChild variant="ghost" className="self-start"><Link href="/pricing">Pricing details <ArrowUpRight aria-hidden="true" /></Link></Button>
           </div>
           <div className="mt-12"><PricingCards compact /></div>
-          <p className="mb-0 mt-5 text-center text-xs leading-5 text-muted">Account creation and checkout are not connected in this frontend stage. Choosing a pack opens an explicit preview handoff; no payment is taken.</p>
+          <p className="mb-0 mt-5 text-center text-xs leading-5 text-muted">Choosing a pack starts account setup. Any purchase is completed separately through hosted checkout after sign-in; selecting a pack alone takes no payment and grants no credits.</p>
         </Container>
       </section>
 

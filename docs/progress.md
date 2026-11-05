@@ -4,7 +4,34 @@ Last updated: **2026-11-05**.
 
 ## Current status
 
-**Prompts 1–4 are implemented and validated as frontend stages.** The customer and admin applications are explicitly fixture-driven frontends. Real Supabase authentication, authorization, session/cookie handling, database, payments, credit deductions, AI generation, uploads, email delivery, deployment and persistent administrative operations remain unimplemented.
+**Prompt 5 backend implementation and credential-free local validation are complete; live production readiness is not complete.** Real Supabase/session, Drizzle schema/migrations, payment/ledger, AI, storage, jobs, email, preview deployment and permission-checked administration code has replaced the routed demo adapters. No live migration, seed/catalog write, paid provider call, real deployment or credentialed customer/admin journey occurred. Real PostgreSQL/RLS/concurrency and provider verification remain launch blockers.
+
+## Prompt 5 implementation and local validation — 2026-11-05
+
+- Added validated server environments, Supabase cookie authentication/callbacks, verified active-profile and permission/AAL2 guards, versioned APIs, safe errors/correlation, same-origin controls and fail-closed production rate limiting.
+- Added reviewed Drizzle schema and three migrations, exact pack seeding, Gateway catalog synchronization, wallet holds/settlement/reconciliation, verified Dodo checkout/webhooks, R2 ownership, durable Inngest/outbox processing, E2B source validation and preview-only Vercel deployment.
+- Replaced routed fixture workspaces with owner-scoped server projections and real service calls. Added audited expected-state admin mutations with stable idempotency and recent AAL2/TOTP requirements. Unsupported high-risk payment/job/dispute operations remain read-only rather than simulating success.
+- Removed query-driven auth success/expiry presentations. Contact acceptance now means durable queue acceptance only; receipt/support delivery uses explicit templates and stable Resend idempotency.
+- Final audit corrections include exact same-cost settlement checks, reconciliation usage evidence, active-pack checkout enforcement, direct Data API restrictions for internal fields, single-open-price indexing, bounded R2 reads, and failed-outcome preservation.
+
+| Prompt 5 check | Result | Evidence |
+|---|---|---|
+| Strict TypeScript / ESLint | Passed | Final `tsc --noEmit` and ESLint completed with no warnings or errors. |
+| Unit/component/security tests | Passed | **21 files, 106/106 tests**, including authz, webhook, exact-cost, catalog, provider-retry and source/security suites. |
+| Drizzle static migration check | Passed | `npx drizzle-kit check`; no SQL execution or database claim. |
+| Production build | Passed | Next 16.4.5 build, strict TypeScript and **45 generated pages**. |
+| Production Playwright | Passed | **50/50 tests**: 17 public, 24 authentication, 5 workspace authorization and 4 admin authorization. |
+| Live infrastructure | Not verified | No credentials/PostgreSQL runtime; migrations, RLS, concurrency, payments, AI, storage, jobs, email and deployment require authorized disposable-environment tests. |
+
+## Prompt 5 documentation baseline — completed 2026-11-05
+
+- Inventoried the application routes, frontend contracts, fixtures/mocks, environment template and 45 inherited nonempty documents; confirmed the absence of route handlers, Drizzle schema/migrations and server authorization.
+- Researched current official Next.js 16 proxy/route guidance, Supabase SSR/Auth/RLS, Drizzle transactions/migrations/RLS, AI SDK 7/Gateway text/image/video/cost lookup, R2 signing, Inngest serving, E2B SDK, Vercel deployment API, Upstash rate limits and Resend idempotency.
+- Cloned and inspected the official Dodo agent-skill repository at `8ed38e7594155575b9f98a867cf30b20589a54ea` and the Dodo 2.61.1 SDK declarations. Selected Checkout Sessions, explicit test/live environments, raw-body `webhooks.unwrap()` and transactional webhook-ID/payment/ledger deduplication.
+- Added `backend-architecture.md`, `database-schema.md`, `migration-policy.md`, `api-reference.md`, `payments-and-webhooks.md`, `ai-metering-and-jobs.md`, `storage-and-website-pipeline.md`, `authorization.md`, and `errors-and-observability.md` before backend implementation.
+- Chose integer USD cents for payments, integer credits, decimal nanodollars plus integer arithmetic for actual AI cost, internal authoritative ledger (not duplicate Dodo entitlement metering), durable outbox, and preview-only website deployment by default.
+
+No provider call, paid operation, migration against shared infrastructure or production deployment occurred during this checkpoint.
 
 The repository began Prompt 1 with only a minimal `README.md`; its 35-file documentation baseline was created before application code. Prompt 2 adds `authentication-design.md` and `authentication-flows.md`, updates the shared architecture/routes/requirements/security docs and creates the Prompt 3 shell handoff before changing auth application code.
 
@@ -166,4 +193,4 @@ See `assumptions-and-open-questions.md`. Canonical origin remains provisionally 
 
 ## Next stage
 
-`handoff-prompt4.md` records the implemented Prompt 3 shell, actual validation evidence, Prompt 5 backend contracts and separate administration-UI requirements. Prompt 4 may refine the customer experience and design administration separately; it must not infer roles or operational data from customer fixtures. Prompt 5 must re-research current official Supabase SSR, Next.js and provider APIs before implementing real authentication or backend operations.
+`handoff-prompt6.md` records the implemented Prompt 5 backend, exact local evidence, setup order, credential blockers and required live verification plan. Prompt 6 should begin with disposable-database migrations/RLS/concurrency tests and credentialed test-mode provider journeys; it must not treat the 106 unit tests, 50 browser tests, or successful build as live production evidence.

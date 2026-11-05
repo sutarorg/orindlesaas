@@ -90,13 +90,31 @@ test("pack handoff never claims payment or credit success", async ({ page }) => 
   await expect(page.getByRole("heading", { level: 1, name: "Start with your next idea." })).toBeVisible();
 });
 
-test("contact preview validates and explicitly does not send", async ({ page }) => {
+test("contact validates and reports durable queue acceptance without claiming inbox delivery", async ({ page }) => {
+  let requestBody: { idempotencyKey?: string } = {};
+  await page.route("**/api/v1/contact", async (route) => {
+    requestBody = route.request().postDataJSON() as { idempotencyKey?: string };
+    await route.fulfill({ status: 202, contentType: "application/json", body: JSON.stringify({ data: { message: "Your message was accepted for support delivery. Delivery status is tracked separately." } }) });
+  });
   await page.goto("/contact");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(page.getByText("Enter at least 2 characters for your name.")).toBeVisible();
   await page.getByLabel("Name").fill("Asha Rao");
   await page.getByLabel("Email").fill("asha@example.com");
   await page.getByLabel("Message").fill("Please explain how shared credits work across products.");
-  await page.getByRole("button", { name: "Preview message" }).click();
-  await expect(page.getByText("Your entries passed local validation. No message was sent or stored.")).toBeVisible();
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(page.getByText("Your message was accepted for support delivery. Delivery status is tracked separately.")).toBeVisible();
+  await expect(page.getByText(/message sent successfully/i)).toHaveCount(0);
+  expect(requestBody.idempotencyKey).toMatch(/^[a-f0-9-]{36}$/);
+});
+
+test("contact API rejects cross-origin writes and fails closed when abuse controls are absent", async ({ request }) => {
+  const data = { name: "Asha Rao", email: "asha@example.com", topic: "general", message: "Please explain how shared credits work across products.", idempotencyKey: "00000000-0000-4000-8000-000000000001" };
+  const crossOrigin = await request.post("/api/v1/contact", { data, headers: { Origin: "https://malicious.invalid" } });
+  expect(crossOrigin.status()).toBe(403);
+  const unconfigured = await request.post("/api/v1/contact", { data, headers: { Origin: "https://127.0.0.1:3000" } });
+  expect(unconfigured.status()).toBe(503);
+  expect((await unconfigured.json()).error.code).toBe("integration_unavailable");
 });
 
 test("FAQ accordion exposes state", async ({ page }) => {

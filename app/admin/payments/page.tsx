@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { PaymentsWorkspace } from "@/components/admin/payments-workspace";
+import { RealAdminWorkspace } from "@/components/admin/real-admin-workspace";
 
 export const metadata: Metadata = { title: "Payments" };
+export const dynamic = "force-dynamic";
 
-export default async function AdminPaymentsPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
-  const params = await searchParams;
-  return <PaymentsWorkspace initialQuery={typeof params.q === "string" ? params.q : ""} />;
+export default function AdminPaymentsPage() {
+  return <RealAdminWorkspace section="payments" />;
 }

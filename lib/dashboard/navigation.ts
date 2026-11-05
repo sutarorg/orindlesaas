@@ -1,5 +1,3 @@
-import { getConversationFixture, getWebsiteFixture } from "@/lib/dashboard/fixtures";
-
 export type AppNavItem = {
   label: string;
   shortLabel: string;
@@ -55,14 +53,13 @@ export function getAppBreadcrumbs(pathname: string): Breadcrumb[] {
   if (parts[1] === "chat" && parts[2]) {
     return [
       { label: "Chat", href: "/app/chat" },
-      { label: getConversationFixture(parts[2])?.title ?? "Conversation" },
+      { label: "Conversation" },
     ];
   }
   if (parts[1] === "websites" && parts[2] && parts[2] !== "new") {
-    const website = getWebsiteFixture(parts[2]);
     return [
       { label: "Websites", href: "/app/websites" },
-      { label: website?.name ?? "Website", href: `/app/websites/${parts[2]}/editor` },
+      { label: "Website", href: `/app/websites/${parts[2]}/editor` },
       { label: parts[3] === "settings" ? "Settings" : "Editor" },
     ];
   }

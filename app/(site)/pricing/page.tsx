@@ -52,7 +52,7 @@ export default function PricingPage() {
           <h2 id="packs-heading" className="sr-only">One-time credit packages</h2>
           <PricingCards />
           <div className="mt-6 rounded-xl border border-line bg-soft px-5 py-4 text-xs leading-5 text-muted">
-            <strong className="font-semibold text-ink">Frontend-stage note:</strong> account creation and checkout are not connected yet. Pack buttons open an explicit preview handoff and do not process a payment or add credits.
+            <strong className="font-semibold text-ink">Checkout note:</strong> pack selection starts account setup. Payment is completed separately in the authenticated workspace through hosted checkout; selecting a pack alone does not process a payment or add credits.
           </div>
         </Container>
       </section>

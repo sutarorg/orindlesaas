@@ -60,7 +60,7 @@ export const creditFaqs = [
   {
     question: "How do I know what I have used?",
     answer:
-      "The connected account experience is designed to provide one usage history across all four products, showing credits used by operation. This backend capability is outside the current public-frontend stage.",
+      "The authenticated workspace provides one usage history across all four products, showing estimated holds and actual settled credits by operation.",
   },
   {
     question: "Are refunds or disputes ever possible?",

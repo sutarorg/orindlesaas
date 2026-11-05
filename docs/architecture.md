@@ -2,9 +2,13 @@
 
 ## Stage boundary
 
-Prompt 1 is a static-friendly Next.js App Router frontend. Public pages are Server Components by default. Client Components are limited to navigation, accessible accordions, the contact preview and sparse motion. Content and pricing live in typed local modules; there are no database writes or real transactions.
+Prompt 5 implements the server modular-monolith contract in `backend-architecture.md`; local evidence and unexecuted live gates are tracked in `progress.md` and `handoff-prompt6.md`. The inherited Prompt 1–4 sections below are stage history, not a description of current demo behavior.
 
-## Implemented boundaries
+Current server boundaries include `app/api/` versioned handlers and signed callbacks, `proxy.ts` plus `lib/supabase/` for SSR cookie handling, `lib/server/auth/` for verified active-profile/permission/recent-AAL2 guards, `lib/server/db/` for Drizzle schema/access, and domain modules for credits, payments, AI, chat, generations, jobs, storage, websites, email, workspace and admin. `components/dashboard/` and `components/admin/` consume owner/permission-scoped server results rather than routed fixture adapters. See `api-reference.md` for the actual implemented endpoint inventory.
+
+Prompt 1 was a static-friendly Next.js App Router frontend. Public pages are Server Components by default. Client Components are limited to navigation, accessible accordions, the contact preview and sparse motion. Content and pricing live in typed local modules; there are no database writes or real transactions.
+
+## Inherited Prompt 1 module map (historical)
 
 ```text
 app/                         routes, metadata, fonts, icon, OG image, sitemap, robots
@@ -56,7 +60,7 @@ Native tables, responsive named scroll regions and local filter/pagination are p
 
 ## Dependency direction
 
-Routes compose content and components. Content modules do not import React or route code. UI primitives have no product/business rules. Pricing displayed on the public site is presentational typed content; later server configuration becomes authoritative and must be reconciled before checkout. SEO helpers receive explicit canonical paths and never infer request hosts from untrusted headers. JSON-LD is serialized by a small component that escapes `<` to reduce script-breakout risk.
+Routes compose content and components. Content modules do not import React or route code. UI primitives have no product/business rules. Pricing displayed on the public site is typed content; checkout now locks and reconciles the exact enabled database/server pack before creating a purchase, so browser values are never authoritative. SEO helpers receive explicit canonical paths and never infer request hosts from untrusted headers. JSON-LD is serialized by a small component that escapes `<` to reduce script-breakout risk.
 
 `components/ui/button.tsx` has an explicit client boundary because the installed Radix Slot uses client context during module evaluation. This does not make the whole marketing site a Client Component; Server Components can still compose the button around native links.
 
@@ -68,14 +72,14 @@ Long-form articles are server-rendered from structured local content so headings
 
 Native links provide real navigation. The Products menu and mobile dialog use Radix primitives; the mobile dialog supports Escape and focus return. FAQ accordions expose `aria-expanded`. Contact validation is local and returns an explicit preview result. Motion reveals use `initial={false}`, so content is visible by default; permitted motion is a small transform keyframe and reduced motion removes it.
 
-## Future backend contract
+## Backend trust contract
 
-Later stages add server-only repositories and service adapters for identity, entitlements, wallet ledger, assets, projects and usage. Browser code submits intent and receives display-safe results. It never supplies authoritative credit price, provider cost or deduction amount. Payment webhooks and AI metering remain server-only and idempotent.
+Server-only repositories and service adapters own identity, entitlements, wallet ledger, assets, projects and usage. Browser code submits intent and receives display-safe results. It never supplies authoritative credit price, provider cost or deduction amount. Payment webhooks and AI metering remain server-only and idempotent; live verification is still required as recorded in `handoff-prompt6.md`.
 
-## Data and state
+## Prompt 1 data and state history
 
-There is no global client state requirement in Prompt 1. Interactive UI owns local state. The mock contact adapter returns an explicit preview state rather than claiming persistence. `CheckoutService` is only an interface for later integration; no checkout adapter is called by the current signup preview.
+There was no global client state requirement in Prompt 1. Interactive UI owns local state. The mock contact adapter returns an explicit preview state rather than claiming persistence. `CheckoutService` is only an interface for later integration; no checkout adapter is called by the current signup preview.
 
 ## Environments
 
-Local development and preview use the same static content. `NEXT_PUBLIC_SITE_URL` controls canonical absolute URLs and falls back to the documented provisional origin. Optional `NEXT_PUBLIC_CONTACT_EMAIL` is used only if a verified inbox is configured. Secrets are neither required nor accepted by the public frontend.
+Local development and preview use the same static public content. `NEXT_PUBLIC_SITE_URL` controls canonical absolute URLs and falls back to the documented provisional origin. Optional `NEXT_PUBLIC_CONTACT_EMAIL` is used only if a verified inbox is configured. Public browser configuration contains no secrets; real backend operations separately require authorized server-only credentials and fail closed when absent.

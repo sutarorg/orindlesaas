@@ -15,7 +15,7 @@ import type { AuthStateContent } from "@/lib/auth/preview-states";
 import { validateSignUp, type SignUpField, type ValidationErrors } from "@/lib/auth/validation";
 import type { CreditPack } from "@/lib/content/pricing";
 import { formatNumber } from "@/lib/utils";
-import { mockAuthenticationService } from "@/lib/mocks/authentication-preview";
+import { authenticationService } from "@/lib/auth/supabase-service";
 
 export function SignupForm({ initialState, pack }: { initialState: AuthStateContent | null; pack?: CreditPack }) {
   const [name, setName] = useState("");
@@ -43,9 +43,14 @@ export function SignupForm({ initialState, pack }: { initialState: AuthStateCont
       return;
     }
     setPending(true);
-    const response = await mockAuthenticationService.signUp({ ...request, name: name.trim(), email: email.trim(), packId: pack?.id });
-    setResult(response.message);
-    setPending(false);
+    try {
+      const response = await authenticationService.signUp({ ...request, name: name.trim(), email: email.trim(), packId: pack?.id });
+      setResult(response.message);
+    } catch {
+      setResult("Account creation could not be reached. No account was confirmed; try again.");
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -89,10 +94,10 @@ export function SignupForm({ initialState, pack }: { initialState: AuthStateCont
         </div>
         <Button type="submit" size="lg" className="mt-6 w-full" disabled={pending}>
           {pending ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : <UserRoundPlus aria-hidden="true" />}
-          {pending ? "Checking locally…" : "Create account"}
+          {pending ? "Creating account…" : "Create account"}
         </Button>
         <div>
-          {result && <AuthAlert tone="info" title="Signup preview" body={result} className="mt-5" />}
+          {result && <AuthAlert tone="info" title="Sign-up status" body={result} className="mt-5" />}
         </div>
       </form>
     </div>

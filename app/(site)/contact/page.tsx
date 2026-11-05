@@ -15,7 +15,7 @@ export const metadata: Metadata = createMetadata({
 export default function ContactPage() {
   return (
     <main id="main-content">
-      <PageHero eyebrow="Contact" title="Let’s make the next step clear." description="Ask about the platform, one-time credits or the kind of workflow you want to build. In this frontend stage, the form below provides local validation only and states clearly that nothing has been sent." breadcrumbs={[{ name: "Contact", href: "/contact" }]} />
+      <PageHero eyebrow="Contact" title="Let’s make the next step clear." description="Ask about the platform, one-time credits or the kind of workflow you want to build. Validated messages are stored and queued for support delivery; the acceptance response does not claim that email delivery has completed." breadcrumbs={[{ name: "Contact", href: "/contact" }]} />
       <section className="py-16 sm:py-20 lg:py-24">
         <Container>
           <div className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">

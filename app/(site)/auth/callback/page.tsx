@@ -1,38 +1,33 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { AuthShell } from "@/components/auth/auth-shell";
-import { AuthStatePanel } from "@/components/auth/auth-state-panel";
-import { Button } from "@/components/ui/button";
-import { getCallbackPreviewState } from "@/lib/auth/preview-states";
+import { AuthCallback } from "@/components/auth/auth-callback";
+import { safeNextPath } from "@/lib/server/auth/safe-redirect";
 import { createMetadata } from "@/lib/site";
 
 export const metadata: Metadata = createMetadata({
   title: "Authentication callback",
-  description: "Orindle authentication callback presentation. No code exchange or session handling is connected.",
+  description: "Complete a secure Orindle authentication code exchange.",
   path: "/auth/callback",
   noindex: true,
 });
 
-type CallbackPageProps = { searchParams: Promise<{ state?: string | string[] }> };
+type CallbackPageProps = {
+  searchParams: Promise<{ code?: string | string[]; next?: string | string[]; error?: string | string[] }>;
+};
 
 export default async function AuthCallbackPage({ searchParams }: CallbackPageProps) {
   const query = await searchParams;
-  const content = getCallbackPreviewState(query.state);
-  const isError = query.state === "error";
-  const isCancelled = query.state === "cancelled";
-
   return (
     <AuthShell
       eyebrow="Authentication callback"
       title="A secure handoff, by design."
-      description="This reserved route demonstrates callback processing, cancellation and error layouts. Real server code exchange belongs to Prompt 5."
+      description="Orindle verifies the one-time callback code before creating a session. Callback URLs never grant credits or assign account privileges."
     >
-      <AuthStatePanel content={content} icon={isError ? "alert" : isCancelled ? "info" : "clock"}>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Button asChild><Link href="/login">Return to login</Link></Button>
-          <Button asChild variant="secondary"><Link href="/">Back to website</Link></Button>
-        </div>
-      </AuthStatePanel>
+      <AuthCallback
+        code={typeof query.code === "string" ? query.code : undefined}
+        nextPath={safeNextPath(typeof query.next === "string" ? query.next : null)}
+        providerError={typeof query.error === "string"}
+      />
     </AuthShell>
   );
 }

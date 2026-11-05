@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { AdminOverview } from "@/components/admin/admin-overview";
+import { RealAdminWorkspace } from "@/components/admin/real-admin-workspace";
 
 export const metadata: Metadata = { title: "Overview" };
+export const dynamic = "force-dynamic";
 
 export default function AdminOverviewPage() {
-  return <AdminOverview />;
+  return <RealAdminWorkspace section="overview" />;
 }

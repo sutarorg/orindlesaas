@@ -8,7 +8,7 @@ import { focusFirstInvalidField } from "@/components/auth/focus-first-invalid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { validateEmailRequest, type ValidationErrors } from "@/lib/auth/validation";
-import { mockAuthenticationService } from "@/lib/mocks/authentication-preview";
+import { authenticationService } from "@/lib/auth/supabase-service";
 
 export function VerificationForm() {
   const [email, setEmail] = useState("");
@@ -27,9 +27,14 @@ export function VerificationForm() {
       return;
     }
     setPending(true);
-    const response = await mockAuthenticationService.requestEmailVerification({ email: email.trim() });
-    setResult(response.message);
-    setPending(false);
+    try {
+      const response = await authenticationService.requestEmailVerification({ email: email.trim() });
+      setResult(response.message);
+    } catch {
+      setResult("The verification request could not be reached. No email delivery was confirmed; try again.");
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -39,10 +44,10 @@ export function VerificationForm() {
       </AuthFormField>
       <Button type="submit" variant="secondary" className="mt-5 w-full" disabled={pending}>
         {pending ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : <MailCheck aria-hidden="true" />}
-        {pending ? "Checking locally…" : "Preview resend"}
+        {pending ? "Requesting verification…" : "Request verification email"}
       </Button>
       <div>
-        {result && <AuthAlert tone="info" title="Resend preview" body={result} className="mt-5" />}
+        {result && <AuthAlert tone="info" title="Verification request status" body={result} className="mt-5" />}
       </div>
     </form>
   );

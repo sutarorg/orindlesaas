@@ -1,16 +1,10 @@
 import * as Dialog from "@radix-ui/react-dialog";
-import { AlertCircle, FlaskConical, Inbox, X } from "lucide-react";
+import { Inbox, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { AdminPreviewResult } from "@/lib/contracts/admin";
 import { cn } from "@/lib/utils";
 
-export function AdminDemoBadge({ label = "Demo data" }: { label?: string }) {
-  return (
-    <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-teal/15 bg-[#eff9f4] px-2.5 py-1 text-[11px] font-semibold text-teal-dark">
-      <FlaskConical className="size-3" aria-hidden="true" />
-      {label}
-    </span>
-  );
+export function AdminLiveBadge() {
+  return <span className="inline-flex w-fit items-center rounded-full border border-teal/15 bg-[#eff9f4] px-2.5 py-1 text-[11px] font-semibold text-teal-dark">Live database</span>;
 }
 
 export function AdminPageHeader({
@@ -29,7 +23,7 @@ export function AdminPageHeader({
       <div className="max-w-3xl">
         <div className="mb-3 flex flex-wrap items-center gap-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal">{eyebrow}</p>
-          <AdminDemoBadge />
+          <AdminLiveBadge />
         </div>
         <h1 className="mb-2.5 text-[clamp(1.75rem,3.4vw,2.35rem)] font-semibold leading-[1.15] tracking-[-0.04em] text-ink">{title}</h1>
         <p className="max-w-2xl text-sm leading-6 text-body">{description}</p>
@@ -92,26 +86,6 @@ export function AdminNotice({ title, children, tone = "neutral" }: { title: stri
     )}>
       <p className="font-semibold text-ink">{title}</p>
       <div className="mt-0.5">{children}</div>
-    </div>
-  );
-}
-
-export function AdminPreviewFeedback({ result }: { result: AdminPreviewResult | null }) {
-  return (
-    <div aria-live="polite" aria-atomic="true">
-      {result && (
-        <div className={cn(
-          "flex items-start gap-3 rounded-xl border px-4 py-3.5 text-sm leading-6",
-          result.status === "unavailable" ? "border-[#eadfca] bg-[#fffaf0] text-[#6f5525]" : "border-teal/20 bg-[#f1faf6] text-teal-dark",
-        )}>
-          {result.status === "unavailable" ? <AlertCircle className="mt-1 size-4 shrink-0" aria-hidden="true" /> : <FlaskConical className="mt-1 size-4 shrink-0" aria-hidden="true" />}
-          <div>
-            <p className="font-semibold text-ink">Preview only · no administrative operation ran</p>
-            <p>{result.message}</p>
-            <p className="mt-1 text-xs font-medium">Nothing persisted · No payment changed · 0 credits changed · No audit persisted</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

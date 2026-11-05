@@ -145,13 +145,42 @@ Automated axe results are not a WCAG certification. They cover the tested route 
 - Browser assertions initially used copy/locator assumptions rather than the actual accessible names (provider heading, pagination labels, chart descriptions and route announcer). Tests were corrected without weakening application assertions; the final complete suite passed.
 - Desktop visual review found avoidable clipping in the two-column model-cost table. Its minimum width was refined while retaining named horizontal scrolling for genuinely narrow viewports.
 
+## Prompt 5 backend/integration QA log — 2026-11-05
+
+| Check | Result | Actual evidence |
+|---|---|---|
+| Documentation inventory/risk sync | Pass | **54/54 `docs/*.md` files nonempty**; both risk filenames byte-identical; root README and Prompt 6 handoff reflect current implementation/live limits. |
+| `npm run typecheck` | Pass | Strict `tsc --noEmit` after the final server changes; no errors. |
+| `npm run lint` | Pass | ESLint over the repository after the final server changes; no warnings or errors. |
+| `npm run test:unit` | Pass | **21 files, 106/106 tests**. Includes exact arithmetic/same-cost settlement, payment mismatch validation, raw-body webhook adapter fakes, recent-AAL2/permission guards, provider retry fakes, catalog/source/security and inherited component tests. |
+| `npx drizzle-kit check` | Pass | Migration chain/snapshot consistency check passed. No migration SQL was executed. |
+| `npm run build` | Pass | Next 16.4.5 production build, strict TypeScript and **45 generated pages**; all API/customer/admin routes compiled. |
+| Production Playwright | Pass | **50/50 Chromium tests**: 17 public, 24 authentication, 5 workspace-authorization and 4 admin-authorization tests. |
+| Public/auth axe and responsive checks | Pass within limits | The suite’s selected axe scans and viewport assertions passed, including six auth routes and allowlisted legacy query states without accepting spoofed auth success. |
+| Credential-free deny-by-default smoke | Pass | Private pages redirect to login; anonymous APIs fail closed with safe correlated errors. With Supabase absent, private API dependencies return 503 `integration_unavailable`, not a false authenticated result. Cross-origin/insecure writes return 403. |
+| Auth spoof resistance | Pass | Login/signup ignore visitor-supplied account state; verify/reset/callback do not render query-driven success or expiry. No unconfigured session-policy cookie/storage write was observed. |
+| Contact API abuse controls | Pass | Browser mocks prove durable-acceptance wording; direct API checks prove cross-origin 403 and production fail-closed behavior when rate-limit configuration is absent. No real Resend message was sent. |
+| Live PostgreSQL/RLS/concurrency | Blocked—not evidenced | No local PostgreSQL, container runtime, or authorized Supabase database is available. No migrations/seeds/catalog writes ran. Unit fakes are not real lock/RLS proof. |
+| Credentialed provider journeys | Blocked—not evidenced | No real Supabase, Dodo, Gateway, R2, Inngest, E2B, Vercel, Upstash, or Resend credentials were used. Paid calls and live deployment were not attempted. |
+
+### Prompt 5 security/correctness corrections covered by final checks
+
+- Removed routed query-driven fake authentication success/expiry states and obsolete demo customer/admin browser suites; production smoke tests now assert actual denial behavior.
+- Added deny-by-default authorization tests for malformed identity, suspended/missing profiles, expired memberships, wrong permissions, stale/fresh AAL2/TOTP evidence, and missing production rate-limit configuration.
+- Added Dodo raw-body/header/hash/signature-failure/size-limit adapter tests and exact payment expectation tests. Live signature/replay/fulfillment races remain open.
+- Made checkout honor database pack enablement and exact values; receipt email now uses the customer email and a durable dispatch event with an allowlisted template.
+- Prevented direct Data API reads of internal cost/provider/storage/deployment fields in reviewed migration grants; this still requires live GRANT/RLS verification.
+- Added the single-open-price database invariant, future-price catalog-sync protection, exact stored-cost settlement checks, and reconciliation usage evidence.
+- Added bounded R2 streaming and preserved failed provider outcomes through later metering recovery. Provider/storage postprocessing remains subject to live integration testing.
+
 ## Remaining validation and launch limits
 
 - Real screen-reader/assistive-technology testing, full 200% zoom/reflow review and real-device testing remain launch-stage work.
 - Lighthouse/throttled lab profiling and representative 75th-percentile field Core Web Vitals were not run; no CWV compliance claim is made.
-- External primary-source links were reviewed during research, but this audit does not guarantee their future availability. Internal links were fetched and checked.
+- External primary-source links were reviewed during research, but this audit does not guarantee their future availability. Earlier internal-link results remain frontend-stage evidence.
 - Final production hostname, verified support inbox, legal entity/governing law and qualified policy review remain unresolved.
-- The site is not commercially production ready because auth, database, payments, ledger, AI, email, monitoring and deployment controls intentionally belong to later stages.
+- **Commercial/backend launch remains blocked** until migrations and seed/catalog setup are reviewed on a disposable real database; RLS/grants, concurrent ledger/idempotency, webhook replay/fulfillment, and all credentialed customer/admin/provider journeys pass; operational reconciliation/runbooks and dependency-risk review are complete.
+- `npm audit` previously reported 11 dependency findings (9 moderate, 2 high), including nested `inngest@4.26.2 -> zod@3.25.76` under GHSA-mrhx-c7xc-m3w5. No blind force upgrade or untested major Zod override was applied; rerun and assess a supported remediation before launch.
 
 ## Release tolerance
 

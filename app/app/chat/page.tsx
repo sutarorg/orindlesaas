@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
-import { ChatWorkspace, type ChatViewState } from "@/components/dashboard/chat-workspace";
-
+import { ChatWorkspace } from "@/components/dashboard/chat-workspace";
+import { requireUser } from "@/lib/server/auth/guards";
+import { getWorkspaceSnapshot } from "@/lib/server/workspace/queries";
 export const metadata: Metadata = { title: "Chat" };
-
-export default async function ChatPage({ searchParams }: { searchParams: Promise<{ state?: string | string[] }> }) {
-  const { state: value } = await searchParams;
-  const state = Array.isArray(value) ? value[0] : value;
-  const viewState: ChatViewState = state === "streaming" || state === "error" ? state : "default";
-  return <ChatWorkspace initialState={viewState} />;
-}
+export const dynamic = "force-dynamic";
+export default async function ChatPage() { const identity = await requireUser(); return <ChatWorkspace data={await getWorkspaceSnapshot(identity.userId)} />; }

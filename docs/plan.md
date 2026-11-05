@@ -93,3 +93,31 @@ Build model pricing, exact credit packs, payments, transactions, usage/costs, jo
 ## Prompt 4 Milestone 4 — Regression validation and Prompt 5 handoff (completed)
 
 Run unit/component/E2E, strict typecheck, lint, production build, all-route axe/overflow, keyboard/dialog, internal-link and representative visual review. Synchronize risks and finalize research, QA, progress and `handoff-prompt5.md` with actual behavior/evidence. Exit: all admin routes and prior public/auth/customer suites pass; backend/security limitations remain explicit.
+
+## Prompt 5 Milestone 0 — Backend research and architecture (completed)
+
+Inspect the inherited application, mock boundaries, contracts and documentation. Re-read current official Next.js/Supabase SSR/RLS/Drizzle/AI Gateway/Dodo/R2/Inngest/E2B/Vercel/Upstash/Resend guidance and inspect the official Dodo agent skills. Record the modular-monolith boundaries, exact financial arithmetic, schema/RLS/migration plan, versioned API, redaction, job and sandbox policies before backend code. Exit: research and nine backend design documents exist; no live-provider or production claim is made.
+
+## Prompt 5 Milestone 1 — Foundation, identity and database
+
+Install current server dependencies, add runtime environment validation, Drizzle schema/migrations/seeds, Supabase SSR cookie auth and verified customer/admin guards. Implement safe API primitives, request validation, Origin checks, rate limiting and RLS/ownership tests. Exit: anonymous/cross-customer/wrong-role access fails closed and local migrations/tests pass.
+
+## Prompt 5 Milestone 2 — Wallet, payments and metering
+
+Implement the atomic append-only wallet ledger, holds/settlement/release/compensation/reconciliation, exact one-time Dodo checkout, raw-body verified webhooks and exactly-once fulfillment. Add server model/capability/price registries and actual Gateway cost lookup. Exit: financial/concurrency/replay/race tests pass with no negative balance or duplicate grant/deduction.
+
+## Prompt 5 Milestone 3 — AI, assets and durable website pipeline
+
+Implement real chat streaming, asynchronous image/video/website jobs, transactional outbox/Inngest, R2 assets, isolated E2B validation and scoped preview Vercel deployment. Add Resend delivery and reconcile uncertain provider states without blind charged retries. Exit: injected-provider integration tests cover failure/resume/idempotency and generated code never executes on the app server.
+
+## Prompt 5 Milestone 4 — Real service adapters and administration
+
+Replace public/auth/customer/admin mock calls with real HTTP/server services while preserving the approved design. Implement permission-filtered admin reads/mutations, AAL2 step-up, current-state checks and append-only audit. Exit: no privileged client secrets or mock-success paths remain; direct endpoint and field/action authorization tests pass.
+
+## Prompt 5 Milestone 5 — Verification and Prompt 6 handoff
+
+Run migration, unit/integration/security/smoke, strict typecheck/lint/build and feasible browser/accessibility/responsive checks. Reconcile every backend document, record exact credential blockers, update production readiness/deployment/runbooks and finalize `handoff-prompt6.md`. Exit: only evidenced items are marked complete; live launch remains unauthorized.
+
+## Prompt 5 final status — 2026-11-05
+
+Milestones 1–4 are implemented in source and locally checked; routed demo customer/admin services were removed. Milestone 5 local static/unit/browser checks are complete. Any exit criterion requiring actual migrations, PostgreSQL row locks/RLS, credentialed auth/admin journeys, Dodo fulfillment, AI/storage/job/email/deployment providers or operational drills remains open. The final local evidence and live gates are recorded in `quality-assurance.md`, `task.md`, and `handoff-prompt6.md`; no live-launch completion is claimed.

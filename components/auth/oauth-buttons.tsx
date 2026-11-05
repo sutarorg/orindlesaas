@@ -6,7 +6,7 @@ import { GitHubIcon, GoogleIcon } from "@/components/brand/provider-icons";
 import { Button } from "@/components/ui/button";
 import { AuthAlert } from "@/components/auth/auth-alert";
 import type { OAuthProvider } from "@/lib/contracts/authentication";
-import { mockAuthenticationService } from "@/lib/mocks/authentication-preview";
+import { authenticationService } from "@/lib/auth/supabase-service";
 
 export function OAuthButtons({ intent }: { intent: "login" | "signup" }) {
   const [pending, setPending] = useState<OAuthProvider | null>(null);
@@ -15,9 +15,15 @@ export function OAuthButtons({ intent }: { intent: "login" | "signup" }) {
   async function handleOAuth(provider: OAuthProvider) {
     setPending(provider);
     setResult(null);
-    const response = await mockAuthenticationService.beginOAuth({ provider, intent });
-    setResult(response.message);
-    setPending(null);
+    try {
+      const response = await authenticationService.beginOAuth({ provider, intent });
+      setResult(response.message);
+      if (response.status === "redirect") window.location.assign(response.url);
+    } catch {
+      setResult("The provider could not be opened. No account was accessed.");
+    } finally {
+      setPending(null);
+    }
   }
 
   return (
@@ -32,8 +38,8 @@ export function OAuthButtons({ intent }: { intent: "login" | "signup" }) {
           {pending === "github" ? "Checking GitHub…" : "Continue with GitHub"}
         </Button>
       </div>
-      <p className="mb-0 mt-3 text-center text-[11px] leading-5 text-muted">Planned alternatives. These buttons never open a provider or redirect you.</p>
-      {result && <AuthAlert tone="info" title="OAuth preview" body={result} className="mt-4" />}
+      <p className="mb-0 mt-3 text-center text-[11px] leading-5 text-muted">A provider opens only after you choose it. Availability depends on the configured Supabase providers.</p>
+      {result && <AuthAlert tone="info" title="OAuth status" body={result} className="mt-4" />}
     </div>
   );
 }

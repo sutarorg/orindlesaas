@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
-import { Overview, type OverviewState } from "@/components/dashboard/overview";
+import { Overview } from "@/components/dashboard/overview";
+import { requireUser } from "@/lib/server/auth/guards";
+import { getWorkspaceSnapshot } from "@/lib/server/workspace/queries";
 
 export const metadata: Metadata = { title: "Overview" };
+export const dynamic = "force-dynamic";
 
-function parseOverviewState(value: string | string[] | undefined): OverviewState {
-  const state = Array.isArray(value) ? value[0] : value;
-  return state === "empty" || state === "error" || state === "session-expired" || state === "unauthorized" ? state : "default";
-}
-
-export default async function AppOverviewPage({ searchParams }: { searchParams: Promise<{ state?: string | string[] }> }) {
-  const { state } = await searchParams;
-  return <Overview state={parseOverviewState(state)} />;
+export default async function AppOverviewPage() {
+  const identity = await requireUser();
+  return <Overview data={await getWorkspaceSnapshot(identity.userId)} />;
 }

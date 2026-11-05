@@ -2,9 +2,11 @@
 
 **Everything AI. One Platform.**
 
-Premium-white public website, authentication frontend, customer demo workspace and operations admin demo for Orindle Chat, Image Studio, Video Studio and Websites. Built with Next.js App Router, React, strict TypeScript, Tailwind CSS, shadcn/ui patterns, Radix primitives, Lucide and Framer Motion.
+Orindle Chat, Image Studio, Video Studio and Websites, with a premium-white public site, Supabase authentication, owner-scoped customer workspace, permission-checked administration, and server integrations for Drizzle/PostgreSQL, Dodo Payments, Vercel AI Gateway, Cloudflare R2, Inngest, E2B, Vercel preview deployments, Upstash and Resend. Built with Next.js App Router, React, strict TypeScript, Tailwind CSS, Radix/shadcn-compatible primitives and Lucide.
 
-## Develop
+> **Status:** Prompt 5 source implementation and credential-free local validation are complete. Live infrastructure is **not verified**: no migration, seed/catalog write, paid provider call, real deployment or credentialed customer/admin journey was run. This repository is not commercially production ready until the gates in `docs/handoff-prompt6.md` pass.
+
+## Develop locally
 
 ```bash
 npm ci
@@ -12,13 +14,17 @@ cp .env.example .env.local
 npm run dev
 ```
 
-## Authentication frontend
+Public pages and fail-closed unconfigured behavior can be reviewed without secrets. Real account, workspace, payment, generation, storage, email and deployment operations require authorized environment-specific credentials and an applied schema. Never commit `.env.local` or place server secrets in `NEXT_PUBLIC_*` variables.
 
-The noindex routes `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/verify-email` and `/auth/callback` provide local validation, accessible password controls and explicitly preview-only states. They do not create accounts/sessions, contact OAuth providers, send email or change passwords. Real Supabase and server authorization belong to Prompt 5.
+Useful safe checks:
 
-## Customer and admin demos
+```bash
+npm run env:check       # validates configuration shape; does not print secrets
+npm run setup:guided   # prints a checklist; contacts no provider
+npx drizzle-kit check  # migration-chain/static consistency only
+```
 
-The noindex `/app` workspace demonstrates all four customer products with typed local fixtures. The separate noindex `/admin` workspace contains 13 operational destinations for users, catalogue/pricing, payments/usage, jobs/websites, adjustments and settings. Every administrative action is an explicitly non-persistent preview: there is no active admin role, real payment/provider connection, wallet mutation or persistent audit. See `docs/handoff-prompt5.md` for backend and authorization contracts.
+`npm run db:migrate`, `npm run db:seed`, and `npm run catalog:sync` perform real database and/or external operations. Do not run them against shared or production infrastructure without explicit authorization and the reviewed procedure in `docs/deployment-runbook.md`.
 
 ## Validate
 
@@ -38,6 +44,14 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-See `docs/quality-assurance.md` for the optional npm-packaged Chromium fallback used in this sandbox and the final validation evidence.
+See `docs/quality-assurance.md` for the optional npm-packaged Chromium fallback used in this sandbox.
 
-This stage is frontend-only. It does not implement real authentication/session handling, admin authorization, payments, credit deductions, AI generation, database writes, email delivery or deployment. Final frontend evidence includes 57/57 unit tests and 91/91 production Playwright tests. See [`docs/README.md`](docs/README.md) for architecture, design, requirements, research and validation evidence.
+## Final local evidence — 2026-11-05
+
+- **21 files, 106/106 unit/component/security tests**
+- **50/50 production Playwright tests**: 17 public, 24 authentication, 5 workspace authorization and 4 admin authorization
+- Strict TypeScript and ESLint pass
+- Drizzle migration-chain check passes; no SQL was executed
+- Next 16.4.5 production build passes with **45 generated pages**
+
+These results do not prove live Supabase, PostgreSQL/RLS/concurrency, Dodo fulfillment, AI metering, R2, Inngest, E2B, Vercel, Upstash or Resend behavior. See [`docs/handoff-prompt6.md`](docs/handoff-prompt6.md) for the implemented boundaries, setup order, credential blockers and required release tests, and [`docs/README.md`](docs/README.md) for the full documentation map.
