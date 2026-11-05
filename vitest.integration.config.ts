@@ -11,7 +11,7 @@ export default defineConfig({
     testTimeout: 120_000,
     hookTimeout: 120_000,
     reporters: process.env.CI
-      ? ["default", ["junit", { outputFile: "test-results/integration-junit.xml" }]]
+      ? ["default", "github-actions", ["junit", { outputFile: "test-results/integration-junit.xml" }]]
       : "default",
   },
 });

@@ -13,7 +13,7 @@ Record revision, build ID, server/runtime, browser/Lighthouse versions, OS/CPU, 
 | Measure | Lab budget / review threshold | Release interpretation |
 |---|---|---|
 | Lighthouse performance | Median ≥90 mobile and desktop on key public routes | P1 investigation if below after controlled repeat; not a field guarantee |
-| Lighthouse accessibility / best practices / SEO | ≥95 with every deducted critical item reviewed; accessibility also requires axe/manual gates | No score substitutes for functional/security review |
+| Lighthouse accessibility / best practices / SEO | ≥95 with every deducted critical item reviewed; accessibility also requires axe/manual gates. Intentionally noindex routes such as `/login` retain their reported SEO score but pass only when `is-crawlable` is the sole SEO deduction in every trial | No score substitutes for functional/security review; the noindex exception never applies to indexable routes |
 | LCP | ≤2.5s in the documented throttled lab profile | Aligns with good field threshold but is not field LCP |
 | CLS | ≤0.1 | Inspect every material unexpected shift |
 | TBT | ≤200ms diagnostic target | TBT is not INP |

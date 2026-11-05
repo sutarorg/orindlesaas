@@ -100,10 +100,10 @@ test("all public internal links and fragments resolve without dead placeholder c
   }
 });
 
-test("every public route reflows at core widths and keeps native controls operable", async ({ page }) => {
-  const errors: string[] = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  for (const width of [320, 390, 768, 1440]) {
+for (const width of [320, 390, 768, 1440]) {
+  test(`every public route reflows at ${width}px and keeps native controls operable`, async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
     await page.setViewportSize({ width, height: 900 });
     for (const route of publicRoutes) {
       await page.goto(route);
@@ -115,9 +115,9 @@ test("every public route reflows at core widths and keeps native controls operab
       }).map((button) => ({ text: button.textContent?.trim(), width: button.getBoundingClientRect().width, height: button.getBoundingClientRect().height })));
       expect(undersizedButtons, `${route} undersized buttons at ${width}`).toEqual([]);
     }
-  }
-  expect(errors).toEqual([]);
-});
+    expect(errors).toEqual([]);
+  });
+}
 
 for (const route of publicRoutes) {
   test(`axe WCAG 2.2 AA review: ${route}`, async ({ page }) => {

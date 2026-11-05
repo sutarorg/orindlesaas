@@ -102,7 +102,7 @@ describe("disposable real PostgreSQL verification", () => {
     await admin`update public.wallets set available_credits = 100 where user_id = ${first}`;
     await admin`update public.wallets set available_credits = 200 where user_id = ${second}`;
 
-    const own = await asRole("authenticated", first, () => admin`select user_id, available_credits from public.wallets order by user_id`);
+    const own = await asRole("authenticated", first, () => admin`select user_id, available_credits::int from public.wallets order by user_id`);
     expect(own).toEqual([{ user_id: first, available_credits: 100 }]);
     const profiles = await asRole("authenticated", first, () => admin`select id from public.profiles order by id`);
     expect(profiles).toEqual([{ id: first }]);
@@ -242,11 +242,17 @@ describe("disposable real PostgreSQL verification", () => {
     await getDb().insert(models).values({ id: "qa-model", providerId: "qa-provider", gatewayModelId: "qa/provider/model", name: "Disposable Model", kind: "chat", enabled: false });
     const [current] = await getDb().insert(modelPrices).values({ modelId: "qa-model", inputNanoUsdPerToken: 10, outputNanoUsdPerToken: 20, operationNanoUsd: null, source: "qa" }).returning();
     expect(current).toBeDefined();
-    await expect(getDb().insert(modelPrices).values({ modelId: "qa-model", inputNanoUsdPerToken: 11, outputNanoUsdPerToken: 21, operationNanoUsd: null, source: "qa" })).rejects.toThrow(/model_prices_one_open_per_model/);
+    await expect(getDb().insert(modelPrices).values({ modelId: "qa-model", inputNanoUsdPerToken: 11, outputNanoUsdPerToken: 21, operationNanoUsd: null, source: "qa" })).rejects.toMatchObject({
+      cause: { code: "23505", constraint_name: "model_prices_one_open_per_model" },
+    });
     const closing = new Date(Date.now() + 60_000);
     await getDb().update(modelPrices).set({ effectiveTo: closing }).where(and(eq(modelPrices.id, current!.id), eq(modelPrices.modelId, "qa-model")));
     const [next] = await getDb().insert(modelPrices).values({ modelId: "qa-model", inputNanoUsdPerToken: 11, outputNanoUsdPerToken: 21, operationNanoUsd: null, source: "qa", effectiveFrom: closing }).returning();
-    await expect(getDb().update(modelPrices).set({ inputNanoUsdPerToken: 99 }).where(eq(modelPrices.id, next!.id))).rejects.toThrow(/only the first valid effective_to closure/);
-    await expect(getDb().delete(modelPrices).where(eq(modelPrices.id, next!.id))).rejects.toThrow(/append-only/);
+    await expect(getDb().update(modelPrices).set({ inputNanoUsdPerToken: 99 }).where(eq(modelPrices.id, next!.id))).rejects.toMatchObject({
+      cause: { message: expect.stringContaining("only the first valid effective_to closure") },
+    });
+    await expect(getDb().delete(modelPrices).where(eq(modelPrices.id, next!.id))).rejects.toMatchObject({
+      cause: { message: expect.stringContaining("append-only") },
+    });
   });
 });
