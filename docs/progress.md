@@ -4,7 +4,17 @@ Last updated: **2026-11-05**.
 
 ## Current status
 
-**Prompt 5 backend implementation and credential-free local validation are complete; live production readiness is not complete.** Real Supabase/session, Drizzle schema/migrations, payment/ledger, AI, storage, jobs, email, preview deployment and permission-checked administration code has replaced the routed demo adapters. No live migration, seed/catalog write, paid provider call, real deployment or credentialed customer/admin journey occurred. Real PostgreSQL/RLS/concurrency and provider verification remain launch blockers.
+**Prompt 6 independent verification is in the execution phase; the release recommendation remains NO-GO.** The documentation-first review is complete: all 54 inherited docs and the root README were read before tests or application edits, followed by 25 new matrix, scenario, security/financial/provider, browser/accessibility/SEO/performance, defect/failure, release/report and handoff documents. No Prompt 6 test result or defect closure is claimed yet. Real PostgreSQL/RLS/concurrency and credentialed provider/operational evidence remain launch blockers.
+
+## Prompt 6 documentation baseline — completed 2026-11-05
+
+- Reviewed all 54 inherited Markdown documents plus the root README and independently inventoried routes, tests, server modules, migrations and environment/runtime availability before test execution.
+- Refreshed current official Next.js, Playwright, Vitest, WCAG/WAI, OWASP, Supabase RLS/grants and PostgreSQL locking guidance; preserved ASVS/WSTG version references and lab-versus-field limits.
+- Created the independent `test-matrix.md`, `test-scenarios.md`, specialized security/credit/payment/AI/mobile/accessibility/SEO/performance plans, bug/failure registers, release checklist/readiness, deployment/rollback procedures, domain reports, final QA and final handoff.
+- Recorded audit hypotheses for direct website-preview isolation, restricted website DTO fields, credit-adjustment idempotency scope, non-success webhook matching, request-ID handling and configuration-mode validation. They are not counted as reproduced or fixed defects yet.
+- Confirmed local provider credential names and PostgreSQL/container runtimes are unavailable. No fake, unconfigured 503, historical result or local build is treated as live-provider, financial, accessibility-conformance, field-performance or production evidence.
+
+The initial NO-GO is an evidence gate, not a final QA result. All new plan/report files are nonempty; current results and blockers will be reconciled after fresh execution.
 
 ## Prompt 5 implementation and local validation — 2026-11-05
 

@@ -167,3 +167,27 @@ Commercial launch tasks remain explicitly open in `production-readiness.md`; thi
 - [x] Do not run paid providers, live deployment or destructive production migration without explicit authorization; none was run.
 
 Prompt 5 source implementation/local validation is complete, but the `[~]` items prevent a live-backend or commercial-launch completion claim. See `handoff-prompt6.md` for the exact release gates.
+
+## Prompt 6 — independent QA, security and release verification
+
+### Documentation and research
+
+- [x] Read all 54 inherited docs and the root README; independently inventory routes, tests, server modules, migrations and environment/runtime availability before tests or application edits.
+- [x] Refresh current official Next.js, Playwright, Vitest, WCAG/WAI, OWASP, Supabase and PostgreSQL guidance.
+- [x] Create the independent test matrix/scenarios and specialized security, credit, payment, AI, mobile, accessibility, SEO and performance plans before execution.
+- [x] Create bug/failure registers, release/readiness checklists, deployment/rollback procedures, domain/final reports and final handoff scaffolds without inventing results.
+
+### Execution and remediation
+
+- [ ] Run fresh strict checks, unit/component tests, production build and production browser suites with retained evidence.
+- [ ] Add repeatable CI, fixtures, browser projects and integration coverage; do not silently skip credential-dependent checks and call them passed.
+- [ ] Reproduce, prioritize, fix and retest security/financial/core defects, including direct/embedded website isolation, DTO redaction, idempotency scope and webhook mismatch cases.
+- [ ] Execute real disposable PostgreSQL migration/RLS/grant/concurrency/replay suites; hosted Supabase remains separate evidence.
+- [ ] Complete authorized Supabase and Dodo test-mode journeys and strictly bounded provider smoke where credentials exist; otherwise retain explicit Blocked states.
+- [ ] Complete cross-browser/mobile, axe/manual WCAG, SEO crawl and repeated lab performance checks; physical devices, named AT, field CWV and indexing remain separate.
+- [ ] Close all P0/P1 defects and critical blocked cases, complete staging backup/restore/rollback/monitoring drills and obtain legal/support/finance/security/operations approval before any launch.
+
+### Final reconciliation
+
+- [ ] Reconcile matrix, reports, progress, risks, production readiness and handoff against exact observed results; retain NO-GO while critical evidence is missing.
+- [x] Do not run real money, destructive production security tests, unrestricted live AI, untrusted app-server code or production deployment without explicit authorization; none has occurred in Prompt 6.

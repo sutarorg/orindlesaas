@@ -3,7 +3,7 @@ import { getDb } from "@/lib/server/db/client";
 import { deployments, generationJobs, outboxEvents, websiteBuilds, websiteProjects } from "@/lib/server/db/schema";
 import { AppError } from "@/lib/server/errors";
 import { readOwnedAssetBytes, storeGeneratedAsset } from "@/lib/server/storage/r2";
-import { validateWebsiteSource, type WebsiteSourceFile } from "@/lib/server/websites/source";
+import { validateWebsiteSource, websitePreviewCsp, type WebsiteSourceFile } from "@/lib/server/websites/source";
 
 export async function getOwnedWebsite(userId: string, projectId: string) {
   const [project] = await getDb().select().from(websiteProjects).where(and(eq(websiteProjects.id, projectId), eq(websiteProjects.userId, userId))).limit(1);
@@ -18,7 +18,15 @@ export async function getOwnedWebsite(userId: string, projectId: string) {
     files = validateWebsiteSource(JSON.parse(new TextDecoder().decode(bytes))).files;
   }
   const currentSourceSha256 = files.length ? validateWebsiteSource({ files }).sourceSha256 : null;
-  return { project, builds, deployments: deploymentRows, files, currentSourceSha256 };
+  // These objects cross both the JSON API and the RSC/client boundary. Map
+  // explicitly so future provider/internal columns cannot become public DTOs.
+  return {
+    project: { id: project.id, name: project.name, slug: project.slug, status: project.status, createdAt: project.createdAt, updatedAt: project.updatedAt },
+    builds: builds.map((build) => ({ id: build.id, status: build.status, sourceSha256: build.sourceSha256, createdAt: build.createdAt })),
+    deployments: deploymentRows.map((deployment) => ({ id: deployment.id, target: deployment.target, status: deployment.status, url: deployment.url, createdAt: deployment.createdAt })),
+    files,
+    currentSourceSha256,
+  };
 }
 
 export type OwnedWebsite = Awaited<ReturnType<typeof getOwnedWebsite>>;
@@ -56,9 +64,17 @@ export function websitePreviewDocument(files: WebsiteSourceFile[]) {
     .replace(/<script\b[^>]*src=["']script\.js["'][^>]*>\s*<\/script>/gi, "");
   const withStyle = sanitized.includes("</head>") ? sanitized.replace("</head>", `<style>${css}</style></head>`) : `<style>${css}</style>${sanitized}`;
   const withScript = withStyle.includes("</body>") ? withStyle.replace("</body>", `<script src="${scriptUrl}"></script></body>`) : `${withStyle}<script src="${scriptUrl}"></script>`;
-  const csp = "default-src 'none'; img-src data: https:; style-src 'unsafe-inline'; script-src data:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'";
-  const meta = `<meta http-equiv="Content-Security-Policy" content="${csp}">`;
+  const meta = `<meta http-equiv="Content-Security-Policy" content="${websitePreviewCsp}">`;
   if (/<head(?:\s[^>]*)?>/i.test(withScript)) return withScript.replace(/<head(\s[^>]*)?>/i, `<head$1>${meta}`);
   if (/<html(?:\s[^>]*)?>/i.test(withScript)) return withScript.replace(/<html(\s[^>]*)?>/i, `<html$1><head>${meta}</head>`);
   return `${meta}${withScript}`;
+}
+
+function escapeHtmlAttribute(value: string) {
+  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+export function websitePreviewShellDocument(files: WebsiteSourceFile[]) {
+  const document = escapeHtmlAttribute(websitePreviewDocument(files));
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Isolated website preview</title><style>html,body{margin:0;width:100%;height:100%;background:#fff}iframe{display:block;width:100%;height:100%;border:0}</style></head><body><iframe title="Isolated generated website preview" sandbox="allow-scripts" srcdoc="${document}"></iframe></body></html>`;
 }

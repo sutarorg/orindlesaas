@@ -69,13 +69,17 @@ export function validateDodoMode(env = readServerEnvironment()) {
   if (!env.DODO_PAYMENTS_API_KEY) return;
   const key = env.DODO_PAYMENTS_API_KEY;
   const looksLive = key.startsWith("live_") || key.startsWith("pk_live_");
+  const looksTest = key.startsWith("test_") || key.startsWith("pk_test_");
   if (env.DODO_PAYMENTS_ENVIRONMENT === "test_mode" && looksLive) {
     throw new Error("Dodo live credentials cannot be used while DODO_PAYMENTS_ENVIRONMENT=test_mode.");
+  }
+  if (env.DODO_PAYMENTS_ENVIRONMENT === "live_mode" && looksTest) {
+    throw new Error("Dodo test credentials cannot be used while DODO_PAYMENTS_ENVIRONMENT=live_mode.");
   }
 }
 
 export function validateNoPublicSecrets(source: Record<string, string | undefined> = process.env) {
-  const forbidden = /(SECRET|SERVICE_ROLE|DATABASE|WEBHOOK|API_TOKEN|ACCESS_KEY)/;
+  const forbidden = /(SECRET|SERVICE_ROLE|DATABASE|WEBHOOK|API_TOKEN|API_KEY|PRIVATE_KEY|ACCESS_KEY)/;
   const exposed = Object.keys(source).filter(
     (key) => key.startsWith("NEXT_PUBLIC_") && forbidden.test(key),
   );

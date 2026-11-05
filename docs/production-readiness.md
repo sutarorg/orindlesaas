@@ -1,6 +1,6 @@
 # Production readiness
 
-This checklist covers a real commercial launch, not just frontend or local backend acceptance. Current status: **not production ready**. Prompt 5 implementation and local checks are complete (106/106 unit tests, 50/50 production Playwright tests, strict checks and a 45-page build), but no live migration, RLS/concurrency test, credentialed provider journey, or production deployment has occurred. Source code and fakes are not operational proof.
+This checklist covers a real commercial launch, not just frontend or local backend acceptance. Current status: **not production ready / NO-GO**. Prompt 6 documentation-first review is complete and independent execution is pending; its authoritative evidence/status files are `test-matrix.md`, `release-checklist.md`, `launch-readiness.md` and `final-qa-report.md`. Prompt 5 implementation and local checks are retained only as historical context (106/106 unit tests, 50/50 production Playwright tests, strict checks and a 45-page build), not reused as Prompt 6 release evidence. No live migration, RLS/concurrency test, credentialed provider journey, or production deployment has occurred. Source code and fakes are not operational proof.
 
 ## Public website gate
 
