@@ -4,7 +4,7 @@
 
 Orindle Chat, Image Studio, Video Studio and Websites, with a premium-white public site, Supabase authentication, owner-scoped customer workspace, permission-checked administration, and server integrations for Drizzle/PostgreSQL, Dodo Payments, Vercel AI Gateway, Cloudflare R2, Inngest, E2B, Vercel preview deployments, Upstash and Resend. Built with Next.js App Router, React, strict TypeScript, Tailwind CSS, Radix/shadcn-compatible primitives and Lucide.
 
-> **Status:** Prompt 5 source implementation and credential-free local validation are complete. Live infrastructure is **not verified**: no migration, seed/catalog write, paid provider call, real deployment or credentialed customer/admin journey was run. This repository is not commercially production ready until the gates in `docs/handoff-prompt6.md` pass.
+> **Status:** Prompt 6 available-scope QA and remediation are complete. Final application CI run `42074366023` passed all nine jobs, including disposable PostgreSQL, five browser projects and performance. Hosted providers, physical-device/AT, field monitoring, staging recovery and owner approvals remain **not verified**. Release and production readiness are **NO-GO**; see `docs/handoff-final.md`.
 
 ## Develop locally
 
@@ -37,21 +37,22 @@ npm run build
 
 Or run the same static/unit/build sequence with `npm run check`.
 
-For browser tests, install Playwright Chromium once, then run `npm run test:e2e`. Without `PLAYWRIGHT_BASE_URL`, Playwright starts/reuses the local dev server. To test a production build, run `npm run start` in a separate terminal and set `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000`.
+For browser tests, install the desired Playwright engines, then run `npm run test:e2e` (all five projects) or `-- --project=chromium`. Without `PLAYWRIGHT_BASE_URL`, Playwright builds and starts/reuses the local server. To test an existing production build, run `npm run start` in a separate terminal and set `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000`.
 
 ```bash
-npx playwright install chromium
+npx playwright install chromium firefox webkit
 npm run test:e2e
 ```
 
-See `docs/quality-assurance.md` for the optional npm-packaged Chromium fallback used in this sandbox.
+`npm run test:integration` requires an explicitly disposable PostgreSQL `DATABASE_URL` and `QA_DATABASE_DISPOSABLE=1`; never point it at shared or production data. `npm run test:performance` audits an already-running production server and retains JSON/HTML reports in `performance-results/`. See `docs/quality-assurance.md` for the optional npm-packaged Chromium fallback and `docs/handoff-final.md` for the verified CI evidence.
 
-## Final local evidence — 2026-11-05
+## Final verification evidence — 2026-11-05
 
-- **21 files, 106/106 unit/component/security tests**
-- **50/50 production Playwright tests**: 17 public, 24 authentication, 5 workspace authorization and 4 admin authorization
-- Strict TypeScript and ESLint pass
-- Drizzle migration-chain check passes; no SQL was executed
-- Next 16.4.5 production build passes with **45 generated pages**
+- **25 files, 124/124 unit/component/security tests**
+- **80/80 local production Chromium tests**; all five browser projects also passed final application CI
+- Strict TypeScript, ESLint, Drizzle migration-chain check and Next 16.4.5 production build with **45 generated pages** pass
+- Seven disposable PostgreSQL 16 integration tests pass migrations/seed, grants/RLS and concurrency/replay cases
+- Final local Lighthouse matrix passes **24/24** after the home/mobile LCP correction; JSON/HTML reports are retained
+- Final application CI [`42074366023`](https://github.com/sutarorg/orindlesaas/actions/runs/42074366023) passes **all nine jobs** with browser, coverage, PostgreSQL and performance artifacts
 
-These results do not prove live Supabase, PostgreSQL/RLS/concurrency, Dodo fulfillment, AI metering, R2, Inngest, E2B, Vercel, Upstash or Resend behavior. See [`docs/handoff-prompt6.md`](docs/handoff-prompt6.md) for the implemented boundaries, setup order, credential blockers and required release tests, and [`docs/README.md`](docs/README.md) for the full documentation map.
+These results do not prove hosted Supabase, Dodo, AI metering, R2, Inngest, E2B, Vercel, Upstash or Resend behavior, physical-device/AT accessibility, field CWV, indexing or operational recovery. No live payment or production deployment occurred. See [`docs/handoff-final.md`](docs/handoff-final.md) for exact revisions, evidence and residual NO-GO gates, and [`docs/README.md`](docs/README.md) for the full documentation map.
