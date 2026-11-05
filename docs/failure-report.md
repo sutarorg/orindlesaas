@@ -1,6 +1,6 @@
 # Failure and blocked-evidence report
 
-Status: **active Prompt 6 evidence log through application revision `3c0f0f5` / workflow revision `9e84adc`**. Product remediations are registered in `bug-register.md`; this file preserves test defects, infrastructure incidents and unavailable evidence. None of these entries is a pass.
+Status: **active Prompt 6 evidence log through application revision `3c0f0f5` and subsequent CI-only hardening**. Product remediations are registered in `bug-register.md`; this file preserves test defects, infrastructure incidents and unavailable evidence. None of these entries is a pass.
 
 ## Current environmental limitations
 
@@ -25,6 +25,7 @@ Status: **active Prompt 6 evidence log through application revision `3c0f0f5` / 
 | INFRA-001 | GitHub artifact upload | Firefox's test step in run `42067360809` exited successfully, but `actions/upload-artifact` remained in progress after the test process ended | Preserve the step-level result; do not call the upload a test failure. A newer revision was pushed and the previous run is superseded | Infrastructure only; subsequent full run `42069035875` and all artifact steps passed |
 | INFRA-002 | GitHub browser installation | Mobile Safari in run `42071353363` remained in `playwright install --with-deps webkit` for more than 18 minutes without starting tests | Add explicit job timeouts to every quality job (10–25 minutes by workload); a later application revision superseded the stalled run | Infrastructure only; no Mobile Safari result is claimed from that run. Final run `42074366023` passed Mobile Safari and all other jobs with bounded timeouts |
 | INFRA-003 | GitHub log/artifact content retrieval | Sandbox downloads from GitHub's result/artifact storage returned EOF, although the API returned job/step conclusions and artifact names/sizes | Preserve the run/artifact metadata and local reports; do not invent per-attempt/flaky counts from an inaccessible log | Final job/step success and artifact presence verified; reviewers should use GitHub's retained artifacts for content-level CI inspection |
+| INFRA-004 | Docs-only HEAD WebKit execution | Run `42076622840` on application-identical docs HEAD `66d6924`: seven jobs passed; Mobile Safari exited 1 after tests and desktop WebKit hit the 25-minute installation timeout. Available annotations contained only the generic exit code | Preserve the failed run and 25 MB Mobile Safari artifact. Add one bounded ten-minute browser-install retry, a 35-minute job ceiling, and JUnit failure-name annotations accessible without downloading the log | CI-only correction; no application change. A new final HEAD run is required and the failed attempt is not a pass |
 
 ## Historical CI results retained for discrimination
 
@@ -33,6 +34,7 @@ Status: **active Prompt 6 evidence log through application revision `3c0f0f5` / 
 - Run `42069035875` / `7ba4bc7`: all nine jobs passed—static/coverage/build, real PostgreSQL, dependency audit, performance, Chromium, Firefox, WebKit, Mobile Chrome and Mobile Safari (five browser projects total).
 - Run `42071353363` / `ed22a58`: static/coverage/build, PostgreSQL, dependency audit, Chromium, Firefox, WebKit and Mobile Chrome passed; **performance failed**, independently blocking the pre-QA-010 revision; Mobile Safari never started tests because WebKit installation stalled (INFRA-002); the superseding push cancelled the run. The performance failure remains a valid rejection, and this run is not a release candidate.
 - Run `42074366023` / `9e84adc`: final application revision `3c0f0f5` plus bounded CI job timeouts; **all nine jobs passed**, including performance, Mobile Chrome and Mobile Safari, and all artifact-upload steps completed.
+- Run `42076622840` / `66d6924`: docs-only HEAD with identical application code; static/unit/build, PostgreSQL, audit, performance, Chromium, Firefox and Mobile Chrome passed, while Mobile Safari failed tests and desktop WebKit installation timed out (INFRA-004). This failed attempt is retained and cannot be replaced retroactively by an earlier green run.
 - Local production Chromium: 77/77 passed before the reflow split, 52/52 focused authentication/public-quality tests passed after the settled-network change, and the final 80/80 suite passed after the structured-data correction. Local Mobile Chrome: 77/77 passed before the split; no assertion was removed by the later harness changes.
 - Local Lighthouse: the pre-QA-010 matrix failed home/mobile LCP with two trials around 3.3s. After the Inter optional-display correction, two complete 24/24 matrices passed; the final retained summary is labelled application revision `3c0f0f5c6bff7dbb6bc3baa552b62be3263de51d`.
 

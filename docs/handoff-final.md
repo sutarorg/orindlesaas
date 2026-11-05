@@ -9,7 +9,7 @@ Status: **Prompt 6 available-scope verification complete; final application CI p
 | Final application code and tests | `3c0f0f5c6bff7dbb6bc3baa552b62be3263de51d` | Includes QA-001–QA-010 application/test corrections; local Lighthouse summary carries this exact revision |
 | Bounded CI workflow | `9e84adca291ca9e38f376132f0af91fd5e4275c6` | Same application code plus explicit 10–25-minute job timeouts |
 | Final application CI | **`42074366023` — SUCCESS** | All nine jobs and every artifact-upload step passed for `9e84adc` |
-| Documentation reconciliation | Subsequent docs-only commit on the same branch | Does not change application evidence; final branch/PR HEAD checks must also be green before handoff/merge |
+| Documentation/CI reconciliation | Subsequent documentation- and CI-only commits on the same branch | Do not change application evidence; final branch/PR HEAD checks must also be green before handoff/merge. Failed docs-only WebKit attempt `42076622840` is retained in `failure-report.md` |
 
 ## Verified result index
 

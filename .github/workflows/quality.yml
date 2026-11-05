@@ -78,7 +78,7 @@ jobs:
 
   browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
@@ -95,8 +95,36 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Install the browser with one bounded retry
+        run: |
+          for attempt in 1 2; do
+            echo "Playwright ${{ matrix.browser }} installation attempt ${attempt}/2"
+            if timeout 10m npx playwright install --with-deps "${{ matrix.browser }}"; then
+              exit 0
+            fi
+            if [ "${attempt}" -eq 2 ]; then
+              exit 1
+            fi
+          done
       - run: npx playwright test --project=${{ matrix.project }}
+      - name: Report failed browser test names
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          path = Path("test-results/playwright-junit.xml")
+          if not path.exists():
+              print("No Playwright JUnit report; inspect the installation step and browser artifact.")
+              raise SystemExit(0)
+          cases = ET.parse(path).getroot().findall(".//testcase")
+          failed = [case for case in cases if case.find("failure") is not None or case.find("error") is not None]
+          print(f"Playwright JUnit: {len(cases)} cases, {len(failed)} failed/error cases")
+          for case in failed[:30]:
+              title = f"{case.get('classname', '')}: {case.get('name', 'unknown')}".replace("\r", " ").replace("\n", " ")
+              print(f"::error::{title} (see browser artifact)")
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
