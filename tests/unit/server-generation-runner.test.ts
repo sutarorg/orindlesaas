@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   recordProviderReference: vi.fn(),
   settleGeneration: vi.fn(),
   storeGeneratedAsset: vi.fn(),
+  revalidateGenerationModel: vi.fn(),
 }));
 
 vi.mock("ai", () => ({
@@ -35,6 +36,7 @@ vi.mock("@/lib/server/generations/service", () => ({
 }));
 vi.mock("@/lib/server/storage/r2", () => ({ storeGeneratedAsset: mocks.storeGeneratedAsset }));
 vi.mock("@/lib/server/storage/provider-download", () => ({ downloadProviderFile: vi.fn() }));
+vi.mock("@/lib/server/ai/models", () => ({ revalidateGenerationModel: mocks.revalidateGenerationModel }));
 
 import { runGenerationJob } from "@/lib/server/generations/runners";
 
@@ -67,6 +69,7 @@ beforeEach(() => {
   mocks.recordProviderReference.mockResolvedValue({});
   mocks.storeGeneratedAsset.mockResolvedValue({ id: "asset-1" });
   mocks.settleGeneration.mockResolvedValue({ status: "succeeded", actualCredits: 2 });
+  mocks.revalidateGenerationModel.mockResolvedValue({ submissionOptions: { size: "1024x1024" } });
 });
 
 describe("generation runner with an injected provider fake", () => {
@@ -80,7 +83,8 @@ describe("generation runner with an injected provider fake", () => {
 
     await expect(runGenerationJob(jobId, userId)).resolves.toEqual({ status: "succeeded", actualCredits: 2 });
     expect(mocks.generateImage).toHaveBeenCalledTimes(1);
-    expect(mocks.generateImage.mock.calls[0]![0]).toMatchObject({ model: { provider: "fake-image-model" }, maxRetries: 0 });
+    expect(mocks.generateImage.mock.calls[0]![0]).toMatchObject({ model: { provider: "fake-image-model" }, size: "1024x1024", maxRetries: 0 });
+    expect(mocks.revalidateGenerationModel).toHaveBeenCalledWith({ modelId: "image-internal", kind: "image", prompt: "A quiet abstract landscape", options: { prompt: "A quiet abstract landscape", size: "1024x1024" } });
     expect(mocks.recordProviderReference).toHaveBeenCalledWith({ jobId, userId, generationId: "gen_fake_success" });
     expect(mocks.settleGeneration).toHaveBeenCalledWith({ jobId, userId, result: { assetIds: ["asset-1"] } });
   });
@@ -98,6 +102,15 @@ describe("generation runner with an injected provider fake", () => {
     mocks.markSubmissionAttempt.mockResolvedValue(null);
     await expect(runGenerationJob(jobId, userId)).resolves.toEqual({ status: "reconciliation_required" });
     expect(mocks.generateImage).not.toHaveBeenCalled();
+  });
+
+  it("blocks the provider call when submission-time revalidation fails", async () => {
+    arrangeJob(baseJob);
+    mocks.markSubmissionAttempt.mockResolvedValue({ ...baseJob, status: "running", submissionState: "attempted" });
+    mocks.revalidateGenerationModel.mockRejectedValue(new Error("compatibility withdrawn"));
+    await expect(runGenerationJob(jobId, userId)).resolves.toMatchObject({ status: "reconciliation_required" });
+    expect(mocks.generateImage).not.toHaveBeenCalled();
+    expect(mocks.settleGeneration).not.toHaveBeenCalled();
   });
 
   it("blocks settlement when the provider omits metering correlation", async () => {

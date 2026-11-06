@@ -1,47 +1,55 @@
 import { describe, expect, it } from "vitest";
-import { normalizeGatewayCatalog, type GatewayCatalogEntry } from "@/lib/server/ai/catalog-sync";
+import { hashCatalogValue, normalizeGatewayCatalog, type GatewayCatalogEntry } from "@/lib/server/ai/catalog-sync";
 
 function entry(partial: Partial<GatewayCatalogEntry>): GatewayCatalogEntry {
   return {
     id: "openai/example",
     name: "Example",
-    modelType: "language",
-    specification: { specificationVersion: "v4", provider: "openai", modelId: "example" },
+    type: "language",
     pricing: { input: "0.000001", output: "0.000002" },
     ...partial,
   };
 }
 
 describe("Gateway catalog normalization", () => {
-  it("uses exact provider prices and keeps enablement outside sync mapping", () => {
+  it("maps discovery metadata without enabling or projecting inexact prices", () => {
     const result = normalizeGatewayCatalog([entry({})]);
-    expect(result.skipped).toEqual([]);
+    expect(result.invalid).toBe(0);
     expect(result.rows).toHaveLength(1);
     expect(result.rows[0]).toMatchObject({
       providerId: "openai",
-      modelId: "gateway:openai/example",
+      id: "gateway:openai/example",
       gatewayModelId: "openai/example",
       kind: "chat",
-      inputNanoUsdPerToken: 1000,
-      outputNanoUsdPerToken: 2000,
+      inputNano: 1000,
+      outputNano: 2000,
+      pricingData: { input: "0.000001", output: "0.000002" },
     });
     expect(result.rows[0]).not.toHaveProperty("enabled");
   });
 
   it("retains media mappings without inventing operation prices", () => {
     const result = normalizeGatewayCatalog([
-      entry({ id: "provider/image", name: "Image", modelType: "image", pricing: null }),
-      entry({ id: "provider/video", name: "Video", modelType: "video", pricing: null }),
+      entry({ id: "provider/image", name: "Image", type: "image", pricing: null }),
+      entry({ id: "provider/video", name: "Video", type: "video", pricing: null }),
     ]);
-    expect(result.rows.map((row) => [row.kind, row.inputNanoUsdPerToken, row.outputNanoUsdPerToken])).toEqual([["image", null, null], ["video", null, null]]);
+    expect(result.rows.map((row) => [row.kind, row.operationNano])).toEqual([["image", null], ["video", null]]);
   });
 
-  it("skips unsupported types and prices exceeding exact storage precision", () => {
+  it("keeps unknown types and raw-only precision as quarantined or projected records", () => {
     const result = normalizeGatewayCatalog([
-      entry({ id: "provider/embedding", modelType: "embedding", pricing: null }),
-      entry({ id: "provider/precise", pricing: { input: "0.000000001", output: "0.000001" } }),
+      entry({ id: "provider/embedding", type: "embedding", pricing: null }),
+      entry({ id: "provider/precise", pricing: { input: "0.0000000015", output: "0.000001" } }),
+      entry({ id: "bad id" }),
     ]);
-    expect(result.rows).toEqual([]);
-    expect(result.skipped.map((row) => row.reason)).toEqual(["unsupported_or_invalid_metadata", "language_price_precision_unsupported"]);
+    expect(result.invalid).toBe(1);
+    expect(result.rows.map((row) => [row.id, row.kind, row.inputNano])).toEqual([
+      ["gateway:provider/embedding", null, null],
+      ["gateway:provider/precise", "chat", null],
+    ]);
+  });
+
+  it("hashes stably regardless of key order", () => {
+    expect(hashCatalogValue({ b: 1, a: 2 })).toBe(hashCatalogValue({ a: 2, b: 1 }));
   });
 });

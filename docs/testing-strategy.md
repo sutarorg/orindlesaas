@@ -1,5 +1,7 @@
 # Testing strategy
 
+> Dynamic AI Gateway ecosystem: see `ai-testing-strategy.md` for the current unit/integration/PostgreSQL/E2E/live-smoke contract. Source A is preserved and verified as 166 unique IDs/28 namespaces; the documentation/source gate is complete, new implementation tests remain pending, and production remains NO-GO.
+
 ## Unit and content integrity (Vitest)
 
 - Credit packs exactly match names, integer USD prices and credits; 100-credit display-value arithmetic examples are correct.

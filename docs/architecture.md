@@ -80,6 +80,12 @@ Server-only repositories and service adapters own identity, entitlements, wallet
 
 There was no global client state requirement in Prompt 1. Interactive UI owns local state. The mock contact adapter returns an explicit preview state rather than claiming persistence. `CheckoutService` is only an interface for later integration; no checkout adapter is called by the current signup preview.
 
+## Dynamic AI integration architecture checkpoint
+
+The 2026 dynamic AI Gateway documentation/source gate is complete: the supplied file is preserved and verified as 166 unique IDs in 28 namespaces. Implementation is a separate subsequent phase. The design extends the existing backend modules rather than adding a parallel service. The controlling documents are `ai-provider-architecture.md`, `ai-model-registry.md`, `ai-routing-engine.md`, `ai-catalog-sync.md`, and `handoff-ai-integration.md`.
+
+The design separates external discovery, admin compatibility/enablement, immutable price evidence, one server-side product resolver, and existing financial/execution state machines. All Gateway model types are retained; only reviewed Chat/Image/Video/Website execution paths can be customer-visible. New discoveries remain disabled, missing rows remain historical, and exact decimal/lossless-cost rules supersede any float-based conversion for new implementation. No application-code or migration completion is implied by this section.
+
 ## Environments
 
 Local development and preview use the same static public content. `NEXT_PUBLIC_SITE_URL` controls canonical absolute URLs and falls back to the documented provisional origin. Optional `NEXT_PUBLIC_CONTACT_EMAIL` is used only if a verified inbox is configured. Public browser configuration contains no secrets; real backend operations separately require authorized server-only credentials and fail closed when absent.

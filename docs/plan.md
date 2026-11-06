@@ -121,3 +121,9 @@ Run migration, unit/integration/security/smoke, strict typecheck/lint/build and 
 ## Prompt 5 final status — 2026-11-05
 
 Milestones 1–4 are implemented in source and locally checked; routed demo customer/admin services were removed. Milestone 5 local static/unit/browser checks are complete. Any exit criterion requiring actual migrations, PostgreSQL row locks/RLS, credentialed auth/admin journeys, Dodo fulfillment, AI/storage/job/email/deployment providers or operational drills remains open. The final local evidence and live gates are recorded in `quality-assurance.md`, `task.md`, and `handoff-prompt6.md`; no live-launch completion is claimed.
+
+## Dynamic AI Gateway ecosystem — current plan
+
+`ai-implementation-plan.md` is the controlling phase plan for the new task. Phase 0 repository/official research and design documents are complete. The supplied Source A file is preserved at `docs/vercel_ai_gateway_llm_model_ids-1.txt` and independently verified as **166 unique IDs in exactly 28 namespaces**, with SHA-256 `1fe5f8a45c45a8d7a63cd46cb0aa0bb3ca1f099ff89ab8fe8d5acfbebc8888e8`; see `ai-catalogue-verification.md`.
+
+With the documentation/source gate complete, implementation proceeds through additive schema/exact primitives, one REST-backed registry and sync service, centralized compatibility/pricing/routing, existing admin/customer integration, and finally verification/reports/handoff. Normal tests use mocks; disposable PostgreSQL and hosted live calls remain separate evidence gates. No production launch or paid live smoke is authorized by this plan.

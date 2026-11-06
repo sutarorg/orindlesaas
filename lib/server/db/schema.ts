@@ -295,6 +295,8 @@ export const providers = pgTable(
     id: text("id").primaryKey(),
     name: text("name").notNull(),
     enabled: boolean("enabled").notNull().default(false),
+    firstDiscoveredAt: timestamp("first_discovered_at", { withTimezone: true }),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -308,9 +310,17 @@ export const models = pgTable(
     providerId: text("provider_id").notNull().references(() => providers.id, { onDelete: "restrict" }),
     gatewayModelId: text("gateway_model_id").notNull().unique(),
     name: text("name").notNull(),
-    kind: generationKind("kind").notNull(),
+    kind: generationKind("kind"),
+    catalogType: text("catalog_type").notNull().default("unknown"),
     modalities: jsonb("modalities").$type<string[]>().notNull().default([]),
     capabilities: jsonb("capabilities").$type<Record<string, unknown>>().notNull().default({}),
+    gatewayMetadata: jsonb("gateway_metadata").$type<Record<string, unknown>>().notNull().default({}),
+    productCompatibility: jsonb("product_compatibility").$type<Record<string, unknown>>().notNull().default({}),
+    compatibilityVersion: integer("compatibility_version").notNull().default(0),
+    discoveryStatus: text("discovery_status", { enum: ["present", "missing", "reference", "invalid"] }).notNull().default("present"),
+    catalogHash: text("catalog_hash"),
+    firstDiscoveredAt: timestamp("first_discovered_at", { withTimezone: true }),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }),
     enabled: boolean("enabled").notNull().default(false),
     catalogSyncedAt: timestamp("catalog_synced_at", { withTimezone: true }),
     createdAt: createdAt(),
@@ -318,6 +328,10 @@ export const models = pgTable(
   },
   (table) => [
     index("models_kind_enabled_idx").on(table.kind, table.enabled),
+    index("models_discovery_status_idx").on(table.discoveryStatus, table.lastSeenAt),
+    check("models_discovery_status_valid", sql`${table.discoveryStatus} in ('present', 'missing', 'reference', 'invalid')`),
+    check("models_enabled_has_product", sql`${table.enabled} = false OR ${table.kind} IS NOT NULL`),
+    check("models_compatibility_version_nonnegative", sql`${table.compatibilityVersion} >= 0`),
     pgPolicy("models_read_catalog", { for: "select", to: ["anon", "authenticated"], using: sql`${table.enabled} = true` }),
   ],
 ).enableRLS();
@@ -326,10 +340,12 @@ export const modelPrices = pgTable(
   "model_prices",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    modelId: text("model_id").notNull().references(() => models.id, { onDelete: "cascade" }),
+    modelId: text("model_id").notNull().references(() => models.id, { onDelete: "restrict" }),
     inputNanoUsdPerToken: bigint("input_nano_usd_per_token", { mode: "number" }),
     outputNanoUsdPerToken: bigint("output_nano_usd_per_token", { mode: "number" }),
     operationNanoUsd: bigint("operation_nano_usd", { mode: "number" }),
+    pricingData: jsonb("pricing_data").$type<Record<string, unknown> | null>(),
+    quoteRule: jsonb("quote_rule").$type<Record<string, unknown> | null>(),
     source: text("source").notNull(),
     effectiveFrom: timestamp("effective_from", { withTimezone: true }).notNull().defaultNow(),
     effectiveTo: timestamp("effective_to", { withTimezone: true }),
@@ -339,6 +355,48 @@ export const modelPrices = pgTable(
     index("model_prices_model_effective_idx").on(table.modelId, table.effectiveFrom),
     check("model_prices_nonnegative", sql`(${table.inputNanoUsdPerToken} IS NULL OR ${table.inputNanoUsdPerToken} >= 0) AND (${table.outputNanoUsdPerToken} IS NULL OR ${table.outputNanoUsdPerToken} >= 0) AND (${table.operationNanoUsd} IS NULL OR ${table.operationNanoUsd} >= 0)`),
     check("model_prices_effective_range", sql`${table.effectiveTo} IS NULL OR ${table.effectiveTo} > ${table.effectiveFrom}`),
+  ],
+).enableRLS();
+
+export const catalogSyncRuns = pgTable(
+  "catalog_sync_runs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    requestId: text("request_id").notNull().unique(),
+    trigger: text("trigger", { enum: ["manual", "scheduled", "recovery"] }).notNull(),
+    mode: text("mode", { enum: ["full", "incremental"] }).notNull().default("full"),
+    actorId: uuid("actor_id").references(() => profiles.id, { onDelete: "restrict" }),
+    status: text("status", { enum: ["running", "succeeded", "partial", "failed"] }).notNull().default("running"),
+    acceptedCount: integer("accepted_count").notNull().default(0),
+    invalidCount: integer("invalid_count").notNull().default(0),
+    changedCount: integer("changed_count").notNull().default(0),
+    missingCount: integer("missing_count").notNull().default(0),
+    responseHash: text("response_hash"),
+    error: text("error"),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+    leaseExpiresAt: timestamp("lease_expires_at", { withTimezone: true }).notNull(),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+  },
+  (table) => [
+    index("catalog_sync_runs_started_idx").on(table.startedAt),
+    check("catalog_sync_runs_status_valid", sql`${table.status} in ('running', 'succeeded', 'partial', 'failed')`),
+    check("catalog_sync_runs_counts_nonnegative", sql`${table.acceptedCount} >= 0 AND ${table.invalidCount} >= 0 AND ${table.changedCount} >= 0 AND ${table.missingCount} >= 0`),
+  ],
+).enableRLS();
+
+export const catalogPriceObservations = pgTable(
+  "catalog_price_observations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    runId: uuid("run_id").notNull().references(() => catalogSyncRuns.id, { onDelete: "restrict" }),
+    modelId: text("model_id").notNull().references(() => models.id, { onDelete: "restrict" }),
+    pricingHash: text("pricing_hash").notNull(),
+    pricingData: jsonb("pricing_data").$type<Record<string, unknown>>().notNull(),
+    observedAt: timestamp("observed_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("catalog_price_observations_model_observed_idx").on(table.modelId, table.observedAt),
+    check("catalog_price_observations_hash_format", sql`${table.pricingHash} ~ '^[0-9a-f]{64}$'`),
   ],
 ).enableRLS();
 

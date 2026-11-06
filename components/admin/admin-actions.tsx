@@ -5,7 +5,8 @@ import { useRef, useState, type FormEvent } from "react";
 import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminNotice, AdminPanel, AdminPanelHeader } from "@/components/admin/ui";
-import type { AdminPriceModel, AdminToggleControl, AdminUserControl } from "@/lib/server/admin/queries";
+import { productPolicySchema, type CatalogProduct as ProductKind } from "@/lib/contracts/catalog";
+import type { AdminCompatibilityModel, AdminPriceModel, AdminSyncRun, AdminToggleControl, AdminUserControl } from "@/lib/server/admin/queries";
 
 export function CreditAdjustmentPanel({ users }: { users: { id: string; email: string; balance: number }[] }) {
   const router = useRouter();
@@ -123,6 +124,103 @@ export function PriceVersionPanel({ models }: { models: AdminPriceModel[] }) {
 }
 
 export function AdminMutationControls({ toggles = [], users = [] }: { toggles?: AdminToggleControl[]; users?: AdminUserControl[] }) {
-  if (!toggles.length && !users.length) return null;
   return <AdminPanel className="mb-5"><AdminPanelHeader title="Audited configuration actions" description="Each action requires its manage permission, AAL2, an expected current state and a substantive reason." /><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{toggles.map((control) => <ToggleMutation key={`${control.action}-${control.targetId}`} control={control} />)}{users.map((control) => <UserStatusMutation key={control.userId} control={control} />)}</div></AdminPanel>;
+}
+
+const parameterFields = [
+  { name: "maxOutputTokens", label: "Max output tokens", hint: "1–32,000. Chat defaults to 2,000 and website to 5,000 when omitted." },
+  { name: "sizes", label: "Image sizes", hint: "Comma separated WxH values, e.g. 1024x1024." },
+  { name: "aspectRatios", label: "Aspect ratios", hint: "Comma separated values, e.g. 16:9." },
+  { name: "durations", label: "Video durations (seconds)", hint: "Comma separated integers, e.g. 4, 8." },
+  { name: "resolutions", label: "Video resolutions", hint: "Comma separated WxH values that also appear in the pricing map." },
+] as const;
+
+function parseParameterField(name: string, raw: string): unknown {
+  const trimmed = raw.trim();
+  if (name === "maxOutputTokens") return trimmed === "" ? undefined : Number(trimmed);
+  const values = trimmed === "" ? [] : trimmed.split(",").map((value) => value.trim()).filter(Boolean);
+  if (name === "durations") return values.map(Number);
+  return values;
+}
+
+export function AdminCompatibilityPanel({ models }: { models: AdminCompatibilityModel[] }) {
+  const router = useRouter();
+  const [modelId, setModelId] = useState(models[0]?.modelId ?? "");
+  const selected = models.find((model) => model.modelId === modelId) ?? models[0];
+  const [product, setProduct] = useState<ProductKind>("chat");
+  const existing = selected?.productCompatibility[product] as { disabled?: boolean; parameters?: Record<string, unknown> } | undefined;
+  const [disabled, setDisabled] = useState(existing?.disabled === true);
+  const [text, setText] = useState<Record<string, string>>({});
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const key = useRef<string | null>(null);
+
+  function loadPolicy(nextModelId: string | undefined, nextProduct: ProductKind) {
+    const model = models.find((item) => item.modelId === nextModelId);
+    const policy = model?.productCompatibility[nextProduct] as { disabled?: boolean; parameters?: Record<string, unknown> } | undefined;
+    const parameters = policy?.parameters ?? {};
+    setDisabled(policy?.disabled === true);
+    setText({
+      maxOutputTokens: parameters.maxOutputTokens == null ? "" : String(parameters.maxOutputTokens),
+      sizes: Array.isArray(parameters.sizes) ? parameters.sizes.join(", ") : "",
+      aspectRatios: Array.isArray(parameters.aspectRatios) ? parameters.aspectRatios.join(", ") : "",
+      durations: Array.isArray(parameters.durations) ? parameters.durations.join(", ") : "",
+      resolutions: Array.isArray(parameters.resolutions) ? parameters.resolutions.join(", ") : "",
+      pricing: JSON.stringify(parameters.resolutionPricing ?? {}, null, 2),
+    });
+  }
+
+  function chooseModel(next: string) { setModelId(next); key.current = null; setError(""); setMessage(""); loadPolicy(next, product); }
+  function chooseProduct(next: ProductKind) { setProduct(next); key.current = null; setError(""); setMessage(""); loadPolicy(modelId, next); }
+
+  async function submit(event: FormEvent) {
+    event.preventDefault(); if (!selected) return;
+    setBusy(true); setError(""); setMessage("");
+    let parsedParameters: Record<string, unknown>;
+    try {
+      parsedParameters = Object.fromEntries(parameterFields.map((field) => [field.name, parseParameterField(field.name, text[field.name] ?? "")]).filter(([, value]) => value !== undefined));
+      parsedParameters.resolutionPricing = JSON.parse(text.pricing ?? "{}") as Record<string, string>;
+    } catch { setError("The resolution pricing map must be valid JSON."); setBusy(false); return; }
+    const policy = productPolicySchema.safeParse({ disabled, parameters: parsedParameters });
+    if (!policy.success) {
+      setError(policy.error.issues.map((issue) => `${issue.path.join(".") || "policy"}: ${issue.message}`).join("; "));
+      setBusy(false); return;
+    }
+    key.current ??= crypto.randomUUID();
+    try {
+      await postAdminMutation({ action: "set_model_compatibility", modelId: selected.modelId, product, expectedCompatibilityVersion: selected.compatibilityVersion, policy: policy.data, reason, idempotencyKey: key.current });
+      key.current = null; setReason(""); setMessage(`Saved a reviewed ${product} policy for ${selected.label}. Version ${selected.compatibilityVersion} was expected and revalidated.`); router.refresh();
+    } catch (reasonValue) { setError(reasonValue instanceof Error ? reasonValue.message : "Compatibility update failed"); }
+    finally { setBusy(false); }
+  }
+
+  if (!selected) return null;
+  return <AdminPanel className="mb-5"><AdminPanelHeader title="Reviewed product compatibility" description="Requires catalog:manage and AAL2. Compatibility is reviewed policy over Gateway evidence; saving never enables a model or weakens pricing checks." /><AdminNotice title="No guessed defaults" tone="warning">Leave a field blank to omit it. Video routes stay unusable unless reviewed durations and resolutions are present and every resolution has an exact pricing label.</AdminNotice><form onSubmit={(event) => void submit(event)} className="mt-5 grid gap-4 sm:grid-cols-2"><div><label htmlFor="compat-model" className="mb-2 block text-xs font-semibold">Model</label><select id="compat-model" value={selected.modelId} onChange={(event) => chooseModel(event.target.value)} className="min-h-11 w-full rounded-xl border border-line bg-white px-3 text-sm">{models.map((model) => <option key={model.modelId} value={model.modelId}>{model.label} · {model.catalogType} · {model.discoveryStatus}</option>)}</select></div><div><label htmlFor="compat-product" className="mb-2 block text-xs font-semibold">Product</label><select id="compat-product" value={product} onChange={(event) => chooseProduct(event.target.value as ProductKind)} className="min-h-11 w-full rounded-xl border border-line bg-white px-3 text-sm">{(["chat", "image", "video", "website"] as const).map((value) => <option key={value} value={value}>{value}</option>)}</select></div>{parameterFields.map((field) => <div key={field.name}><label htmlFor={`compat-${field.name}`} className="mb-2 block text-xs font-semibold">{field.label}</label><input id={`compat-${field.name}`} value={text[field.name] ?? ""} onChange={(event) => setText((current) => ({ ...current, [field.name]: event.target.value }))} className="min-h-11 w-full rounded-xl border border-line px-3 text-sm" /><p className="mb-0 mt-1 text-[11px] text-muted">{field.hint}</p></div>)}<div className="sm:col-span-2"><label htmlFor="compat-pricing" className="mb-2 block text-xs font-semibold">Video resolution pricing labels (JSON)</label><textarea id="compat-pricing" value={text.pricing ?? "{}"} onChange={(event) => setText((current) => ({ ...current, pricing: event.target.value }))} rows={3} className="w-full rounded-xl border border-line px-3 py-2 font-mono text-xs" placeholder={'{"1280x720":"720p"}'} /></div><label className="flex items-start gap-2 text-xs leading-5 sm:col-span-2"><input type="checkbox" checked={disabled} onChange={(event) => { setDisabled(event.target.checked); key.current = null; }} className="mt-0.5 size-4 accent-teal" />Disable this product route even when Gateway evidence looks valid.</label><div className="sm:col-span-2"><label htmlFor="compat-reason" className="mb-2 block text-xs font-semibold">Review evidence and reason</label><textarea id="compat-reason" value={reason} onChange={(event) => setReason(event.target.value)} minLength={10} maxLength={500} rows={3} className="w-full rounded-xl border border-line px-3 py-2 text-sm" /></div>{error && <p role="alert" className="m-0 text-sm text-error sm:col-span-2">{error}</p>}{message && <p role="status" className="m-0 text-sm text-teal-dark sm:col-span-2">{message}</p>}<div className="sm:col-span-2"><Button type="submit" disabled={busy || reason.trim().length < 10}><ShieldCheck />{busy ? "Saving…" : "Save reviewed compatibility"}</Button></div></form>{selected.kind ? null : <p className="mb-0 mt-3 text-xs text-muted">This record has no product kind; compatibility evidence must be reviewed before any product route can pass.</p>}</AdminPanel>;
+}
+
+export function CatalogSyncPanel({ runs, canSync }: { runs: AdminSyncRun[]; canSync: boolean }) {
+  const router = useRouter();
+  const [mode, setMode] = useState<"incremental" | "full">("incremental");
+  const [reason, setReason] = useState("");
+  const [confirmed, setConfirmed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const key = useRef<string | null>(null);
+  async function submit(event: FormEvent) {
+    event.preventDefault(); setBusy(true); setError(""); setMessage(""); key.current ??= crypto.randomUUID();
+    try {
+      const response = await fetch("/api/v1/admin/actions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "run_catalog_sync", mode, reason, idempotencyKey: key.current }) });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body?.error?.message ?? "Catalogue sync failed.");
+      key.current = null; setReason(""); setConfirmed(false);
+      setMessage(body.data.duplicate ? `Stored result reused for run ${body.data.runId}.` : `Run ${body.data.runId} ${body.data.status}: ${body.data.models} accepted, ${body.data.invalid} quarantined, ${body.data.changed} changed, ${body.data.missing} missing.`);
+      router.refresh();
+    } catch (reasonValue) { setError(reasonValue instanceof Error ? reasonValue.message : "Catalogue sync failed"); }
+    finally { setBusy(false); }
+  }
+  if (!canSync) return null;
+  return <AdminPanel className="mb-5"><AdminPanelHeader title="Gateway catalogue discovery" description="Requires catalog:manage and AAL2. Sync writes disabled discovery metadata, immutable price observations and audit records; it never enables a model or calls a paid generation endpoint." /><AdminNotice title="Fail-closed discovery" tone="warning">Invalid or unmappable entries are quarantined and reported as a partial run. A failed sync changes no catalogue rows. Reusing a request key with different input is rejected.</AdminNotice><form onSubmit={(event) => void submit(event)} className="mt-5 grid gap-4 sm:grid-cols-2"><div><label htmlFor="sync-mode" className="mb-2 block text-xs font-semibold">Mode</label><select id="sync-mode" value={mode} onChange={(event) => { setMode(event.target.value as "incremental" | "full"); key.current = null; }} className="min-h-11 w-full rounded-xl border border-line bg-white px-3 text-sm"><option value="incremental">Incremental (availability refresh)</option><option value="full">Full (re-read all metadata)</option></select></div><div className="sm:col-span-2"><label htmlFor="sync-reason" className="mb-2 block text-xs font-semibold">Reason and reference</label><textarea id="sync-reason" value={reason} onChange={(event) => setReason(event.target.value)} minLength={10} maxLength={500} rows={2} className="w-full rounded-xl border border-line px-3 py-2 text-sm" /></div><label className="flex items-start gap-2 text-xs leading-5 sm:col-span-2"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} className="mt-0.5 size-4 accent-teal" />I understand this performs one authenticated catalogue read and records the outcome.</label>{error && <p role="alert" className="m-0 text-sm text-error sm:col-span-2">{error}</p>}{message && <p role="status" className="m-0 text-sm text-teal-dark sm:col-span-2">{message}</p>}<div className="sm:col-span-2"><Button type="submit" disabled={busy || !confirmed || reason.trim().length < 10}>{busy ? "Syncing…" : "Run audited catalogue sync"}</Button></div></form><div className="mt-6 overflow-x-auto"><table className="w-full min-w-[640px] border-collapse text-left text-xs"><caption className="pb-2 text-left text-xs font-semibold text-ink">Recent sync runs</caption><thead><tr className="border-b border-line text-muted">{["Run", "Status", "Trigger", "Mode", "Accepted", "Invalid", "Changed", "Missing", "Started"].map((column) => <th key={column} scope="col" className="whitespace-nowrap px-2 py-2 font-medium">{column}</th>)}</tr></thead><tbody className="divide-y divide-line">{runs.length ? runs.map((run) => <tr key={run.id}><td className="px-2 py-2 font-mono text-[11px]">{run.id.slice(0, 8)}</td><td className="px-2 py-2">{run.status}</td><td className="px-2 py-2">{run.trigger}</td><td className="px-2 py-2">{run.mode}</td><td className="px-2 py-2">{run.accepted}</td><td className="px-2 py-2">{run.invalid}</td><td className="px-2 py-2">{run.changed}</td><td className="px-2 py-2">{run.missing}</td><td className="px-2 py-2">{run.startedAt ?? "—"}</td></tr>) : <tr><td colSpan={9} className="px-2 py-4 text-center text-muted">No sync runs recorded yet.</td></tr>}</tbody></table></div></AdminPanel>;
 }

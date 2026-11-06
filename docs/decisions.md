@@ -99,3 +99,35 @@
 ## D025 — Administration remains a dependency-light fixture frontend
 
 **Status:** accepted and validated on 2026-11-05. Prompt 4 reuses React/Radix/Lucide and shared model fixtures rather than adding a grid, chart, payments, auth or provider SDK. Local SVG trends have exact HTML equivalents, native tables remain keyboard-accessible and every operation uses the typed no-operation adapter. Production validation passed 57/57 unit tests and 91/91 Playwright tests; these results do not alter the Prompt 5 backend/security boundary.
+
+## D026 — One existing AI integration architecture
+
+**Status:** accepted for the dynamic AI design, not yet implemented. Extend `lib/server/ai`, existing registry/pricing/credits, Inngest jobs, admin actions, and customer catalogue routes. Do not create a parallel Gateway client, model registry, quote engine, wallet, scheduler, or admin API family. REST discovery/lossless lookup belongs in the existing Gateway module; inference remains on the existing AI SDK Gateway.
+
+## D027 — Reference seed and live discovery have different authority
+
+**Status:** accepted; Source A verified. The supplied 166 language IDs/28 namespaces are a partial exact reference preserved verbatim, while live `GET /v1/models` is authoritative for current discovery. Neither source auto-enables a model or proves Orindle compatibility. Reference-only entries are not rewritten or inferred from the SDK/live response.
+
+## D028 — Retain every category, route only explicit products
+
+**Status:** accepted for implementation. Store language, image, video, embedding, reranking, speech, transcription, realtime, decision/evaluation, and unknown future types with exact IDs/metadata. Only centralized reviewed Chat/Image/Video/Website execution paths can be customer-visible. New and unknown discoveries are disabled/unroutable; absent rows become missing, never deleted.
+
+## D029 — Discovery and admin policy are separate
+
+**Status:** accepted for implementation. Sync updates discovery-owned fields only. Provider/model enablement, reviewed compatibility/parameters, and active/future manual price overrides are administrator-controlled and preserved. Material metadata drift can fail closed for review without rewriting history.
+
+## D030 — Exact heterogeneous decimals, not flattened floats
+
+**Status:** accepted for implementation. Preserve complete pricing payloads and decimal strings in immutable evidence. Use BigInt rational arithmetic for supported quote formulas and block ambiguous/unquotable operations. Actual generation cost must be parsed losslessly from authenticated REST evidence; SDK `number` plus `toFixed` is not acceptable as the new exact-cost authority. Existing `1 credit = $0.01`, 2× actual-cost pricing, holds, settlement, and no-negative-balance rules remain unchanged.
+
+## D031 — Incremental sync means changed-row detection
+
+**Status:** accepted for implementation. Full and incremental modes consume a complete authoritative response; incremental uses canonical hashes to avoid unchanged writes. No undocumented delta endpoint is invented. One service/transaction/advisory lease handles manual, CLI, and existing-Inngest scheduled triggers, with external reads outside DB transactions and safe run/audit history.
+
+## D032 — Paid submission never falls back blindly
+
+**Status:** accepted and preserved. Validate model/product/options/price before the existing atomic submission claim. SDK paid retries remain disabled. After an attempted or uncertain submission, do not select another model, provider, or job; reconcile the original generation ID and actual cost. Read-only catalogue/generation lookup retries are separately bounded.
+
+## D033 — Documentation gate requires exact Source A verification
+
+**Status:** accepted and satisfied on 2026-11-06. The user supplied the original list; it is preserved at `docs/vercel_ai_gateway_llm_model_ids-1.txt` and independently verified as 166 unique IDs in 28 namespaces with all declared provider counts matched. SHA-256 is `1fe5f8a45c45a8d7a63cd46cb0aa0bb3ca1f099ff89ab8fe8d5acfbebc8888e8`. The documentation/source gate is therefore complete; implementation and hosted release remain separate evidence gates.
