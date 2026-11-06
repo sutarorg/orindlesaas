@@ -9,6 +9,7 @@ out/
 coverage/
 playwright-report/
 test-results/
+performance-results/
 
 # environment and local files
 .env

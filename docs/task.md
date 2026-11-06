@@ -152,18 +152,43 @@ Commercial launch tasks remain explicitly open in `production-readiness.md`; thi
 
 - [~] Add validated server environment, Drizzle schema/migrations/seeds and real Supabase cookie authentication/route protection. Code/local fail-closed tests are complete; live migration and Supabase journeys are blocked.
 - [~] Add versioned validated APIs, safe errors, request correlation, same-origin/CSRF controls, Upstash limits and Resend delivery. Implementation and abuse-control tests pass; live Upstash/Resend delivery is unverified.
-- [~] Implement atomic wallet/ledger/reservations/settlement/compensation/reconciliation and concurrency/idempotency tests. Exact arithmetic and same-cost/idempotency units pass; real PostgreSQL races remain required.
-- [~] Implement exact Dodo one-time checkout and verified raw-body exactly-once webhooks with product/amount/currency/purchase validation. Adapter/validation tests pass; live signature/replay/fulfillment races remain required.
+- [~] Implement atomic wallet/ledger/reservations/settlement/compensation/reconciliation and concurrency/idempotency tests. Exact arithmetic units and disposable CI PostgreSQL races pass; hosted Supabase/provider reconciliation remains required.
+- [~] Implement exact Dodo one-time checkout and verified raw-body exactly-once webhooks with product/amount/currency/purchase validation. Adapter/validation and disposable PostgreSQL replay/race tests pass; signed Dodo test-mode delivery and provider reconciliation remain required.
 - [~] Implement actual AI chat/image/video/website operations, model/capability/price sync, actual-cost metering and durable jobs/outbox. Code/provider fakes pass; no live Gateway/Inngest operation was attempted.
 - [~] Implement R2 ownership/signed access, E2B build isolation and scoped Vercel preview deployment without app-server execution. Code/static tests pass; live storage/sandbox/deployment is unverified.
 - [~] Replace mock adapters with real services and implement deny-by-default admin reads/actions, recent AAL2 step-up and append-only audit. Routed demo workspaces are removed; credentialed role/action tests remain required.
 
 ### Validation and delivery
 
-- [~] Unit/security/smoke tests cover local authz, validation, webhook mismatch, exact-cost and insufficient-balance logic; real RLS, replay/duplicate fulfillment and concurrent-credit integration evidence is still blocked.
+- [~] Unit/security/smoke tests cover local authz, validation, webhook mismatch, exact-cost and insufficient-balance logic; disposable PostgreSQL RLS/grant/replay/concurrency evidence now passes, while hosted Supabase and credentialed role/provider journeys remain blocked.
 - [x] Provider fakes prove job retry/idempotency/uncertain-state behavior; no fake is silently used in production.
 - [x] Preserve public UX and run strict typecheck/lint/build plus feasible browser/accessibility/responsive regressions: 106/106 unit, 50/50 production Playwright, clean checks and 45-page build.
 - [x] Reconcile documentation and record actual evidence, credential blockers, migration/setup steps and production-readiness limits in `handoff-prompt6.md`.
 - [x] Do not run paid providers, live deployment or destructive production migration without explicit authorization; none was run.
 
 Prompt 5 source implementation/local validation is complete, but the `[~]` items prevent a live-backend or commercial-launch completion claim. See `handoff-prompt6.md` for the exact release gates.
+
+## Prompt 6 — independent QA, security and release verification
+
+### Documentation and research
+
+- [x] Read all 54 inherited docs and the root README; independently inventory routes, tests, server modules, migrations and environment/runtime availability before tests or application edits.
+- [x] Refresh current official Next.js, Playwright, Vitest, WCAG/WAI, OWASP, Supabase and PostgreSQL guidance.
+- [x] Create the independent test matrix/scenarios and specialized security, credit, payment, AI, mobile, accessibility, SEO and performance plans before execution.
+- [x] Create bug/failure registers, release/readiness checklists, deployment/rollback procedures, domain/final reports and final handoff scaffolds without inventing results.
+
+### Execution and remediation
+
+- [x] Run fresh strict checks, 26 unit files/126 tests, a 45-page production build and production browser suites with retained evidence; final local Chromium passed 80/80.
+- [x] Add repeatable nine-job CI, fixtures, five browser projects and integration coverage; credential-dependent checks remain explicitly Blocked rather than silently passed. Run `42084593285` passed all jobs; subsequent PR failures are retained and replacement final-HEAD CI remains a separate gate.
+- [x] Reproduce, prioritize, fix and retest QA-001 through QA-010, including direct/embedded website isolation, DTO redaction, idempotency scope, webhook mismatch, structured-data consistency and intermittent home/mobile LCP.
+- [x] Execute seven real disposable PostgreSQL migration/RLS/grant/concurrency/replay tests; hosted Supabase remains separate blocked evidence.
+- [x] Confirm Supabase/Dodo/provider credentials and authorization are absent, retain explicit Blocked states, and perform no live journey or unbounded provider smoke.
+- [x] Complete managed five-browser/mobile-emulation, public-route axe/scripted keyboard/reflow, technical SEO and repeated Lighthouse checks; exact-`4244b69` local matrix passed 24/24. Historical CI gates passed, while the replacement final-HEAD run remains pending after later retained failures.
+- [ ] Complete manual WCAG/200–400% zoom/forced-colors/named-AT, authenticated accessibility, physical iOS/Android, field CWV and production indexing/Search Console evidence; these remain blocked or unexecuted.
+- [ ] Resolve critical hosted/provider and operational blocked cases, complete staging backup/restore/rollback/monitoring drills and obtain legal/support/finance/security/operations approval before any launch. Reproduced local P0/P1 defects are closed, but this launch gate is not met.
+
+### Final reconciliation
+
+- [x] Reconcile matrix, reports, task/progress, both risk copies, production readiness and handoff against exact observed results; retain NO-GO while critical evidence is missing.
+- [x] Do not run real money, destructive production security tests, unrestricted live AI, untrusted app-server code or production deployment without explicit authorization; none has occurred in Prompt 6.

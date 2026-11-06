@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef } from "react";
 import Link from "next/link";
-import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowUpRight, Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Logo } from "@/components/layout/logo";
 import { products } from "@/lib/content/products";
+import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/features", label: "Features" },
@@ -18,26 +18,43 @@ const links = [
 ];
 
 export function MobileNav() {
-  const [open, setOpen] = useState(false);
-  const close = () => setOpen(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const open = () => {
+    if (dialogRef.current && !dialogRef.current.open) dialogRef.current.showModal();
+  };
+  const close = () => dialogRef.current?.close();
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Open navigation" className="lg:hidden">
-          <Menu aria-hidden="true" className="size-5" />
-        </Button>
-      </Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-ink/25 data-[state=open]:animate-in data-[state=open]:fade-in" />
-        <Dialog.Content className="fixed inset-y-0 right-0 z-50 flex w-[min(420px,100vw)] flex-col overflow-y-auto border-l border-line bg-white p-6 shadow-2xl outline-none sm:p-8" aria-describedby="mobile-nav-description">
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={open}
+        className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "lg:hidden")}
+        aria-label="Open navigation"
+        aria-haspopup="dialog"
+        aria-controls="mobile-navigation"
+      >
+        <Menu aria-hidden="true" className="size-5" />
+      </button>
+      <dialog
+        ref={dialogRef}
+        id="mobile-navigation"
+        aria-label="Site navigation"
+        aria-describedby="mobile-nav-description"
+        onClose={() => triggerRef.current?.focus()}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) close();
+        }}
+        className="fixed inset-y-0 left-auto right-0 z-50 m-0 h-full max-h-none w-[min(420px,100vw)] max-w-full overflow-y-auto border-l border-line bg-white p-0 text-body shadow-2xl outline-none backdrop:bg-ink/25"
+      >
+        <div className="flex min-h-full flex-col p-6 sm:p-8">
           <div className="flex items-center justify-between">
-            <Dialog.Title asChild><Link href="/" onClick={close} aria-label="Orindle home"><Logo /></Link></Dialog.Title>
-            <Dialog.Close asChild>
-              <Button variant="ghost" size="icon" aria-label="Close navigation"><X aria-hidden="true" className="size-5" /></Button>
-            </Dialog.Close>
+            <Link href="/" onClick={close} aria-label="Orindle home"><Logo /></Link>
+            <Button type="button" variant="ghost" size="icon" aria-label="Close navigation" onClick={close}><X aria-hidden="true" className="size-5" /></Button>
           </div>
-          <Dialog.Description id="mobile-nav-description" className="sr-only">Navigate Orindle products and public pages.</Dialog.Description>
+          <p id="mobile-nav-description" className="sr-only">Navigate Orindle products and public pages.</p>
 
           <nav aria-label="Mobile navigation" className="mt-10 flex-1">
             <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">Products</p>
@@ -64,8 +81,8 @@ export function MobileNav() {
             <Button asChild variant="secondary"><Link href="/login" onClick={close}>Login</Link></Button>
             <Button asChild><Link href="/signup" onClick={close}>Get Started</Link></Button>
           </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+        </div>
+      </dialog>
+    </>
   );
 }

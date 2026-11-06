@@ -3,7 +3,7 @@ import { getDb } from "@/lib/server/db/client";
 import { emailOutbox, outboxEvents, payments, profiles, purchases, webhookEvents } from "@/lib/server/db/schema";
 import { AppError } from "@/lib/server/errors";
 import { grantPurchasedCredits } from "@/lib/server/credits/ledger";
-import { paymentValidationIssues, type VerifiedPaymentEvent } from "@/lib/server/payments/payment-validation";
+import { paymentEventStatusIssues, paymentIdentityIssues, paymentValidationIssues, type VerifiedPaymentEvent } from "@/lib/server/payments/payment-validation";
 
 export async function fulfillDodoPayment(input: {
   event: VerifiedPaymentEvent;
@@ -55,6 +55,14 @@ export async function fulfillDodoPayment(input: {
     }
 
     if (event.type !== "payment.succeeded") {
+      // A verified signature authenticates Dodo, not the purchase metadata.
+      // Never let a non-success event mutate a purchase it does not fully match.
+      const issues = [...paymentIdentityIssues(event, purchase), ...paymentEventStatusIssues(event)];
+      if (issues.length > 0) {
+        const reason = issues.join(",");
+        await tx.update(webhookEvents).set({ processedAt: new Date(), processingError: reason }).where(eq(webhookEvents.id, claimed.id));
+        return { status: "reconciliation_required" as const, purchaseId: purchase.id, reason, creditsGranted: 0 };
+      }
       const status = event.type === "payment.failed" ? "failed" : event.type === "payment.cancelled" ? "cancelled" : "pending";
       await tx.update(purchases).set({ status, updatedAt: new Date() }).where(eq(purchases.id, purchase.id));
       await tx.update(payments).set({ status, providerPaymentId: event.data.payment_id, rawEventType: event.type, updatedAt: new Date() }).where(eq(payments.id, payment.id));

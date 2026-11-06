@@ -26,6 +26,13 @@ export const siteConfig = {
   url: siteUrl,
 } as const;
 
+export const socialImage = {
+  url: absoluteUrl("/opengraph-image"),
+  width: 1200,
+  height: 630,
+  alt: "Orindle — Everything AI. One Platform.",
+};
+
 export function absoluteUrl(path = "/") {
   return new URL(path, `${siteUrl}/`).toString();
 }
@@ -65,6 +72,7 @@ export function createMetadata({
       siteName: siteConfig.name,
       locale: "en_US",
       type,
+      images: [socialImage],
       ...(type === "article"
         ? { publishedTime, modifiedTime, authors: ["Orindle Editorial"] }
         : {}),
@@ -73,6 +81,7 @@ export function createMetadata({
       card: "summary_large_image",
       title,
       description,
+      images: [socialImage],
     },
     ...(noindex ? { robots: { index: false, follow: false } } : {}),
   };

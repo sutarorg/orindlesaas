@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { requireUser } from "@/lib/server/auth/guards";
-import { getOwnedWebsite, websitePreviewDocument } from "@/lib/server/websites/projects";
+import { getOwnedWebsite, websitePreviewShellDocument } from "@/lib/server/websites/projects";
+import { websitePreviewShellCsp } from "@/lib/server/websites/source";
 import { errorResponse } from "@/lib/server/errors";
 import { requestId } from "@/lib/server/http";
 
@@ -13,6 +14,6 @@ export async function GET(request: Request, context: Context) {
     const identity = await requireUser();
     const { projectId } = await context.params;
     const website = await getOwnedWebsite(identity.userId, z.uuid().parse(projectId));
-    return new Response(websitePreviewDocument(website.files), { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "Content-Security-Policy": "default-src 'none'; img-src data: https:; style-src 'unsafe-inline'; script-src data:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; frame-ancestors 'self'", "X-Request-Id": id } });
+    return new Response(websitePreviewShellDocument(website.files), { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "Content-Security-Policy": websitePreviewShellCsp, "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer", "X-Request-Id": id } });
   } catch (error) { return errorResponse(error, id); }
 }

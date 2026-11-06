@@ -4,8 +4,11 @@ import { AppError, errorResponse } from "@/lib/server/errors";
 
 const MAX_JSON_BYTES = 64 * 1024;
 
+const REQUEST_ID_PATTERN = /^[A-Za-z0-9._:-]{1,100}$/;
+
 export function requestId(request: Request) {
-  return request.headers.get("X-Request-Id")?.slice(0, 100) || crypto.randomUUID();
+  const supplied = request.headers.get("X-Request-Id");
+  return supplied && REQUEST_ID_PATTERN.test(supplied) ? supplied : crypto.randomUUID();
 }
 
 export function assertSameOrigin(request: Request) {

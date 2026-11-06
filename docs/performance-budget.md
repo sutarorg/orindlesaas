@@ -8,7 +8,7 @@ At the 75th percentile, segmented by mobile/desktop after a real launch: LCP ≤
 
 - Server Components by default; no sitewide client hydration.
 - Initial route JavaScript target: keep marketing routes lean and inspect Next build output; investigate any large shared client bundle.
-- Framer Motion only in small interaction islands; do not import it into every section merely for reveals.
+- Prefer server-rendered/native disclosures and CSS-only motion on public pages. Do not hydrate static links or ship a JavaScript animation/menu runtime merely for simple reveals and disclosures.
 - Two self-hosted font families with only used weights/subsets; no third-party font requests at runtime.
 - Hero media uses stable dimensions; below-fold media lazy loads. Avoid raster images where semantic HTML/SVG is sharper and smaller.
 - No third-party analytics, chat widgets, tag managers or video embeds in Prompt 1.

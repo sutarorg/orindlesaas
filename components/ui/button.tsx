@@ -1,7 +1,4 @@
-"use client";
-
 import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
@@ -33,9 +30,22 @@ export interface ButtonProps
   asChild?: boolean;
 }
 
-function Button({ className, variant, size, asChild = false, ...props }: ButtonProps) {
-  const Comp = asChild ? Slot : "button";
-  return <Comp className={cn(buttonVariants({ variant, size }), className)} {...props} />;
+function Button({ className, variant, size, asChild = false, children, ...props }: ButtonProps) {
+  const classes = cn(buttonVariants({ variant, size }), className);
+
+  if (asChild) {
+    const child = React.Children.only(children);
+    if (!React.isValidElement<{ className?: string }>(child)) {
+      throw new Error("Button asChild requires one valid React element.");
+    }
+
+    return React.cloneElement(child, {
+      ...props,
+      className: cn(classes, child.props.className),
+    });
+  }
+
+  return <button className={classes} {...props}>{children}</button>;
 }
 
 export { Button, buttonVariants };

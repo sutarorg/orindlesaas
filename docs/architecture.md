@@ -70,7 +70,7 @@ Long-form articles are server-rendered from structured local content so headings
 
 ## Interaction and motion
 
-Native links provide real navigation. The Products menu and mobile dialog use Radix primitives; the mobile dialog supports Escape and focus return. FAQ accordions expose `aria-expanded`. Contact validation is local and returns an explicit preview result. Motion reveals use `initial={false}`, so content is visible by default; permitted motion is a small transform keyframe and reduced motion removes it.
+Native links provide real navigation. The public Products disclosure uses the native Popover API, and the mobile navigation uses a native modal `<dialog>` with a small controller for opening, backdrop close and explicit focus return; both support Escape. Public and dashboard FAQs use named native `<details>` disclosures, so expanded state and exclusive groups work without a hydration runtime. Contact validation is local and returns an explicit preview result. Public motion reveals are CSS-only entrance transforms; reduced motion removes the animation and transform. Radix remains in authenticated admin/dashboard interactions where its richer behavior is required.
 
 ## Backend trust contract
 

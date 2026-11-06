@@ -10,7 +10,7 @@
 
 ## Component and accessibility
 
-Use Testing Library where useful for accessible names, accordion `aria-expanded`, menu keyboard behavior and form labels/errors. ESLint includes JSX accessibility rules. Playwright + axe checks key pages for serious violations; automated results do not replace manual review.
+Use Testing Library where useful for accessible names, native disclosure `open` state, popover/dialog keyboard behavior and form labels/errors. ESLint includes JSX accessibility rules. Playwright + axe checks key pages for serious violations; automated results do not replace manual review.
 
 ## End-to-end (Playwright)
 

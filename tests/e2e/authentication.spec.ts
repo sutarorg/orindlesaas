@@ -55,9 +55,12 @@ test("signup explains weak and mismatched passwords, terms and honest completion
   await expect(page.getByText(/Please accept the Terms/)).toBeVisible();
   await page.getByLabel("Create a password").fill("a long private passphrase");
   await page.getByLabel("Confirm password", { exact: true }).fill("a long private passphrase");
+  await expect(page.getByLabel("Create a password")).toHaveValue("a long private passphrase");
+  await expect(page.getByLabel("Confirm password", { exact: true })).toHaveValue("a long private passphrase");
   await page.getByRole("checkbox").check();
+  await expect(page.getByRole("checkbox")).toBeChecked();
   await page.getByRole("button", { name: "Create account" }).click();
-  await expect(page.getByText("Authentication is not configured. No account or session change was made.")).toBeVisible();
+  await expect(page.getByText("Authentication is not configured. No account or session change was made.")).toBeVisible({ timeout: 10_000 });
 });
 
 test("forgot-password validates and returns generic no-delivery feedback", async ({ page }) => {

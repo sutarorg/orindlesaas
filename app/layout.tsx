@@ -1,13 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { absoluteUrl, siteConfig } from "@/lib/site";
+import { absoluteUrl, siteConfig, socialImage } from "@/lib/site";
 import "./globals.css";
 
 const inter = localFont({
   src: "./fonts/inter-latin-variable.woff2",
   variable: "--font-inter",
   weight: "100 900",
-  display: "swap",
+  display: "optional",
   fallback: ["Arial", "sans-serif"],
 });
 
@@ -41,11 +41,13 @@ export const metadata: Metadata = {
     siteName: "Orindle",
     locale: "en_US",
     type: "website",
+    images: [socialImage],
   },
   twitter: {
     card: "summary_large_image",
     title: "Orindle — Everything AI. One Platform.",
     description: siteConfig.description,
+    images: [socialImage],
   },
   robots: { index: true, follow: true },
 };

