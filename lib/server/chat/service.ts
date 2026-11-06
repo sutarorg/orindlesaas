@@ -4,7 +4,7 @@ import { z } from "zod";
 import { getDb } from "@/lib/server/db/client";
 import { conversations, messages, generationJobs } from "@/lib/server/db/schema";
 import { AppError } from "@/lib/server/errors";
-import { getPricedModel, estimateCost } from "@/lib/server/ai/models";
+import { resolveGenerationModel } from "@/lib/server/ai/models";
 import { holdCredits, lockCreditWallet } from "@/lib/server/credits/ledger";
 import { getGateway, extractGatewayGenerationId } from "@/lib/server/ai/gateway";
 import { generationRequestHash, markSubmissionAttempt, markSubmissionUncertain, recordProviderReference, settleGeneration } from "@/lib/server/generations/service";
@@ -28,10 +28,11 @@ export async function createChatStream(userId: string, rawInput: unknown, correl
     const [owned] = await getDb().select({ id: conversations.id }).from(conversations).where(and(eq(conversations.id, input.conversationId), eq(conversations.userId, userId))).limit(1);
     if (!owned) throw new AppError("not_found", 404, "The conversation was not found.");
   }
-  const model = await getPricedModel(input.modelId, "chat");
   const modelHistory = await modelMessages(input.conversationId, input.message);
   const prompt = modelHistory.map((message) => String(message.content)).join("\n");
-  const estimatedCostUsd = estimateCost({ ...model, kind: "chat", prompt, maxOutputTokens: 2000 });
+  const model = await resolveGenerationModel({ modelId: input.modelId, kind: "chat", prompt, options: { messages: modelHistory } });
+  const maxOutputTokens = Math.min(2000, model.compatibilityParameters.maxOutputTokens ?? 2000);
+  const estimatedCostUsd = model.estimatedCostUsd;
   const requestSha256 = generationRequestHash({ modelId: input.modelId, conversationId: input.conversationId ?? null, message: input.message });
   const jobId = crypto.randomUUID();
   const conversationId = input.conversationId ?? crypto.randomUUID();
@@ -64,7 +65,7 @@ export async function createChatStream(userId: string, rawInput: unknown, correl
     model: getGateway().languageModel(model.gatewayModelId),
     system: "You are Orindle's helpful AI workspace assistant. Be clear about uncertainty. Never claim to have performed external actions or persist memory beyond this conversation.",
     messages: modelHistory,
-    maxOutputTokens: 2000,
+    maxOutputTokens,
     maxRetries: 0,
     streamRetries: 0,
     providerOptions: { gateway: { user: userId, tags: [`generation:${jobId}`] } },

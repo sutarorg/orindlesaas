@@ -42,3 +42,9 @@ Local development may use explicit injected fakes in tests and a bounded process
 ## Validation
 
 `npm run env:check` validates variable presence groups, URL/enumeration formats, Dodo key/mode consistency and forbidden public-secret patterns without printing secret values. Build scripts do not require live secrets merely to compile. `npm run setup:guided` prints a configuration checklist; it does not create paid resources. See `deployment-runbook.md` for migration, catalog sync, admin bootstrap, webhook and Inngest sync order.
+
+## Dynamic AI operations note
+
+The planned dynamic registry/sync uses the existing `AI_GATEWAY_API_KEY`, database, and Inngest configuration; no duplicate Gateway credential or parallel service URL is introduced. Public model discovery needs no key, while team private/virtual models and `include_availability` require authenticated server reads. Availability responses must remain private/no-store.
+
+The existing optional live-AI smoke policy remains disabled by default and separately authorized. Any new schedule or live test flag must be documented before use; no such flag has been enabled and no hosted sync or paid call has run for the dynamic stage. See `ai-catalog-sync.md` and `ai-testing-strategy.md`.

@@ -89,3 +89,11 @@ RLS policy behavior, negative cross-user cases, column/grant verification, and s
 3. Verify constraints, append-only triggers, the single-open-price index, grants, RLS negative tests, auth-user bootstrap, and rollback/backup procedures.
 4. Run `npm run db:seed` only in the intended non-production environment, then use an authorized `npm run catalog:sync`; both are real writes and were not run here.
 5. Record real concurrency/replay/RLS evidence before marking the live backend complete.
+
+## Planned dynamic registry expansion — not implemented
+
+`ai-model-registry.md`, `ai-model-pricing.md`, and `ai-catalog-sync.md` define a future additive migration; no `0003` SQL or Drizzle snapshot has been generated at this documentation checkpoint. The design adds discovery-owned model/provider metadata, exact raw pricing/quote data, product compatibility, sync runs, and read-only price observations. Existing provider/model/price/generation/conversation/usage rows and internal IDs remain intact.
+
+Unsupported or unknown Gateway categories require a nullable legacy product route with an enabled-route invariant rather than being mislabeled as Chat. Sync marks absent rows missing and never deletes them. New sync/observation tables receive RLS and no public Data API grants. Historical price observations are evidence only; `model_prices` remains the single estimate-version authority and the credits schema remains unchanged.
+
+Migration acceptance requires reviewed SQL/snapshots, existing-data backfill, append-only/history protections, two-user RLS/grant tests, concurrent sync/admin price tests, rollback/failure tests, and explicit deployment notes. No hosted or disposable migration for this expansion has run.

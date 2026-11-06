@@ -192,3 +192,26 @@ Prompt 5 source implementation/local validation is complete, but the `[~]` items
 
 - [x] Reconcile matrix, reports, task/progress, both risk copies, production readiness and handoff against exact observed results; retain NO-GO while critical evidence is missing.
 - [x] Do not run real money, destructive production security tests, unrestricted live AI, untrusted app-server code or production deployment without explicit authorization; none has occurred in Prompt 6.
+
+## Dynamic AI Gateway ecosystem — current task
+
+### Documentation and source gate
+
+- [x] Inspect existing Gateway/catalog sync, registry, schemas/migrations, generation/chat, credits, jobs, admin/customer APIs, selectors, and tests before new application code.
+- [x] Research current official Gateway REST discovery/availability/pricing/generation/video guidance and installed AI SDK declarations; record actual live public-schema findings without making paid calls.
+- [x] Create/reconcile all required AI architecture, registry, catalogue, capabilities, pricing, routing, metering, admin, sync, security, testing, implementation, risk, shared, and handoff documents.
+- [x] Obtain and verbatim-copy `vercel_ai_gateway_llm_model_ids-1.txt`; independently verified all 166 unique IDs and exactly 28 namespaces with no duplicates or provider-count mismatches. Evidence: `ai-catalogue-verification.md`.
+
+### Implementation — documentation/source gate complete
+
+- [ ] Add reviewed additive schema/migration for dynamic discovery, compatibility, sync history, exact pricing observations, RLS/grants, and historical-data protection.
+- [ ] Extend the existing Gateway/catalog-sync modules for all-type REST discovery, lossless generation cost, atomic manual/scheduled/hash-incremental sync, race recovery, and preserved admin settings/history.
+- [ ] Centralize Chat/Image/Video/Website compatibility, exact parameter/price validation, bounded registry reads, and coherent estimate/submission routing.
+- [ ] Extend existing admin providers/models/pricing/sync/usage controls and replace customer static selectors/options with dynamic registry data while preserving design and redaction.
+- [ ] Add substantive unit/mocked integration/PostgreSQL/E2E tests; keep live providers disabled unless separately authorized and spend-limited.
+
+### Delivery and evidence
+
+- [ ] Run and record applicable strict checks, tests, migration checks, and production build; do not convert blocked database/hosted cases into passes.
+- [ ] Produce changed-file/migration, catalogue, customer, admin, pricing, security, and test reports plus deployment/sync instructions and final `handoff-ai-integration.md` evidence.
+- [ ] Complete real hosted Gateway/Supabase/database/schedule/recovery/security/finance release gates and owner approval. Production remains NO-GO.

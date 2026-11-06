@@ -2,6 +2,8 @@
 
 Status: **Prompt 6 available-scope local verification complete; replacement final-HEAD CI pending; release NO-GO**. Branch: `arena/5f93f879-orindlesaas`. PR: **#6**. Base inherited from merged Prompt 5 commit `f18c81b0710e7af856f4b8611a7ab80a37b04692`.
 
+> Historical handoff: the subsequent dynamic AI Gateway task is on `arena/f7f2b3be-orindlesaas` and starts from `handoff-ai-integration.md`. Its documentation/source gate is complete after exact 166/28 verification; none of the results below verifies the new implementation.
+
 ## Revision and evidence identity
 
 | Item | Revision / run | Meaning |

@@ -24,13 +24,23 @@ export function GenerationStudio({ kind, data }: { kind: Kind; data: WorkspaceSn
   const router = useRouter();
   const availableModels = data.models.filter((model) => model.kind === kind);
   const [modelId, setModelId] = useState(availableModels[0]?.id ?? "");
+  const selectedModel = availableModels.find((model) => model.id === modelId) ?? availableModels[0];
+  const serverOptions = selectedModel?.options;
+  const sizes = serverOptions?.sizes ?? [];
+  const aspectRatios = serverOptions?.aspectRatios ?? [];
+  const durations = serverOptions?.durations ?? [];
+  const resolutions = serverOptions?.resolutions ?? [];
   const [prompt, setPrompt] = useState("");
   const [name, setName] = useState("");
-  const [aspectRatio, setAspectRatio] = useState("16:9");
-  const [size, setSize] = useState("1024x1024");
-  const [duration, setDuration] = useState(5);
-  const [resolution, setResolution] = useState("1280x720");
-  const [generateAudio, setGenerateAudio] = useState(false);
+  const [choice, setChoice] = useState<{ key: string; aspectRatio?: string; size?: string; duration?: number; resolution?: string; generateAudio?: boolean }>({ key: "" });
+  const optionsKey = `${modelId}|${JSON.stringify(serverOptions ?? {})}`;
+  // Selections are derived from the server allowlist; a model change cannot keep a stale option.
+  const aspectRatio = (choice.key === optionsKey ? choice.aspectRatio : undefined) ?? aspectRatios[0] ?? "";
+  const size = (choice.key === optionsKey ? choice.size : undefined) ?? sizes[0] ?? "";
+  const duration = (choice.key === optionsKey ? choice.duration : undefined) ?? durations[0] ?? 0;
+  const resolution = (choice.key === optionsKey ? choice.resolution : undefined) ?? resolutions[0] ?? "";
+  const generateAudio = choice.key === optionsKey ? choice.generateAudio === true && serverOptions?.generateAudio === true : false;
+  const pick = (next: Partial<typeof choice>) => setChoice({ ...choice, ...next, key: optionsKey });
   const [estimate, setEstimate] = useState<number | null>(null);
   const [estimateError, setEstimateError] = useState("");
   const [error, setError] = useState("");
@@ -41,17 +51,28 @@ export function GenerationStudio({ kind, data }: { kind: Kind; data: WorkspaceSn
   const copy = labels[kind];
   const Icon = kind === "image" ? ImageIcon : kind === "video" ? Video : Globe2;
 
+  function requestOptions(): Record<string, unknown> {
+    if (kind === "website") return { name: name.trim() };
+    if (kind === "image") return { ...(size ? { size } : {}), ...(aspectRatio ? { aspectRatio } : {}) };
+    return { duration, resolution, ...(aspectRatio ? { aspectRatio } : {}), generateAudio };
+  }
+
+  const optionsReady = kind === "website" ? name.trim().length >= 2
+    : kind === "image" ? sizes.length === 0 || Boolean(size)
+    : Boolean(durations.length && resolutions.length && duration > 0 && resolution);
+
   useEffect(() => {
-    if (!modelId || !prompt.trim()) return;
+    if (!modelId || !prompt.trim() || !optionsReady) return;
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const result = await responseData<{ estimatedCredits: number }>(await fetch("/api/v1/catalog/estimate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind, modelId, prompt, maxOutputTokens: kind === "website" ? 5000 : undefined }), signal: controller.signal }));
+        const result = await responseData<{ estimatedCredits: number }>(await fetch("/api/v1/catalog/estimate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind, modelId, prompt, ...(kind === "website" ? { maxOutputTokens: 5000 } : requestOptions()) }), signal: controller.signal }));
         setEstimate(result.estimatedCredits); setEstimateError("");
       } catch (reason) { if (!controller.signal.aborted) { setEstimate(null); setEstimateError(reason instanceof Error ? reason.message : "Estimate unavailable"); } }
     }, 450);
     return () => { clearTimeout(timer); controller.abort(); };
-  }, [kind, modelId, prompt]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kind, modelId, prompt, name, size, aspectRatio, duration, resolution, generateAudio, optionsReady]);
 
   async function pollJob(id: string) {
     for (let attempt = 0; attempt < 45; attempt += 1) {
@@ -64,11 +85,11 @@ export function GenerationStudio({ kind, data }: { kind: Kind; data: WorkspaceSn
   }
 
   async function submit() {
-    if (!prompt.trim() || !modelId || (kind === "website" && name.trim().length < 2)) { setError("Complete the required fields before generating."); return; }
+    if (!prompt.trim() || !modelId || !optionsReady) { setError("Complete the required fields before generating."); return; }
     setBusy(true); setError("");
     const idempotencyKey = pendingKey.current ?? crypto.randomUUID(); pendingKey.current = idempotencyKey;
     try {
-      const payload = { kind, modelId, prompt, idempotencyKey, ...(kind === "image" ? { aspectRatio, size } : {}), ...(kind === "video" ? { aspectRatio, duration, resolution, generateAudio } : {}), ...(kind === "website" ? { name } : {}) };
+      const payload = { kind, modelId, prompt, idempotencyKey, ...requestOptions() };
       const created = await responseData<{ id: string; status: Job["status"]; estimatedCredits: number }>(await fetch("/api/v1/generations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }));
       pendingKey.current = null;
       setRetrying(false);
@@ -91,12 +112,12 @@ export function GenerationStudio({ kind, data }: { kind: Kind; data: WorkspaceSn
       {kind === "website" && <div><label htmlFor="website-name" className="mb-2 block text-sm font-semibold">Website name</label><input id="website-name" value={name} onChange={(event) => setName(event.target.value)} maxLength={80} className="min-h-11 w-full rounded-xl border border-line px-3 text-sm" placeholder="My studio website" /></div>}
       <div><div className="mb-2 flex justify-between"><label htmlFor={`${kind}-prompt`} className="text-sm font-semibold">{kind === "website" ? "Website brief" : "Prompt"}</label><span className="text-[11px] text-muted">{prompt.length}/{kind === "website" ? "8,000" : "16,000"}</span></div><textarea id={`${kind}-prompt`} value={prompt} onChange={(event) => setPrompt(event.target.value)} maxLength={kind === "website" ? 8000 : 16000} rows={7} className="w-full resize-y rounded-xl border border-line px-3.5 py-3 text-sm leading-6 outline-none focus:border-teal focus:ring-2 focus:ring-teal/15" placeholder={kind === "website" ? "Describe the audience, pages, visual direction and content…" : "Describe the subject, setting and mood…"} /></div>
       <div><label htmlFor={`${kind}-model`} className="mb-2 block text-sm font-semibold">Enabled model</label><select id={`${kind}-model`} value={modelId} onChange={(event) => setModelId(event.target.value)} className="min-h-11 w-full rounded-xl border border-line bg-white px-3 text-sm">{availableModels.map((model) => <option key={model.id} value={model.id}>{model.name} · {model.provider}</option>)}</select></div>
-      {kind !== "website" && <div><label htmlFor={`${kind}-ratio`} className="mb-2 block text-xs font-semibold">Aspect ratio</label><select id={`${kind}-ratio`} value={aspectRatio} onChange={(event) => setAspectRatio(event.target.value)} className="min-h-11 w-full rounded-xl border border-line bg-white px-3 text-sm">{["16:9", "1:1", "9:16", "4:3", "3:4"].map((value) => <option key={value}>{value}</option>)}</select></div>}
-      {kind === "image" && <div><label htmlFor="image-size" className="mb-2 block text-xs font-semibold">Requested size</label><select id="image-size" value={size} onChange={(event) => setSize(event.target.value)} className="min-h-11 w-full rounded-xl border border-line bg-white px-3 text-sm">{["1024x1024", "1344x768", "768x1344"].map((value) => <option key={value}>{value}</option>)}</select></div>}
-      {kind === "video" && <><div className="grid grid-cols-2 gap-3"><div><label htmlFor="video-duration" className="mb-2 block text-xs font-semibold">Duration (seconds)</label><input id="video-duration" type="number" min={1} max={30} value={duration} onChange={(event) => setDuration(Number(event.target.value))} className="min-h-11 w-full rounded-xl border border-line px-3 text-sm" /></div><div><label htmlFor="video-resolution" className="mb-2 block text-xs font-semibold">Resolution</label><select id="video-resolution" value={resolution} onChange={(event) => setResolution(event.target.value)} className="min-h-11 w-full rounded-xl border border-line bg-white px-3 text-sm"><option>1280x720</option><option>1920x1080</option><option>720x1280</option></select></div></div><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={generateAudio} onChange={(event) => setGenerateAudio(event.target.checked)} className="size-4 accent-teal" />Generate audio when supported</label></>}
-      <div className="rounded-2xl bg-soft p-4 text-sm"><div className="flex justify-between"><span className="text-body">Server estimate</span><strong>{!prompt.trim() || estimate === null ? "—" : `${estimate.toLocaleString()} credits`}</strong></div><p className="mt-2 text-[11px] leading-5 text-muted">A hold is created at submission. Final usage is charged from actual Gateway cost, never from this estimate.</p>{estimateError && <p className="mt-2 text-xs text-error">{estimateError}</p>}</div>
+      {kind !== "website" && aspectRatios.length > 0 && <div><label htmlFor={`${kind}-ratio`} className="mb-2 block text-xs font-semibold">Aspect ratio</label><select id={`${kind}-ratio`} value={aspectRatio} onChange={(event) => pick({ aspectRatio: event.target.value })} className="min-h-11 w-full rounded-xl border border-line bg-white px-3 text-sm">{aspectRatios.map((value) => <option key={value}>{value}</option>)}</select></div>}
+      {kind === "image" && sizes.length > 0 && <div><label htmlFor="image-size" className="mb-2 block text-xs font-semibold">Size</label><select id="image-size" value={size} onChange={(event) => pick({ size: event.target.value })} className="min-h-11 w-full rounded-xl border border-line bg-white px-3 text-sm">{sizes.map((value) => <option key={value}>{value}</option>)}</select></div>}
+      {kind === "video" && <><div className="grid grid-cols-2 gap-3"><div><label htmlFor="video-duration" className="mb-2 block text-xs font-semibold">Duration (seconds)</label><select id="video-duration" value={duration} onChange={(event) => pick({ duration: Number(event.target.value) })} className="min-h-11 w-full rounded-xl border border-line bg-white px-3 text-sm">{durations.map((value) => <option key={value} value={value}>{value}</option>)}</select></div><div><label htmlFor="video-resolution" className="mb-2 block text-xs font-semibold">Resolution</label><select id="video-resolution" value={resolution} onChange={(event) => pick({ resolution: event.target.value })} className="min-h-11 w-full rounded-xl border border-line bg-white px-3 text-sm">{resolutions.map((value) => <option key={value}>{value}</option>)}</select></div></div><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={generateAudio} onChange={(event) => pick({ generateAudio: event.target.checked })} disabled={serverOptions?.generateAudio !== true} className="size-4 accent-teal" />Generate audio{serverOptions?.generateAudio === true ? "" : " (not offered by this model)"}</label>{!durations.length || !resolutions.length ? <p className="text-xs text-error">This model is missing reviewed video durations or resolutions and cannot be used.</p> : null}</>}
+      <div className="rounded-2xl bg-soft p-4 text-sm"><div className="flex justify-between"><span className="text-body">Server estimate</span><strong>{!prompt.trim() || !optionsReady || estimate === null ? "—" : `${estimate.toLocaleString()} credits`}</strong></div><p className="mt-2 text-[11px] leading-5 text-muted">A hold is created at submission. Final usage is charged from actual Gateway cost, never from this estimate.</p>{estimateError && <p className="mt-2 text-xs text-error">{estimateError}</p>}</div>
       {error && <p role="alert" className="text-sm leading-6 text-error">{error}</p>}
-      <Button type="button" size="lg" className="w-full" onClick={() => void submit()} disabled={busy || !availableModels.length}><Sparkles />{busy ? "Processing…" : retrying ? "Retry same request" : copy.action}</Button>
+      <Button type="button" size="lg" className="w-full" onClick={() => void submit()} disabled={busy || !availableModels.length || !optionsReady}><Sparkles />{busy ? "Processing…" : retrying ? "Retry same request" : copy.action}</Button>
       {!availableModels.length && <p className="text-center text-xs text-error">No enabled, currently priced {kind} model is available.</p>}
     </div></Panel>
     <div className="min-w-0 space-y-6">{currentJob && <Panel><div className="flex items-center gap-3"><LoaderCircle className={`size-5 text-teal ${terminal.has(currentJob.status) ? "" : "animate-spin"}`} /><div><h2 className="font-semibold capitalize">Job {currentJob.status.replaceAll("_", " ")}</h2><p className="mt-1 text-xs text-muted">{currentJob.id} · {currentJob.actualCredits ?? currentJob.estimatedCredits ?? "—"} {currentJob.actualCredits === null ? "estimated" : "actual"} credits</p></div></div>{currentJob.status === "reconciliation_required" && <InlineNotice title="Reconciliation required" tone="warning">Automatic submission retries and hold release are blocked while actual usage is reviewed.</InlineNotice>}{typeof currentJob.result?.projectId === "string" && <Button asChild className="mt-4"><Link href={`/app/websites/${currentJob.result.projectId}/editor`}>Open website project<ArrowUpRight /></Link></Button>}</Panel>}

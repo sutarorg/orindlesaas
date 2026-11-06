@@ -1,6 +1,6 @@
 # Research
 
-Access date for all sources below: **2026-11-05**. Research is revalidated when relevant packages or providers change.
+Access date is **2026-11-05** unless a later section states otherwise. Research is revalidated when relevant packages or providers change.
 
 ## Available tools and skills
 
@@ -162,3 +162,31 @@ Research performed **2026-11-05 before backend code**. Current package versions 
 | Resend | https://resend.com/docs/send-with-nextjs and https://resend.com/docs/dashboard/emails/idempotency-keys | Use `resend.emails.send` with stable idempotency keys (24-hour provider dedup is supplemental) and outbox state; Supabase auth email can use verified Resend SMTP configuration. |
 
 Exact SDK boundaries, transaction state machines and credential limitations are recorded in the nine Prompt 5 backend design documents. No live integration or launch readiness is inferred from documentation access.
+
+## Dynamic AI Gateway ecosystem research — 2026-11-06
+
+Research preceded any application-code edit for the dynamic registry/routing/sync task. The repository's current AI, database, admin, customer, jobs, and test modules were inspected. `npm ci --ignore-scripts` restored the locked dependencies for declaration inspection; it did not change the lockfile or application source.
+
+| Area | Primary source | Verified finding and design consequence |
+|---|---|---|
+| Runtime model discovery | https://vercel.com/docs/ai-gateway/models-and-providers and https://ai-gateway.vercel.sh/v1/models | Public REST discovery returns exact IDs, types, modalities, specifications, supported parameters, reasoning controls, and pricing. It is authoritative at sync time; no static list is complete. |
+| Team availability | https://vercel.com/docs/ai-gateway/sdks-and-apis/rest-api#team-availability-annotations | Authenticated `include_availability` adds model eligibility and request-context status. `unknown` is not approval; eligibility does not prove live health or Orindle compatibility. |
+| Rich REST schema | https://vercel.com/docs/ai-gateway/sdks-and-apis/rest-api | Documented fields include tiered token pricing, cached input, per-image pricing, endpoint metadata, and generation lookup. Unknown fields/categories must survive validation without becoming product support. |
+| Installed discovery behavior | Locked `@ai-sdk/gateway` 4.0.136 declarations and implementation in `node_modules` | `getAvailableModels()` exposes a smaller metadata shape and its transform filters model types outside `embedding`, `decision`, `evaluation`, `image`, `language`, `realtime`, `reranking`, `speech`, `transcription`, and `video`. Use REST inside the existing Gateway module so unknown types are retained safely. |
+| Image schema | Public `GET /v1/models/openai/gpt-image-2`, `/bfl/flux-2-pro`, `/bytedance/seedream-4.0`, and `/recraft/recraft-v4` | Current entries do not share a safe operation-estimate formula: one had token/cache rates and others only zero input/output token strings. Never convert these into invented per-image prices. |
+| Language/image modality distinction | Public `GET /v1/models/google/gemini-3-pro-image` | A `language` entry can have text+image output and service-tier token pricing. That does not make it compatible with the existing `imageModel` worker. |
+| Video schema | Public `GET /v1/models/google/veo-3.1-fast-generate-001` and `/google/veo-3.1-generate-001` | `video_duration_pricing` contains resolution/audio dimensions and exact decimal `cost_per_second` strings; rates differ by model. Quotes need the actual requested dimensions. |
+| Video parameters | https://vercel.com/docs/ai-gateway/modalities/video-generation and https://ai-sdk.dev/docs/ai-sdk-core/video-generation | Duration, aspect ratio, resolution, and audio support vary by model. Current fixed UI options cannot be assumed valid for every discovered model. |
+| Image parameters | https://ai-sdk.dev/docs/ai-sdk-core/image-generation | Size, aspect ratio, and seed support vary; unsupported settings may produce warnings. Server policy must validate/omit options rather than treating a warning as requested behavior. |
+| Actual generation cost | https://vercel.com/docs/ai-gateway/observability-and-spend/usage and REST reference | `total_cost` is the generation lookup billing value; BYOK requires separate treatment because total cost can be zero while upstream inference cost is nonzero. |
+| Eventual usage ingestion | https://vercel.com/docs/ai-gateway/sdks-and-apis/rest-api#look-up-a-generation | Immediate lookup can return “Usage event not found.” Retry only the read with bounded recovery; never repeat the paid generation. |
+| Exact numeric parsing | Installed `GatewayGenerationInfo` declaration and https://www.npmjs.com/package/lossless-json registry metadata | SDK `totalCost` is a JavaScript `number`, incompatible with an exact-decimal ledger authority. Research identified `lossless-json` 4.3.3 (MIT) as a candidate parser; it is not yet installed or validated. |
+| Provider metadata corroboration | https://vercel.com/docs/ai-gateway/models-and-providers/provider-filtering-and-ordering | `gateway.cost` is a decimal string but excludes some possible surcharges. It can corroborate, not replace, generation lookup `total_cost`. |
+
+### Source A verification passed
+
+The user subsequently supplied `vercel_ai_gateway_llm_model_ids-1.txt`. Its complete content is preserved at `docs/vercel_ai_gateway_llm_model_ids-1.txt`; an independent structural parser verified 166 unique IDs in exactly 28 namespaces and every declared provider count. SHA-256 is `1fe5f8a45c45a8d7a63cd46cb0aa0bb3ca1f099ff89ab8fe8d5acfbebc8888e8`. See `ai-catalogue-verification.md`. The source explicitly remains a partial export; live discovery is still authoritative. This closes the documentation/source gate, not the implementation or hosted-release gates.
+
+### Research boundary
+
+Only public model metadata reads and package/registry inspection occurred. No authenticated sync, paid model call, database migration, scheduled job, hosted test, or deployment was performed. New target decisions live in the `ai-*.md` documents and `handoff-ai-integration.md`; they are not implementation claims.

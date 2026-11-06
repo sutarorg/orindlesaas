@@ -2,9 +2,9 @@ import { syncGatewayCatalog } from "../lib/server/ai/catalog-sync";
 import { closeDb } from "../lib/server/db/client";
 
 try {
-  const result = await syncGatewayCatalog();
-  console.log(`Gateway catalog synchronized: ${result.models} supported model mappings, ${result.priceVersions} price versions, ${result.skipped.length} entries skipped.`);
-  console.log("New records remain disabled. Media operation prices are not invented and must be configured from authoritative provider evidence before enablement.");
+  const result = await syncGatewayCatalog({ trigger: "manual", mode: "full" });
+  console.log(`Gateway catalog synchronized: ${result.models} accepted mappings, ${result.changed} changed, ${result.missing} missing historically, ${result.invalid} quarantined.`);
+  console.log(`Run ${result.runId} finished ${result.status}; response SHA-256 ${result.responseHash}. New records remain disabled and unquotable/unsupported records stay unavailable.`);
 } finally {
   await closeDb();
 }

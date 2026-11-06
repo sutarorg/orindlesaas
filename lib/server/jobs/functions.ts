@@ -6,6 +6,7 @@ import { getDb } from "@/lib/server/db/client";
 import { generationJobs } from "@/lib/server/db/schema";
 import { deliverEmail } from "@/lib/server/email/service";
 import { pollDeployment, submitDeployment } from "@/lib/server/websites/deployments";
+import { markExpiredSyncRuns, syncGatewayCatalog } from "@/lib/server/ai/catalog-sync";
 
 export const generationRequested = inngest.createFunction(
   {
@@ -90,4 +91,13 @@ export const deploymentRequested = inngest.createFunction(
   },
 );
 
-export const jobFunctions = [generationRequested, websiteValidationRequested, emailDeliveryRequested, deploymentRequested, outboxRecovery, meteringRecovery];
+export const catalogSyncScheduled = inngest.createFunction(
+  { id: "catalog-sync-scheduled", retries: 0, triggers: { cron: "17 3 * * *" } },
+  async ({ step }) => {
+    await step.run("expire-stale-catalog-sync-leases", () => markExpiredSyncRuns());
+    const day = new Date().toISOString().slice(0, 10);
+    return step.run("sync-gateway-catalog", () => syncGatewayCatalog({ trigger: "scheduled", mode: "incremental", requestId: `catalog-sync:scheduled:${day}` }));
+  },
+);
+
+export const jobFunctions = [generationRequested, websiteValidationRequested, emailDeliveryRequested, deploymentRequested, outboxRecovery, meteringRecovery, catalogSyncScheduled];

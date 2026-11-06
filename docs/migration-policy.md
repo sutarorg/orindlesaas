@@ -34,3 +34,9 @@ Each migration is checked for nonempty SQL, deterministic down/roll-forward note
 ## Recovery
 
 Before staging/production changes, capture a restorable backup and identify the application version compatible with the old and new schema. Roll back application code for additive failures. Use a new forward migration for committed schema changes; do not manually edit migration history. Credential rotation and provider webhook/product changes are operational changes, not database rollbacks.
+
+## Dynamic AI registry migration gate
+
+The planned registry expansion must be a new additive migration after `0002`, generated only after the documentation/Source A gate. It must not rewrite existing IDs, enabled settings, price intervals, usage, generations, or conversations. Any nullable legacy product-kind change needs an explicit enabled-route check and safe backfill; unknown Gateway categories must not be coerced into an existing product enum.
+
+Review new JSONB size/shape handling, discovery/sync indexes, RLS and grants, no public access to sync runs/price observations, single-open-price behavior, and deletion/history protections. Test concurrent sync and admin writers on disposable PostgreSQL before staging. A schema check or generated SQL is not application evidence; record the actual applied target, result, and roll-forward procedure in the migration report.

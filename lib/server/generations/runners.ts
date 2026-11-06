@@ -5,6 +5,7 @@ import { getDb } from "@/lib/server/db/client";
 import { generationJobs, models, websiteBuilds, websiteProjects } from "@/lib/server/db/schema";
 import { AppError } from "@/lib/server/errors";
 import { extractGatewayGenerationId, getGateway } from "@/lib/server/ai/gateway";
+import { revalidateGenerationModel } from "@/lib/server/ai/models";
 import { markSubmissionAttempt, markSubmissionUncertain, recordProviderReference, settleGeneration } from "@/lib/server/generations/service";
 import { storeGeneratedAsset } from "@/lib/server/storage/r2";
 import { downloadProviderFile } from "@/lib/server/storage/provider-download";
@@ -18,12 +19,22 @@ const imageOptions = z.object({
 });
 const videoOptions = z.object({
   prompt: z.string().min(1),
-  duration: z.number().int().optional(),
+  duration: z.number().int().positive(),
   aspectRatio: z.string().optional(),
-  resolution: z.string().optional(),
+  resolution: z.string().min(1),
   generateAudio: z.boolean().optional(),
 });
 const websiteOptions = z.object({ prompt: z.string().min(1), name: z.string().min(2).max(80) });
+
+/**
+ * Re-run central resolution at submission time so a disabled model, stale discovery,
+ * or withdrawn compatibility cannot reach the provider on a queued job.
+ */
+async function approvedOptions(kind: "image" | "video" | "website", modelId: string | null, prompt: string, request: Record<string, unknown>) {
+  if (!modelId) throw new AppError("not_found", 404, "The generation has no model mapping.");
+  const resolved = await revalidateGenerationModel({ modelId, kind, prompt, options: request });
+  return resolved.submissionOptions;
+}
 
 async function getJob(jobId: string, userId: string) {
   const [row] = await getDb().select().from(generationJobs).innerJoin(models, eq(generationJobs.modelId, models.id)).where(
@@ -48,12 +59,13 @@ export async function runGenerationJob(jobId: string, userId: string) {
   try {
     if (job.kind === "image") {
       const options = imageOptions.parse(job.request);
+      const approved = await approvedOptions(job.kind, job.modelId, options.prompt, options);
       const result = await generateImage({
         model: getGateway().imageModel(job.gatewayModelId),
         prompt: options.prompt,
-        size: options.size as `${number}x${number}` | undefined,
-        aspectRatio: options.aspectRatio as `${number}:${number}` | undefined,
-        seed: options.seed,
+        size: approved.size as `${number}x${number}` | undefined,
+        aspectRatio: approved.aspectRatio as `${number}:${number}` | undefined,
+        seed: approved.seed as number | undefined,
         maxRetries: 0,
         providerOptions: { gateway: { user: userId, tags: [`generation:${jobId}`] } },
       });
@@ -76,13 +88,14 @@ export async function runGenerationJob(jobId: string, userId: string) {
 
     if (job.kind === "video") {
       const options = videoOptions.parse(job.request);
+      const approved = await approvedOptions(job.kind, job.modelId, options.prompt, options);
       const started = await experimental_startVideo({
         model: getGateway().videoModel(job.gatewayModelId),
         prompt: options.prompt,
-        duration: options.duration,
-        aspectRatio: options.aspectRatio as `${number}:${number}` | undefined,
-        resolution: options.resolution as `${number}x${number}` | undefined,
-        generateAudio: options.generateAudio,
+        duration: approved.duration as number,
+        aspectRatio: approved.aspectRatio as `${number}:${number}` | undefined,
+        resolution: approved.resolution as `${number}x${number}`,
+        generateAudio: approved.generateAudio as boolean,
         maxRetries: 0,
         providerOptions: { gateway: { user: userId, tags: [`generation:${jobId}`] } },
       });
@@ -98,11 +111,12 @@ export async function runGenerationJob(jobId: string, userId: string) {
 
     if (job.kind === "website") {
       const options = websiteOptions.parse(job.request);
+      const approved = await approvedOptions(job.kind, job.modelId, options.prompt, options);
       const result = await generateText({
         model: getGateway().languageModel(job.gatewayModelId),
         system: "Return only JSON matching {\"files\":[{\"path\":\"index.html|styles.css|script.js\",\"content\":\"...\"}]}. Create an accessible, responsive static website from the request. Use only local CSS/JS, no dependencies, external scripts, iframes, inline event handlers, network calls, secrets, or claims of real backend behavior.",
         prompt: options.prompt,
-        maxOutputTokens: 5000,
+        maxOutputTokens: approved.maxOutputTokens as number,
         maxRetries: 0,
         providerOptions: { gateway: { user: userId, tags: [`generation:${jobId}`] } },
       });

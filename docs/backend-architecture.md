@@ -56,3 +56,11 @@ Vercel deployment uses a server-generated project name within a configured team 
 ## Configuration and degradation
 
 Missing credentials are explicit integration states, not fixtures or fake successes. Public content remains available. Private routes fail closed. Provider-dependent mutations return `integration_unavailable` with a safe request ID. Current local tests use injected fakes and credential-free production smoke behavior; no isolated PostgreSQL test database was available. Real PostgreSQL remains a launch gate. Fakes are never selected by a browser parameter or silently used in production.
+
+## Dynamic AI Gateway ecosystem — design only, 2026-11-06
+
+The next AI stage extends the modules above; it does not add another provider, registry, wallet, pricing engine, or scheduler. `ai-provider-architecture.md` is the controlling design. The existing Gateway module will add validated REST discovery and lossless generation lookup because the installed SDK metadata transform filters unknown model types and returns generation cost as a JavaScript `number`.
+
+Discovery-owned metadata is separate from admin enablement/compatibility and immutable price evidence. One server resolver in `lib/server/ai/models.ts` must validate model/provider presence and enablement, product compatibility, exact operation parameters, model limits, and current quote eligibility for Chat, Image Studio, Video Studio, and Websites. All returned model types are retained; unsupported and unknown categories have no customer route.
+
+Catalogue sync uses the existing catalog-sync module and Inngest boundary, external reads outside DB transactions, one atomic changeset, run leases/history/audit, and missing—not deleted—historical rows. New discoveries remain disabled. Actual settlement continues through the existing credits ledger and uses losslessly parsed Gateway generation evidence. Source A is now preserved and verified as 166 unique IDs in 28 namespaces; the documentation/source gate is complete, while implementation remains a separate phase. See `handoff-ai-integration.md`.

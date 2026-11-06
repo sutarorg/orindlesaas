@@ -9,7 +9,8 @@ import { appendWalletMovement, holdCredits, settleReservation } from "@/lib/serv
 import { fulfillDodoPayment } from "@/lib/server/payments/fulfillment";
 import { paymentWebhookSchema } from "@/lib/server/payments/payment-validation";
 import { creditPacks as contentPacks } from "@/lib/content/pricing";
-import { creditPacks, modelPrices, models, providers } from "@/lib/server/db/schema";
+import { catalogPriceObservations, catalogSyncRuns, creditPacks, modelPrices, models, providers } from "@/lib/server/db/schema";
+import { syncGatewayCatalog } from "@/lib/server/ai/catalog-sync";
 import type { VerifiedIdentity } from "@/lib/server/auth/guards";
 
 let admin: ReturnType<typeof postgres>;
@@ -254,5 +255,87 @@ describe("disposable real PostgreSQL verification", () => {
     await expect(getDb().delete(modelPrices).where(eq(modelPrices.id, next!.id))).rejects.toMatchObject({
       cause: { message: expect.stringContaining("append-only") },
     });
+  });
+
+  it("seeds the reference catalogue as disabled, kind-less, unpriced history", async () => {
+    const [reference] = await admin<{ models: number; namespaces: number; unsafe: number; providers: number; enabled: number }[]>`select
+      (select count(*)::int from public.models where discovery_status = 'reference') models,
+      (select count(distinct provider_id)::int from public.models where discovery_status = 'reference') namespaces,
+      (select count(*)::int from public.models where discovery_status = 'reference' and (enabled or kind is not null)) unsafe,
+      (select count(*)::int from public.providers where id not like 'qa-%') providers,
+      (select count(*)::int from public.providers where enabled) enabled`;
+    // Migration 0003 seeds exactly the providers named by the 166 reference IDs; none is enabled.
+    expect(reference).toEqual({ models: 166, namespaces: 28, unsafe: 0, providers: 28, enabled: 0 });
+    const priced = await admin`select p.id from public.model_prices p join public.models m on m.id = p.model_id where m.discovery_status = 'reference'`;
+    expect(priced).toHaveLength(0);
+  });
+
+  it("keeps discovered catalogue rows non-deletable and observations append-only", async () => {
+    await expect(admin`delete from public.models where discovery_status = 'reference'`).rejects.toThrow(/historical and cannot be deleted/);
+    await expect(admin`delete from public.providers where id = 'openai'`).rejects.toThrow(/historical and cannot be deleted/);
+    const [run] = await admin<{ id: string }[]>`insert into public.catalog_sync_runs (trigger, mode, status, started_at, request_id, lease_expires_at)
+      values ('manual', 'full', 'running', now(), ${"qa-observation"}, now() + interval '1 hour') returning id`;
+    await admin`insert into public.catalog_price_observations (run_id, model_id, pricing_hash, pricing_data, observed_at)
+      values (${run!.id}, ${"gateway:openai/gpt-4o-mini"}, ${"a".repeat(64)}, ${admin.json({ input: "0.000001" })}, now())`;
+    await expect(admin`update public.catalog_price_observations set pricing_hash = ${"b".repeat(64)}`).rejects.toThrow(/append-only/);
+    await expect(admin`delete from public.catalog_price_observations`).rejects.toThrow(/append-only/);
+    await expect(admin`delete from public.catalog_sync_runs`).rejects.toThrow(/historical and cannot be deleted/);
+    // Release the lease so later cases observe the real single-flight behaviour rather than this fixture.
+    await admin`update public.catalog_sync_runs set status = 'partial', lease_expires_at = now() - interval '1 minute', finished_at = now() where request_id = ${"qa-observation"}`;
+  });
+
+  it("applies discovery idempotently, never enables, and quarantines invalid entries", async () => {
+    const fetchImpl: typeof fetch = (async () => new Response(JSON.stringify({ object: "list", data: [] }), { status: 200 })) as unknown as typeof fetch;
+    const [lease] = await admin<{ id: string }[]>`insert into public.catalog_sync_runs (trigger, mode, status, started_at, request_id, lease_expires_at)
+      values ('manual', 'full', 'running', now(), ${"qa-lease"}, now() + interval '30 minutes') returning id`;
+    await expect(syncGatewayCatalog({ trigger: "scheduled", mode: "full", fetchImpl, includeAvailability: false })).rejects.toMatchObject({ code: "conflict" });
+    await admin`update public.catalog_sync_runs set status = 'failed', lease_expires_at = now() - interval '1 minute' where id = ${lease!.id}`;
+
+    const response = {
+      object: "list",
+      data: [
+        { id: "qa-alpha/model-one", name: "QA One", type: "language", owned_by: "QA Alpha", pricing: { input: "0.000001", output: "0.000002" }, supported_specifications: ["v4"], modalities: { input: ["text"], output: ["text"] } },
+        { id: "qa-alpha/model-two", name: "QA Two", type: "image", owned_by: "QA Alpha", pricing: null, supported_specifications: ["v4"], modalities: { input: ["text"], output: ["image"] } },
+        { id: "qa-alpha/not a valid id", name: "Broken", type: "language" },
+      ],
+    };
+    const catalogFetch = (async () => new Response(JSON.stringify(response), { status: 200, headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
+    const first = await syncGatewayCatalog({ trigger: "manual", mode: "full", fetchImpl: catalogFetch, includeAvailability: false });
+    expect(first).toMatchObject({ status: "partial", models: 2, invalid: 1 });
+    const [alpha] = await admin<{ enabled: boolean }[]>`select enabled from public.providers where id = 'qa-alpha'`;
+    expect(alpha).toEqual({ enabled: false });
+    const discovered = await admin<{ id: string; enabled: boolean; discovery_status: string; kind: string | null }[]>`
+      select id, enabled, discovery_status, kind from public.models where provider_id = 'qa-alpha' order by id`;
+    expect(discovered).toEqual([
+      { id: "gateway:qa-alpha/model-one", enabled: false, discovery_status: "present", kind: "chat" },
+      { id: "gateway:qa-alpha/model-two", enabled: false, discovery_status: "present", kind: "image" },
+    ]);
+    const prices = await admin<{ model_id: string; input: string | null; source: string; open: boolean }[]>`
+      select p.model_id, p.pricing_data->>'input' input, p.source, p.effective_to is null open from public.model_prices p
+      where p.model_id like 'gateway:qa-alpha/%' order by p.model_id`;
+    expect(prices).toEqual([{ model_id: "gateway:qa-alpha/model-one", input: "0.000001", source: "gateway_catalog", open: true }]);
+
+    const second = await syncGatewayCatalog({ trigger: "scheduled", mode: "incremental", fetchImpl: catalogFetch, includeAvailability: false });
+    expect(second).toMatchObject({ status: "partial", models: 2, invalid: 1, changed: 0 });
+    const [priceCount] = await admin<{ count: number }[]>`select count(*)::int count from public.model_prices where model_id like 'gateway:qa-alpha/%'`;
+    expect(priceCount?.count).toBe(1);
+
+    // A model that vanishes from discovery is marked missing, not deleted or enabled.
+    const reduced = { object: "list", data: [response.data[0]] };
+    const reducedFetch = (async () => new Response(JSON.stringify(reduced), { status: 200, headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
+    const third = await syncGatewayCatalog({ trigger: "scheduled", mode: "full", fetchImpl: reducedFetch, includeAvailability: false });
+    expect(third).toMatchObject({ status: "succeeded", models: 1, invalid: 0 });
+    const [gone] = await admin<{ discovery_status: string; enabled: boolean }[]>`select discovery_status, enabled from public.models where id = 'gateway:qa-alpha/model-two'`;
+    expect(gone).toEqual({ discovery_status: "missing", enabled: false });
+
+    const [runs] = await admin<{ succeeded: number; partial: number }[]>`select
+      count(*) filter (where status = 'succeeded')::int succeeded,
+      count(*) filter (where status = 'partial')::int partial
+      from public.catalog_sync_runs where trigger in ('manual', 'scheduled') and request_id not in ('qa-observation', 'qa-lease')`;
+    expect(runs!.partial).toBeGreaterThanOrEqual(2);
+    expect(runs!.succeeded).toBeGreaterThanOrEqual(1);
+    expect(await admin`select id from public.catalog_sync_runs where status = 'running'`).toHaveLength(0);
+    expect(await getDb().select({ id: catalogSyncRuns.id }).from(catalogSyncRuns).where(eq(catalogSyncRuns.status, "running"))).toEqual([]);
+    expect(await getDb().select({ id: catalogPriceObservations.id }).from(catalogPriceObservations).limit(1)).toHaveLength(1);
   });
 });

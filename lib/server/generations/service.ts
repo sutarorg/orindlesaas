@@ -3,7 +3,7 @@ import { and, count, eq, inArray, notInArray, sql } from "drizzle-orm";
 import { getDb } from "@/lib/server/db/client";
 import { creditReservations, generationJobs, outboxEvents } from "@/lib/server/db/schema";
 import { AppError } from "@/lib/server/errors";
-import { estimateCost, getPricedModel, type GenerationKind } from "@/lib/server/ai/models";
+import { resolveGenerationModel, type GenerationKind } from "@/lib/server/ai/models";
 import { holdCredits, lockCreditWallet, settleReservation } from "@/lib/server/credits/ledger";
 import { lookupActualGenerationCost } from "@/lib/server/ai/gateway";
 
@@ -37,8 +37,8 @@ export async function createGeneration(input: {
     if (existingRow.job.requestSha256 !== requestSha256) throw new AppError("conflict", 409, "This generation request key was already used with different input.");
     return { job: existingRow.job, reservation: existingRow.reservation ?? undefined, duplicate: true };
   }
-  const model = await getPricedModel(input.modelId, input.kind);
-  const estimatedCostUsd = estimateCost({ ...model, kind: input.kind, prompt: input.prompt });
+  const model = await resolveGenerationModel({ modelId: input.modelId, kind: input.kind, prompt: input.prompt, options: input.request });
+  const estimatedCostUsd = model.estimatedCostUsd;
   const jobId = crypto.randomUUID();
   return getDb().transaction(async (tx) => {
     await lockCreditWallet(tx, input.userId);

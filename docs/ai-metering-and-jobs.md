@@ -43,3 +43,9 @@ The transactional outbox covers Inngest notification and email. A scheduled swee
 ## Compensation and reconciliation
 
 Validation fails before provider submission where possible. The current worker does not automatically release a hold after a possibly submitted provider call: unknown/post-submission failures require actual-cost lookup and reconciliation. A general release helper and ledger compensation kind exist, but no browser/job cancellation or automatic compensation policy is exposed. Periodic recovery is intentionally limited to reconciliation jobs with a Gateway generation ID and stored result evidence; unknown submissions without that evidence remain manual. Every automatic repair uses the original generation/reservation ID and exact cost evidence.
+
+## Dynamic registry and lossless-cost amendment — planned
+
+The 2026 research in `ai-metering-and-reconciliation.md` retains every rule above but identifies two required implementation corrections before the dynamic ecosystem can be accepted: generation lookup must parse the REST cost decimal losslessly rather than rely on SDK `number` plus `toFixed`, and the estimate/submission resolver must include complete media parameters and model-specific compatibility. BYOK evidence requires review rather than being interpreted as free usage.
+
+Catalogue scheduling will join the existing Inngest function list and call the one catalog-sync service with run leases/history. It will not create a second scheduler or execute external discovery inside a DB transaction. These are planned controls, not new tested behavior. Source A and the documentation/source gate are complete; implementation and hosted verification remain open.

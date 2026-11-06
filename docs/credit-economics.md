@@ -34,3 +34,9 @@ The required overview label “Total revenue” is always qualified as demo data
 ## Policy and rights
 
 Credit expiry, transferability, taxes, regional treatment and mixed-wallet consumption order require product/legal decisions before sale. The Credits Policy preserves applicable statutory consumer rights, payment dispute channels and legally required remedies. It must not state that no refund is ever possible. Payment chargebacks and ledger reversal handling need a later audited support process.
+
+## Dynamic model pricing boundary — design only
+
+The 2026 AI Gateway research does not change the customer unit or settlement formula. Catalogue pricing is heterogeneous metadata—token/base/tier/cache/service/region, per-image, and resolution/audio-specific per-second rates—and must remain exact decimal data. A reservation quote is allowed only for a complete server-supported formula for the actual requested operation; otherwise the operation is unavailable rather than assigned an invented price.
+
+`ai-model-pricing.md` defines immutable observations versus the one active estimate-price history. `ai-metering-and-reconciliation.md` defines lossless actual generation lookup. Actual cost, customer usage value, and gross contribution remain distinct. No dynamic catalogue work may expose upstream costs to customers or claim a fixed margin/profit from the 2× pricing rule.

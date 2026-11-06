@@ -31,3 +31,7 @@ All meaningful page headings, labels, prices and article copy remain real HTML. 
 ## Optimization
 
 Fonts are self-hosted with only Latin subsets and used Poppins weights; there are no runtime Google Fonts requests. Semantic HTML/CSS/SVG replaces large hero raster images on marketing pages. The Open Graph image has stable 1200x630 dimensions. Workspace fixtures are local, reserved-dimension `next/image` assets with no remote media host. Prompt 3 visual-review screenshots were written to `/tmp/orindle-prompt3-visual/` and are not committed. Prompt 4 production review screenshots were written to `/tmp/admin-overview.png`, `/tmp/admin-users.png`, `/tmp/admin-usage.png` and `/tmp/admin-mobile.png` and are not committed; test reports remain ignored. No unselected generation variants or large audit artifacts are committed.
+
+## Dynamic AI stage assets
+
+No visual, raster, provider-logo, or generated media asset is required for the dynamic AI design. Dynamic selectors will reuse existing Lucide icons, native controls, typography, and premium-white surfaces. Source A is a documentation/catalogue input rather than a brand asset; the supplied original is now preserved at `docs/vercel_ai_gateway_llm_model_ids-1.txt` (5,959 bytes, SHA-256 `1fe5f8a45c45a8d7a63cd46cb0aa0bb3ca1f099ff89ab8fe8d5acfbebc8888e8`). `ai-catalogue-verification.md` records its 166 unique IDs and 28 namespaces; no placeholder or reconstructed catalogue was used.

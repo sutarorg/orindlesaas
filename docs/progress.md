@@ -4,7 +4,20 @@ Last updated: **2026-11-06**.
 
 ## Current status
 
-**Prompt 6 independent execution and report reconciliation are complete for the available local/disposable-CI scope; replacement final-HEAD CI is pending and release remains NO-GO.** Current application revision is `4244b6962a1506316e559efaa4ef8436c61c0f47`, with CI hardening inherited through `cd6775bb5f61451ca3963610dd9908ed53723287`. Previous push run `42084593285` passed all nine jobs, but fresh PR run `42086200854` failed three mobile TBT groups and desktop-Chromium installation. Those failures prompted the current native-interaction/hydration remediation; they remain preserved in `failure-report.md`.
+**The dynamic AI Gateway documentation/source gate is complete and application Phases 1–3 are implemented with local evidence; hosted verification is absent and release remains NO-GO.** The supplied `vercel_ai_gateway_llm_model_ids-1.txt` is preserved verbatim and independently verified as **166 unique IDs in exactly 28 namespaces**, with every declared provider count matched. SHA-256 is `1fe5f8a45c45a8d7a63cd46cb0aa0bb3ca1f099ff89ab8fe8d5acfbebc8888e8`; evidence is in `ai-catalogue-verification.md`. The mandatory documentation gate no longer blocks application code. Local verification now passes: `npm run check` (typecheck, ESLint, 140 unit tests in 28 files, production build) and 10 integration tests against a disposable PostgreSQL 16 cluster with migrations `0000`–`0003` applied. Remaining incomplete stages are browser/E2E and 320px checks, hosted Gateway/Supabase/Inngest/R2/Dodo verification, and release approval.
+
+Earlier Prompt 6 independent execution/report reconciliation remains historical evidence for the inherited application, not evidence for this new task. Its application revision was `4244b6962a1506316e559efaa4ef8436c61c0f47`, with CI hardening through `cd6775bb5f61451ca3963610dd9908ed53723287`. Previous push run `42084593285` passed all nine jobs, but fresh PR run `42086200854` failed three mobile TBT groups and desktop-Chromium installation. Those failures remain preserved in `failure-report.md`; none is reclassified by the current AI research.
+
+## Dynamic AI Gateway documentation checkpoint — 2026-11-06
+
+- Inspected the existing AI Gateway/catalog sync/registry, generation and Chat services, exact credit ledger, schema/migrations, Inngest recovery, admin/customer APIs and components, and current unit/integration test boundaries. Confirmed these are extension points, not a blank architecture.
+- Restored locked dependencies with `npm ci --ignore-scripts` and inspected `ai@7.0.163` / `@ai-sdk/gateway@4.0.136` declarations. No dependency or application source change resulted.
+- Researched official Gateway discovery, availability, pricing, video/image options, generation lookup, and provider metadata. Public model-list/detail reads succeeded; no authenticated sync, paid generation, database migration, scheduled job, or deployment occurred.
+- Confirmed SDK unknown-type filtering, rich REST-only metadata, model-specific video-duration pricing, non-uniform image pricing, eventual usage ingestion, and the exact-cost float risk. Also found that current generation ID validation does not admit synced `gateway:` internal IDs and fixed studio options are not model-specific.
+- Created the 13 required AI design documents plus `handoff-ai-integration.md`, and reconciled shared architecture/database/API/metering/economics/migration/environment/testing/plan/task/progress/decisions/assets/risk documentation. These documents describe planned work, not implemented behavior.
+- The user then supplied Source A. It is preserved verbatim at `docs/vercel_ai_gateway_llm_model_ids-1.txt`; an independent parser verified 166 unique IDs, 28 namespaces, and every declared provider count. SHA-256 `1fe5f8a45c45a8d7a63cd46cb0aa0bb3ca1f099ff89ab8fe8d5acfbebc8888e8` and results are recorded in `ai-catalogue-verification.md`. The documentation/source gate is complete.
+
+No new application tests or build were run at the documentation-only checkpoint. With Source A verified, the next action is the additive schema and exact-primitive implementation; implementation evidence will be recorded separately.
 
 ## Prompt 6 observed execution — 2026-11-05
 

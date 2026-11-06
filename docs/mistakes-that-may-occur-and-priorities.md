@@ -73,6 +73,21 @@ The Prompt 5 dependency and local-database risks now have fresh remediation evid
 | P2 | Documentation drifts from exact application evidence | Application revision `4244b69`, CI hardening through `cd6775b`, run index and domain reports reconciled | Preserve application-versus-workflow evidence distinctions and require replacement final HEAD checks |
 | P2 | Dependency maintenance warnings become future vulnerabilities | Zero current moderate+ audit findings and narrow tested overrides | Re-audit on dependency changes; review peer/deprecation maintenance without blind upgrades |
 
+## Dynamic AI Gateway risks — current documentation checkpoint
+
+The detailed register is `ai-risk-register.md`. The highest-priority controls are restated here to keep the shared risk index current; none is marked resolved by documentation alone.
+
+| Priority | Risk | Required control/gate |
+|---|---|---|
+| P1 — closed | Missing Source A could lead to a fabricated or incomplete reference | Original supplied file copied verbatim; independent hash/166-ID/28-namespace/provider-count verification passed in `ai-catalogue-verification.md`; repeat in permanent tests |
+| P0 | SDK discovery filtering or product misclassification exposes an unsupported paid model | Validated REST discovery for every type; centralized deny-by-default product/options/price resolver |
+| P0 | Float conversion or flattened heterogeneous pricing corrupts charges | Lossless generation-cost parsing, exact decimal JSON/BigInt quote formulas, block ambiguous pricing/BYOK |
+| P0 | Uncertain generation or eventual metering “not found” causes a duplicate paid call | Existing submission guard plus bounded read-only lookup recovery only; never blind retry/fallback |
+| P1 | Sync deletes history, auto-enables discoveries, or overwrites admin settings/prices | Missing—not deleted—rows, disabled defaults, separate discovery/admin fields, immutable observations and race tests |
+| P1 | Static model options/ID validation reject valid IDs or send unsupported parameters | Opaque exact-ID lookup and dynamic server-reviewed options shared by estimate and submission |
+| P1 | New sync/metadata tables bypass authorization or leak internal costs | Additive RLS/grants, safe DTOs/cache separation, permission/step-up/audit tests and redaction scans |
+| P1 | Local mocks/build are represented as hosted readiness | Separate mocked/PostgreSQL/hosted evidence and retain NO-GO until real release gates pass |
+
 ## Prioritization
 
 P0 blocks any real transaction or deployment. P1 blocks stage acceptance. P2 requires resolution before content/launch sign-off unless explicitly recorded. P3 is maintainability polish. Findings are not considered resolved until inspected and tested. Blocked critical evidence is not accepted risk.

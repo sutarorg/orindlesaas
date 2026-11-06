@@ -19,9 +19,9 @@ export const mediaGenerationSchema = z.discriminatedUnion("kind", [
     modelId,
     prompt,
     idempotencyKey: key,
-    duration: z.number().int().min(1).max(30).optional(),
+    duration: z.number().int().min(1).max(30),
     aspectRatio: z.string().regex(/^\d{1,2}:\d{1,2}$/).optional(),
-    resolution: z.string().regex(/^\d{3,4}x\d{3,4}$/).optional(),
+    resolution: z.string().regex(/^\d{3,4}x\d{3,4}$/),
     generateAudio: z.boolean().optional(),
   }),
   z.object({

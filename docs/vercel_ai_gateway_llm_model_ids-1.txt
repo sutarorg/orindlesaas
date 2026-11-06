@@ -1,0 +1,253 @@
+VERCEL AI GATEWAY — LLM MODEL IDS
+=================================
+
+Source: Vercel AI Gateway public model-list endpoint
+https://ai-gateway.vercel.sh/v1/models
+Filter intended: models whose API record has type = language.
+Catalogue checked: 6 November 2026.
+
+Captured entries: 166
+Provider namespaces represented: 28
+
+IMPORTANT COMPLETENESS NOTE
+---------------------------
+This is an actual model-ID list extracted from the live API response
+available in this session. The web retrieval view did not expose the
+entire raw JSON payload in one downloadable response, so this file is
+a verified partial export rather than a guaranteed exhaustive dump.
+Some providers may have additional language models not captured here.
+Use the live endpoint above for the authoritative complete current list.
+
+MODEL IDS BY PROVIDER NAMESPACE
+-------------------------------
+
+[alibaba]  (25 captured)
+alibaba/qwen-3-14b
+alibaba/qwen-3-235b
+alibaba/qwen-3-30b
+alibaba/qwen-3-32b
+alibaba/qwen3-coder
+alibaba/qwen3-coder-30b-a3b
+alibaba/qwen3-coder-next
+alibaba/qwen3-max-thinking
+alibaba/qwen3-next-80b-a3b-instruct
+alibaba/qwen3-next-80b-a3b-thinking
+alibaba/qwen3-vl-instruct
+alibaba/qwen3.5-flash
+alibaba/qwen3.5-plus
+alibaba/qwen3.6-27b
+alibaba/qwen3.6-plus
+alibaba/qwen3.7-flash
+alibaba/qwen3.7-max
+alibaba/qwen3.7-plus
+alibaba/qwen3.8-2.4t-a95b
+alibaba/qwen3.8-27b
+alibaba/qwen3.8-flash
+alibaba/qwen3.8-max
+alibaba/qwen3.8-max-0902
+alibaba/qwen3.8-max-prime
+alibaba/qwen3.8-omni-flash
+
+[anthropic]  (20 captured)
+anthropic/claude-haiku-5.5
+anthropic/claude-haiku-5.5-batch
+anthropic/claude-opus-4.5
+anthropic/claude-opus-4.5-batch
+anthropic/claude-opus-4.6
+anthropic/claude-opus-4.6-batch
+anthropic/claude-opus-4.7
+anthropic/claude-opus-4.7-batch
+anthropic/claude-opus-4.8
+anthropic/claude-opus-4.8-fast
+anthropic/claude-opus-4.8-batch
+anthropic/claude-opus-5
+anthropic/claude-opus-5-fast
+anthropic/claude-opus-5-batch
+anthropic/claude-opus-5.5
+anthropic/claude-opus-5.5-fast
+anthropic/claude-opus-5.5-batch
+anthropic/claude-sonnet-5
+anthropic/claude-sonnet-5-batch
+anthropic/claude-sonnet-5.5
+
+[bytedance]  (3 captured)
+bytedance/seed-1.6
+bytedance/seed-1.8
+bytedance/seed-2.1-turbo
+
+[callstack]  (1 captured)
+callstack/apex
+
+[deepseek]  (10 captured)
+deepseek/deepseek-r1
+deepseek/deepseek-v3.1
+deepseek/deepseek-v3.2
+deepseek/deepseek-v3.2-thinking
+deepseek/deepseek-v4-flash
+deepseek/deepseek-v4-flash-0731
+deepseek/deepseek-v4-flash-vision-exp
+deepseek/deepseek-v4.1-flash-1017
+deepseek/deepseek-v4.1-flash-1017-fast
+deepseek/deepseek-v4.1-flash-fast
+
+[google]  (8 captured)
+google/gemini-2.5-flash
+google/gemini-2.5-flash-batch
+google/gemini-2.5-pro
+google/gemini-2.5-pro-batch
+google/gemini-3.7-flash
+google/gemini-3.8-flash
+google/gemini-nano-banana-2.1
+google/gemini-omni-1.2-flash
+
+[inception]  (1 captured)
+inception/mercury-coder-small
+
+[inclusionai]  (5 captured)
+inclusionai/ling-3.0-flash
+inclusionai/ling-3.0-flash-fin
+inclusionai/ling-3.0-flash-sante
+inclusionai/ling-3.1-flash
+inclusionai/ling-3.1-flash-1019
+
+[inference-net]  (1 captured)
+inference-net/schematron-v2-small
+
+[liquid]  (1 captured)
+liquid/lfm2.5-24b-a2b
+
+[meituan]  (1 captured)
+meituan/longcat-2.5
+
+[meta]  (4 captured)
+meta/llama-3.1-70b
+meta/llama-3.1-8b
+meta/llama-3.3-70b
+meta/muse-spark-1.3-contributor
+
+[minimax]  (7 captured)
+minimax/minimax-m2
+minimax/minimax-m2.5
+minimax/minimax-m2.5-highspeed
+minimax/minimax-m2.7
+minimax/minimax-m2.7-highspeed
+minimax/minimax-m3
+minimax/minimax-m3.1-flash
+
+[mistral]  (3 captured)
+mistral/ministral-3b
+mistral/ministral-8b
+mistral/mistral-large-3
+
+[moonshotai]  (4 captured)
+moonshotai/kimi-k2
+moonshotai/kimi-k2.5
+moonshotai/kimi-k2.6
+moonshotai/kimi-k2.7-code
+
+[morph]  (2 captured)
+morph/morph-v3-small
+morph/morph-v3-large
+
+[nvidia]  (6 captured)
+nvidia/nemotron-3-nano-30b-a3b
+nvidia/nemotron-3-super-120b-a12b
+nvidia/nemotron-3-ultra-550b-a55b
+nvidia/nemotron-3.5-lightning
+nvidia/nemotron-nano-12b-v2-vl
+nvidia/nemotron-nano-9b-v2
+
+[openai]  (35 captured)
+openai/gpt-4.1
+openai/gpt-4.1-fast
+openai/gpt-4.1-mini
+openai/gpt-4.1-mini-fast
+openai/gpt-4.1-mini-batch
+openai/gpt-4.1-nano
+openai/gpt-4o
+openai/gpt-4o-mini
+openai/gpt-4o-mini-fast
+openai/gpt-4o-mini-batch
+openai/gpt-5
+openai/gpt-5-fast
+openai/gpt-5-batch
+openai/gpt-5-codex
+openai/gpt-5-mini
+openai/gpt-5-pro
+openai/gpt-5-pro-batch
+openai/gpt-5.1-codex
+openai/gpt-5.1-codex-max
+openai/gpt-5.1-codex-mini
+openai/gpt-5.1-thinking
+openai/gpt-5.1-thinking-fast
+openai/gpt-5.2
+openai/gpt-5.5
+openai/gpt-5.5-fast
+openai/gpt-6.1-sol
+openai/gpt-6.1-sol-fast
+openai/gpt-6-luna-batch
+openai/gpt-oss-120b
+openai/gpt-oss-20b
+openai/gpt-oss-safeguard-120b
+openai/o3
+openai/o3-fast
+openai/o3-mini
+openai/o3-pro
+
+[perplexity]  (1 captured)
+perplexity/sonar
+
+[poolside]  (1 captured)
+poolside/laguna-s-2.1
+
+[quiverai]  (2 captured)
+quiverai/arrow-2
+quiverai/arrow-2-telos
+
+[sakana]  (1 captured)
+sakana/namazu
+
+[spacexai]  (9 captured)
+spacexai/grok-4.20-reasoning
+spacexai/grok-4.20-reasoning-batch
+spacexai/grok-4.20-reasoning-beta
+spacexai/grok-4.3
+spacexai/grok-4.3-batch
+spacexai/grok-4.5
+spacexai/grok-4.6
+spacexai/grok-4.7
+spacexai/grok-build-0.1
+
+[stealth]  (1 captured)
+stealth/glyph-cluster
+
+[stepfun]  (2 captured)
+stepfun/step-3.7-flash
+stepfun/step-5-preview
+
+[tencent]  (5 captured)
+tencent/hy-mt2-lite
+tencent/hy-mt2-plus
+tencent/hy-mt2-pro
+tencent/hy3
+tencent/hy4
+
+[xiaomi]  (2 captured)
+xiaomi/mimo-v2.6-pro
+xiaomi/mimo-v2.6-pro-ultraspeed
+
+[zai]  (5 captured)
+zai/glm-4.5
+zai/glm-4.5-air
+zai/glm-5.1
+zai/glm-5.2
+zai/glm-5.2-fast
+
+NOTES
+-----
+• IDs are reproduced in provider/model-name form as returned by the API.
+• Batch and fast variants are kept as separate IDs when present.
+• The API's type=language category can include multimodal text models,
+  translation models, or models that also produce image/video output.
+• Pure image, video, speech, transcription, embedding, reranking, and
+  evaluation records are excluded unless the API marked them language.

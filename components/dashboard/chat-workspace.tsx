@@ -21,6 +21,9 @@ async function errorMessage(response: Response) {
 export function ChatWorkspace({ data, initialConversation }: { data: WorkspaceSnapshot; initialConversation?: InitialConversation }) {
   const router = useRouter();
   const models = data.models.filter((model) => model.kind === "chat");
+  // Mirror the server's output cap so the preview matches the eventual reservation.
+  const declaredCap = data.models.find((model) => model.id === modelId)?.options?.maxOutputTokens;
+  const outputCap = Math.min(2000, declaredCap ?? 2000);
   const [conversationId, setConversationId] = useState(initialConversation?.conversation.id);
   const [title, setTitle] = useState(initialConversation?.conversation.title ?? "New conversation");
   const [modelId, setModelId] = useState(initialConversation?.conversation.modelId ?? models[0]?.id ?? "");
@@ -40,14 +43,14 @@ export function ChatWorkspace({ data, initialConversation }: { data: WorkspaceSn
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const response = await fetch("/api/v1/catalog/estimate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind: "chat", modelId, prompt, maxOutputTokens: 2000 }), signal: controller.signal });
+        const response = await fetch("/api/v1/catalog/estimate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind: "chat", modelId, prompt, maxOutputTokens: outputCap }), signal: controller.signal });
         const body = await response.json();
         if (!response.ok) throw new Error(body?.error?.message);
         setEstimate(body.data.estimatedCredits);
       } catch { if (!controller.signal.aborted) setEstimate(null); }
     }, 400);
     return () => { clearTimeout(timer); controller.abort(); };
-  }, [modelId, prompt]);
+  }, [modelId, prompt, outputCap]);
 
   async function submit() {
     const message = prompt.trim();

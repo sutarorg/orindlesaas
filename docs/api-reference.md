@@ -69,3 +69,9 @@ Account session invalidation, payment reconciliation, dispute resolution and pos
 ## Internal jobs
 
 `/api/inngest` exports the official GET/POST/PUT `serve()` handlers for generation, website validation, email, deployment, outbox recovery and metering recovery functions. Production invocation/sync requires Inngest signing configuration. Event payloads use internal IDs and safe metadata, not credentials or unnecessary private content.
+
+## Planned dynamic AI revisions — not implemented
+
+The next AI stage will keep the existing route inventory. `GET /api/v1/catalog/models` will return only centrally eligible product models with safe exact identity and reviewed option metadata. `POST /api/v1/catalog/estimate` and `POST /api/v1/generations` will share product-specific option validation so video duration/resolution/audio and image options are priced and submitted coherently. Browser-supplied prices, capabilities, compatibility, provider options, or upstream costs remain invalid/non-authoritative.
+
+`POST /api/v1/admin/actions` will gain discriminated compatibility and catalogue-sync actions using the existing permission, step-up, idempotency, expected-state, same-origin, rate-limit, and audit controls. Admin read filtering remains in permission-checked server query projections; no duplicate admin API family is planned. Scheduled catalogue sync will be added to the existing Inngest function list only after its migration and manual recovery behavior are verified. See `ai-routing-engine.md`, `ai-admin-management.md`, and `ai-catalog-sync.md`.
