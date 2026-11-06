@@ -68,9 +68,9 @@ The Prompt 5 dependency and local-database risks now have fresh remediation evid
 | P0 | Uncertain real provider/financial effects cannot be restored or reconciled | No blind retry; synthetic/disposable reconciliation tests; no live operation attempted | Authorized backup restoration, incident and provider/finance reconciliation drills |
 | P1 | Generated website/provider behavior differs in real E2B/Vercel/R2 environments | QA-001/002 local isolation and DTO regressions; fixed-command/static controls | Authorized sandbox/storage/deployment failure and cleanup tests |
 | P1 | Automated accessibility green is mistaken for WCAG conformance | Public axe/scripted keyboard/reflow results explicitly scoped | Complete manual WCAG, named AT, physical devices and authenticated states |
-| P1 | Lab performance is mistaken for field responsiveness | QA-010 repeated 24/24 local matrix; no TBT-as-INP or field claim | Interaction/private/provider traces and privacy-approved real-user p75 monitoring |
+| P1 | Lab performance is mistaken for field responsiveness | QA-010/TEST-007 exact-`4244b69` repeated 24/24 local matrix; no TBT-as-INP or field claim; CI failures retained | Replacement final-HEAD CI, interaction/private/provider traces and privacy-approved real-user p75 monitoring |
 | P1 | CI stalls or artifact cleanup hides a failure | Dedicated `performance-results/`, retained failure history and bounded job timeouts | Final HEAD run and artifact inspection; never substitute an older green revision |
-| P2 | Documentation drifts from exact application evidence | Application revision `3c0f0f5`, workflow revision `9e84adc`, run index and domain reports reconciled | Preserve docs-only versus application evidence distinction and require final HEAD checks |
+| P2 | Documentation drifts from exact application evidence | Application revision `4244b69`, CI hardening through `cd6775b`, run index and domain reports reconciled | Preserve application-versus-workflow evidence distinctions and require replacement final HEAD checks |
 | P2 | Dependency maintenance warnings become future vulnerabilities | Zero current moderate+ audit findings and narrow tested overrides | Re-audit on dependency changes; review peer/deprecation maintenance without blind upgrades |
 
 ## Prioritization

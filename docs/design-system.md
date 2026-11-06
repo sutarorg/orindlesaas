@@ -39,7 +39,7 @@ Use 10–16px radii for controls/cards and 20–24px only for major product artb
 - **Link:** descriptive text; underline offset in prose; icon arrows are decorative.
 - **Section heading:** small uppercase/ruled eyebrow, strong H2, concise optional lead.
 - **Product visual:** semantic HTML/CSS/SVG with accessible summary and decorative children hidden where redundant.
-- **Accordion:** native button semantics, `aria-expanded`, associated panel and keyboard access.
+- **Accordion:** native `<details>`/`<summary>` disclosure semantics, browser-managed expanded state, associated panel and keyboard access; a shared `name` provides exclusive groups.
 - **Form:** persistent visible labels, helpful hints, field-level errors and honest pending/success copy.
 - **Badge:** text plus color; never color-only status.
 - **Table:** real headers, caption where useful, responsive overflow labelled for keyboard users.
@@ -50,7 +50,7 @@ Lucide icons use consistent 1.75–2px strokes and are decorative when text dupl
 
 ## Motion
 
-Framer Motion provides only a small transform reveal in the current public site; menu/accordion transitions remain brief. Default 160–240ms UI feedback; no perpetual decorative motion. Reveals start visible, and CSS/Framer reduced-motion handling removes nonessential transforms. Content remains visible without JavaScript.
+The current public site uses a CSS-only 480ms transform entrance rather than a JavaScript animation runtime. Default 160–240ms UI feedback remains for controls; there is no perpetual decorative motion. Reveals stay opaque, reduced-motion handling removes the animation and transform, and content/disclosures remain visible and operable without JavaScript.
 
 ## Responsive behavior
 

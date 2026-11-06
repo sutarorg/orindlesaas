@@ -38,4 +38,4 @@ These closures do not assert hosted provider security. Anonymous `503 integratio
 
 ## Decision
 
-**Executed local/disposable-CI security regression scope: PASS, including final application CI run `42074366023`. Security launch gate: NOT MET.** Absence of a reported exploit or secret-pattern hit is not evidence of complete security, and local mocks cannot remove the hosted and operational gates.
+**Executed local/disposable-CI security regression scope: PASS, including previous green CI run `42084593285`; replacement final-HEAD CI is pending. Security launch gate: NOT MET.** Absence of a reported exploit or secret-pattern hit is not evidence of complete security, and local mocks cannot remove the hosted and operational gates.

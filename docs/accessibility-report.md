@@ -5,9 +5,9 @@ Status: **automated public-route evaluation passed in the observed browser scope
 ## Executed evidence
 
 - Production-build Playwright evaluated all **21 indexable routes** with axe-core using WCAG 2 A/AA, 2.1 AA and 2.2 AA tags. The successful five-project CI matrix in run `42069035875` covered Chromium, Firefox, WebKit, Mobile Chrome emulation and Mobile Safari emulation; no axe violations were reported in those runs.
-- The final local pre-font-correction Chromium suite passed **80/80**, including all 21 route-level axe tests. Subsequent font rendering changed no semantics; all five browser projects passed final application CI run `42074366023`.
+- The current `4244b69` local Chromium suite passed **80/80**, including all 21 route-level axe tests and native popover/dialog/disclosure keyboard checks. All five managed browser projects passed previous run `42084593285`; the replacement final-HEAD matrix is pending.
 - Four viewport tests visited every public route at **320, 390, 768 and 1440 CSS px**, asserted no document-level horizontal overflow, checked visible native buttons against 24×24 CSS px minima, and collected page errors.
-- Browser journeys exercised mobile-dialog keyboard open/Escape close/focus return, login invalid-field focus, password visibility by keyboard, checkbox Space operation, FAQ expanded state, skip-link behavior, visible controls, labels, headings and reduced-motion content visibility.
+- Browser journeys exercised native Products-popover and mobile-dialog keyboard open/Escape close/focus return, login invalid-field focus, password visibility by keyboard, checkbox Space operation, native FAQ `open` state, skip-link behavior, visible controls, labels, headings and reduced-motion content visibility.
 - Lighthouse 13.6.0 reported accessibility **100** for the repeated home, pricing, article and login mobile/desktop lab matrix. This is supporting evidence only and does not replace axe or manual review.
 - Production anonymous customer/admin/API checks established that private content is not exposed. A login redirect is not positive authenticated accessibility evidence.
 

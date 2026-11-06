@@ -1,10 +1,10 @@
 # Launch decision report
 
-Decision: **NO-GO** as of 2026-11-05. This remains a risk decision, not a launch approval.
+Decision: **NO-GO** as of 2026-11-06. This remains a risk decision, not a launch approval.
 
 ## Evidence considered
 
-The Prompt 6 review produced fresh static, unit, production-build, browser, dependency, disposable-PostgreSQL, structured-data, security and repeated Lighthouse evidence. QA-001 through QA-009 have scoped regressions; QA-010 records the intermittent mobile home LCP failure and font-rendering correction. CI run `42069035875` passed all nine jobs for its revision. A later revision independently exposed the performance issue; after correction, final application run `42074366023` passed all nine jobs. Exact revisions and artifacts are indexed in `handoff-final.md`.
+The Prompt 6 review produced fresh static, unit, production-build, browser, dependency, disposable-PostgreSQL, structured-data, security and repeated Lighthouse evidence. QA-001 through QA-010 have scoped regressions. TEST-007 retains the later mobile TBT failures and native-public-UI remediation; exact `4244b69` passes 24/24 locally. Previous run `42084593285` passed all nine jobs, while subsequent PR run `42086200854` failed mobile TBT and desktop-Chromium installation. The replacement final-HEAD run is pending. Exact revisions and artifacts are indexed in `handoff-final.md`.
 
 These results improve confidence in the tested implementation but do not supply hosted-provider, production, physical-device/AT, field-monitoring, operational-recovery or owner-approval evidence.
 

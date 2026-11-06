@@ -179,12 +179,12 @@ Prompt 5 source implementation/local validation is complete, but the `[~]` items
 
 ### Execution and remediation
 
-- [x] Run fresh strict checks, 25 unit files/124 tests, a 45-page production build and production browser suites with retained evidence; final local Chromium passed 80/80.
-- [x] Add repeatable nine-job CI, fixtures, five browser projects and integration coverage; credential-dependent checks remain explicitly Blocked rather than silently passed. Final application run `42074366023` passed all jobs.
+- [x] Run fresh strict checks, 26 unit files/126 tests, a 45-page production build and production browser suites with retained evidence; final local Chromium passed 80/80.
+- [x] Add repeatable nine-job CI, fixtures, five browser projects and integration coverage; credential-dependent checks remain explicitly Blocked rather than silently passed. Run `42084593285` passed all jobs; subsequent PR failures are retained and replacement final-HEAD CI remains a separate gate.
 - [x] Reproduce, prioritize, fix and retest QA-001 through QA-010, including direct/embedded website isolation, DTO redaction, idempotency scope, webhook mismatch, structured-data consistency and intermittent home/mobile LCP.
 - [x] Execute seven real disposable PostgreSQL migration/RLS/grant/concurrency/replay tests; hosted Supabase remains separate blocked evidence.
 - [x] Confirm Supabase/Dodo/provider credentials and authorization are absent, retain explicit Blocked states, and perform no live journey or unbounded provider smoke.
-- [x] Complete managed five-browser/mobile-emulation, public-route axe/scripted keyboard/reflow, technical SEO and repeated Lighthouse checks; QA-010 final local matrix passed 24/24 and CI performance passed.
+- [x] Complete managed five-browser/mobile-emulation, public-route axe/scripted keyboard/reflow, technical SEO and repeated Lighthouse checks; exact-`4244b69` local matrix passed 24/24. Historical CI gates passed, while the replacement final-HEAD run remains pending after later retained failures.
 - [ ] Complete manual WCAG/200–400% zoom/forced-colors/named-AT, authenticated accessibility, physical iOS/Android, field CWV and production indexing/Search Console evidence; these remain blocked or unexecuted.
 - [ ] Resolve critical hosted/provider and operational blocked cases, complete staging backup/restore/rollback/monitoring drills and obtain legal/support/finance/security/operations approval before any launch. Reproduced local P0/P1 defects are closed, but this launch gate is not met.
 

@@ -13,9 +13,9 @@ Status: **Prompt 6 execution checklist**. Checked items have linked observed loc
 
 ## 2. Repeatable local and CI quality gates
 
-- [x] Clean lockfile install, strict TypeScript, ESLint, 25 unit files/124 tests, migration-chain check and 45-page production build passed locally/completed CI; final application run is indexed in `handoff-final.md`.
+- [x] Clean lockfile install, strict TypeScript, ESLint, 26 unit files/126 tests, migration-chain check and 45-page production build passed locally; previous CI passed and replacement final-HEAD CI is indexed as pending in `handoff-final.md`.
 - [x] Added independent financial/state, authorization/redaction, request-security, website-isolation, all-public-route/article, SEO, axe and responsive regressions; hosted/manual boundaries remain separately unchecked.
-- [x] Least-privilege nine-job Actions matrix and usable artifacts passed in runs `42069035875` and bounded final application run `42074366023`; failed/stalled earlier runs remain recorded.
+- [x] Least-privilege nine-job Actions matrix and usable artifacts passed in previous run `42084593285`; failed/stalled earlier and subsequent PR runs remain recorded, with replacement final-HEAD CI pending.
 - [x] Zero-finding dependency audit and reviewed secret/artifact/mock-import scans pass; narrow overrides were tested without blind force upgrades (`security-report.md`).
 
 ## 3. Database, identity, and authorization
@@ -46,12 +46,12 @@ Status: **Prompt 6 execution checklist**. Checked items have linked observed loc
 ## 6. Browser, mobile, accessibility, SEO, and performance
 
 - [x] All public routes/six articles, unconfigured auth states and available anonymous customer/admin boundaries passed production browser tests with failure tracing; positive private journeys remain blocked.
-- [x] Chromium, Firefox, WebKit, Mobile Chrome and Mobile Safari projects passed runs `42069035875` and final application run `42074366023`.
+- [x] Chromium, Firefox, WebKit, Mobile Chrome and Mobile Safari projects passed previous run `42084593285`; subsequent PR desktop-Chromium installation failure is retained and the replacement matrix is pending.
 - [ ] Physical-device support-policy requirement remains launch-blocking: no named iOS/Android hardware evidence exists.
 - [ ] Scripted core-width/keyboard/focus/reduced-motion/native-button/reflow checks pass; complete zoom, text-spacing, forced-colors and manual target review remains incomplete.
 - [ ] Public-route axe corpus has no unreviewed violations; auth/private/manual WCAG 2.2 AA and named-AT matrix is incomplete. No certification claim is made.
 - [x] Metadata, canonical/OG, sitemap/robots, status codes, internal links and all-route JSON-LD match visible content; no ranking/indexing claim.
-- [x] QA-010 repeated final local 24/24 Lighthouse matrix and resource review pass with retained reports; field CWV remains separately blocked and no field claim is made.
+- [x] QA-010 and TEST-007 repeated local Lighthouse matrices and resource reviews pass with retained reports; exact `4244b69` is 24/24. Field CWV remains separately blocked, no field claim is made, and replacement final-HEAD CI is still required.
 
 ## 7. Operations, legal, and final approval
 

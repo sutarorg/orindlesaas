@@ -7,7 +7,7 @@ Current recommendation: **NO-GO** as of 2026-11-05. This is an evidence assessme
 | Gate | State | Observed reason |
 |---|---|---|
 | Documentation/test strategy | COMPLETE | Independent matrix, scenarios, plans, registers, runbooks and domain reports reconciled to observed execution |
-| Static/local implementation evidence | PASS in available scope | Typecheck, ESLint, Drizzle check, 45-page build, 25 unit files/124 tests and local Chromium 80/80; final application CI is separately indexed |
+| Static/local implementation evidence | PASS in available scope | Typecheck, ESLint, Drizzle check, 45-page build, 26 unit files/126 tests and local Chromium 80/80; replacement final-HEAD CI is separately indexed |
 | Dependency/secret/release hygiene | PASS for current tree | Zero audit findings; reviewed secret/artifact/mock-import scans; retained CI artifacts and bounded jobs |
 | Real PostgreSQL/RLS/concurrency | PASS in disposable CI; hosted BLOCKED | Seven integration tests cover migrations/seed, grants/RLS, locks, wallet/webhook/admin races and append-only price history; not hosted Supabase evidence |
 | Supabase customer/admin journeys | BLOCKED | No disposable hosted project, test email, MFA/OAuth or credentialed two-user lifecycle |
@@ -17,7 +17,7 @@ Current recommendation: **NO-GO** as of 2026-11-05. This is an evidence assessme
 | Cross-browser/mobile | PASS in managed emulation; physical BLOCKED | Five projects passed run `42069035875`; final run required. No physical iOS/Android evidence |
 | Accessibility | Automated public scope PASS; launch BLOCKED | 21-route axe corpus and scripted keyboard/reflow checks pass; complete manual WCAG, zoom/forced-colors, named AT and private states are incomplete |
 | Technical SEO | Local PASS; production search NOT EVALUATED | All-route metadata/sitemap/links/JSON-LD regressions pass; live origin/Search Console/indexing unavailable |
-| Performance | Repeated local lab PASS after QA-010; field BLOCKED | Retained 24/24 final local matrix; interaction/private/provider and real-user p75 monitoring unavailable |
+| Performance | Repeated local lab PASS after QA-010/TEST-007; field BLOCKED | Exact-`4244b69` retained 24/24 local matrix; replacement final-HEAD CI pending; interaction/private/provider and real-user p75 monitoring unavailable |
 | Operations/legal/deployment | BLOCKED | No staging drills, owner approvals, explicit production authorization or tested rollback |
 
 ## Non-negotiable launch conditions

@@ -2,7 +2,7 @@
 
 ## Prompt 6 current verification summary — 2026-11-05
 
-The historical stage logs below are retained for traceability, but their then-current limits are superseded by the Prompt 6 reports. Fresh execution now includes 25 unit files/124 tests, a 45-page build, local production Chromium 80/80, five managed CI browser projects, disposable PostgreSQL 16 integration tests, all-route structured-data checks, dependency/secret/artifact/mock-import scans, and a retained repeated Lighthouse matrix.
+The historical stage logs below are retained for traceability, but their then-current limits are superseded by the Prompt 6 reports. Fresh execution now includes 26 unit files/126 tests, a 45-page build, local production Chromium 80/80, five managed CI browser projects, disposable PostgreSQL 16 integration tests, all-route structured-data checks, dependency/secret/artifact/mock-import scans, and a retained repeated Lighthouse matrix. Previous CI passed all nine jobs; the replacement final-HEAD run remains pending after later retained failures.
 
 QA-001 through QA-010 are reconciled in `bug-register.md`; test/infrastructure incidents and all CI runs are in `failure-report.md`. In particular, a later home/mobile LCP failure was corrected and retested rather than hidden by an earlier green run. Current authoritative outcomes are in `final-qa-report.md`, `test-matrix.md`, `release-checklist.md` and `handoff-final.md`.
 

@@ -1,6 +1,6 @@
 # Independent release test matrix
 
-Status: **Prompt 6 execution matrix reconciled through application revision `3c0f0f5`; final application CI `42074366023` passed all nine jobs**. Results below come from observed local/CI runs. “Partial PASS” never satisfies a blocked live, manual or provider boundary.
+Status: **Prompt 6 execution matrix reconciled through application revision `4244b69`; exact-revision local gates pass and replacement final-HEAD CI is pending**. Previous run `42084593285` passed all nine jobs; subsequent PR run `42086200854` failed performance and desktop-Chromium installation and remains retained. “Partial PASS” never satisfies a blocked live, manual or provider boundary.
 
 ## Status and release rules
 
@@ -17,7 +17,7 @@ Current environment baseline: no provider credentials, local PostgreSQL binaries
 
 | ID | Pri | Scenario | Layer / environment | Current observed state | Required evidence |
 |---|---|---|---|---|---|
-| BLD-01 | P1 | Strict TypeScript, ESLint, unit/component tests, migration-chain check, and production build succeed together | Local + CI / current revision | PASS locally and in final application CI 42074366023 | Command logs and build route output |
+| BLD-01 | P1 | Strict TypeScript, ESLint, unit/component tests, migration-chain check, and production build succeed together | Local + CI / current revision | PASS locally for `4244b69` (26 files/126 tests); previous CI 42084593285 passed, replacement final-HEAD CI pending | Command logs and build route output |
 | BLD-02 | P1 | Dependency audit and secret/artifact/mock-import scans have no unaccepted release finding | Local + CI | PASS: zero audit findings; secret/artifact/mock scans reviewed | Audit JSON/text and scoped scan output |
 | PUB-01 | P1 | All 21 public routes render one visible H1, expected status, useful content, and no runtime error | Production browser | PASS: five-project CI and final local Chromium 80/80 | Playwright HTML/report |
 | PUB-02 | P1 | All six launch articles have unique substantive bodies, semantic headings/TOC, working internal/external links, related links, and truthful dates | Content unit + production browser | Partial PASS: substantive content/internal links; external availability not crawled | Content assertions and six-article browser report |
@@ -85,20 +85,20 @@ Detailed vectors live in `credit-engine-test-plan.md` and `payment-test-plan.md`
 | SEC-06 | P0 | R2 ownership/checksum/size and provider URL/redirect/SSRF controls block cross-owner or unrestricted downloads | Unit + authorized R2 failure tests | Partial PASS: unit/static controls; authorized R2/provider failures blocked | Signed URL/key/host and bounded-stream evidence |
 | SEC-07 | P1 | No generated source runs in the primary process; E2B has no inherited secrets/network and fixed commands only | Static/unit + authorized E2B smoke | PASS local fixed-command/no-secret scope; authorized E2B smoke blocked | Process/network/env and sandbox cleanup evidence |
 | MOB-01 | P1 | Public/auth and accessible private states work at 320/360/390/430/768/834/1024/1280/1440/1920 without page overflow or lost controls | Production Chromium | Partial PASS: all public at 320/390/768/1440 plus complex/auth widths; full ten-width/private matrix not complete | Route-width matrix and failure screenshots |
-| MOB-02 | P1 | Current Playwright Chromium, Firefox, WebKit, Mobile Chrome, and Mobile Safari projects pass the supported smoke matrix | Managed browsers/CI | Retest PASS in runs 42069035875 and 42074366023 | Per-project XML/HTML reports |
+| MOB-02 | P1 | Current Playwright Chromium, Firefox, WebKit, Mobile Chrome, and Mobile Safari projects pass the supported smoke matrix | Managed browsers/CI | PASS in run 42084593285; PR run 42086200854 passed four projects but desktop-Chromium installation failed. Replacement final-HEAD matrix pending | Per-project XML/HTML reports |
 | MOB-03 | P2 | Real iOS Safari and Android Chrome touch, orientation, keyboard, and device-specific checks pass | Physical devices/browser service | BLOCKED: no physical device/browser service | Named device/OS evidence; emulation is not a substitute |
 | A11Y-01 | P1 | Axe reports zero serious/critical and no unreviewed violations on all public/auth routes and available app/admin states | Production browser | Partial PASS: zero axe violations on 21 public routes in five projects; auth/private/full-state coverage incomplete | Route/state axe JSON and reviewed exceptions |
 | A11Y-02 | P1 | Complete keyboard, focus, dialog/menu, form error, status, skip-link, reduced-motion, target-size, and reflow review passes | Browser + manual | Partial PASS: scripted keyboard/focus/reflow/reduced-motion; complete manual review not done | Keyboard script results and manual checklist |
 | A11Y-03 | P1 | 200%/400% zoom, text spacing, forced colors, and screen-reader journeys are usable | Manual AT/browser modes | BLOCKED/NOT RUN: zoom/text-spacing/forced-colors/named-AT matrix | Named AT/browser/setting evidence; no certification claim |
-| PERF-01 | P1 | Production Lighthouse mobile/desktop medians meet documented budgets on home, pricing, one article, and available login | Local/CI Lighthouse, 3 runs | Retest PASS for QA-010 in local 24/24 and CI 42074366023; TEST-007 final-HEAD retest open | JSON/HTML reports, median calculations, environment |
+| PERF-01 | P1 | Production Lighthouse mobile/desktop medians meet documented budgets on home, pricing, one article, and available login | Local/CI Lighthouse, 3 runs | Exact-`4244b69` local 24/24 PASS after TEST-007 remediation; replacement final-HEAD CI open. Runs 42082108844 and 42086200854 remain failures | JSON/HTML reports, median calculations, environment |
 | PERF-02 | P1 | Lab LCP/CLS and measured interaction responsiveness meet budgets; no field CWV claim without real-user p75 data | Lab browser + post-launch field | Partial PASS: lab LCP/CLS/TBT; interaction trace and field p75 blocked | Lab traces and separately labelled field status |
-| PERF-03 | P2 | Client manifests, route resources, image/font behavior, and third-party requests remain within reviewed budgets | Production build/browser | Retest PASS: font/resource/third-party review in final local matrix | Manifest/resource report |
+| PERF-03 | P2 | Client manifests, route resources, image/font behavior, and third-party requests remain within reviewed budgets | Production build/browser | Retest PASS: exact-`4244b69` native-public UI reduced three requests/about 73–75KB on audited routes; no third-party origins | Manifest/resource report |
 
 ## Operations and final release
 
 | ID | Pri | Scenario | Layer / environment | Current observed state | Required evidence |
 |---|---|---|---|---|---|
-| OPS-01 | P1 | GitHub Actions repeatably runs static/unit/build, Chromium, cross-browser, security, and isolated PostgreSQL jobs with artifacts | GitHub Actions | Retest PASS: nine jobs/artifacts in runs 42069035875 and 42074366023 | Workflow run URLs and uploaded reports |
+| OPS-01 | P1 | GitHub Actions repeatably runs static/unit/build, Chromium, cross-browser, security, and isolated PostgreSQL jobs with artifacts | GitHub Actions | Previous nine-job/artifact run 42084593285 PASS; subsequent PR run 42086200854 FAILURE retained. Current HEAD pending | Workflow run URLs and uploaded reports |
 | OPS-02 | P0 | Fresh migrations, grants/RLS/append-only constraints, seed conflicts, and forward recovery pass on disposable PostgreSQL/Supabase | CI PostgreSQL + hosted Supabase when available | Retest PASS: disposable CI PostgreSQL; hosted Supabase/forward recovery blocked | Migration/test logs and role assertions |
 | OPS-03 | P0 | Backup restoration, ledger/payment reconciliation, alert drills, and rollback to a compatible known-good revision are demonstrated | Authorized staging | BLOCKED: staging, backup, alert/rollback drills and owners | Dated drill evidence and approver |
 | REL-01 | P0 | No open P0/P1 defect or blocked critical release gate remains; final reports link evidence for the exact release revision | Release review | BLOCKED: critical live/manual/operational/owner gates remain | Signed final QA/readiness report |

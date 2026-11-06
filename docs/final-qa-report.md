@@ -1,6 +1,6 @@
 # Final QA report
 
-Status: **Prompt 6 execution reconciled; final-revision CI is indexed in `handoff-final.md`; not production sign-off**. Date: 2026-11-05. Release recommendation: **NO-GO**.
+Status: **Prompt 6 execution reconciled through application revision `4244b69`; replacement final-HEAD CI is pending; not production sign-off**. Date: 2026-11-06. Release recommendation: **NO-GO**.
 
 ## Scope and independence
 
@@ -12,15 +12,15 @@ All 54 inherited documentation files and the root README were reviewed before te
 
 | Area | Prompt 6 result |
 |---|---|
-| Static/component/build | Local typecheck, ESLint, diff check, Drizzle check, 45-page production build and **25 unit files/124 tests** passed. The QA-010 font-only correction then passed typecheck/build and the complete static/coverage/build job in final application CI `42074366023`. |
-| Production Chromium | **80/80 PASS** after the all-route structured-data correction. Includes 21 indexable routes, six articles, navigation/forms, fail-closed auth/private APIs, security and accessibility/reflow assertions. |
-| Managed cross-browser | Run `42069035875` passed Chromium, Firefox, WebKit, Mobile Chrome and Mobile Safari, plus the other four quality jobs: **nine/nine jobs**. WebKit/signup harness findings were corrected without filtering runtime errors. |
+| Static/component/build | Local typecheck, ESLint, diff check, Drizzle check, 45-page production build and **26 unit files/126 tests** passed for `4244b69`. The previous static/coverage/build CI job passed in `42084593285`; replacement final-HEAD CI remains pending. |
+| Production Chromium | **80/80 PASS** on `4244b69` after the native popover/dialog/details and CSS-motion correction. Includes 21 indexable routes, six articles, navigation/forms, fail-closed auth/private APIs, security and accessibility/reflow assertions. |
+| Managed cross-browser | Previous run `42084593285` passed all five browser projects and all nine jobs. PR run `42086200854` passed Firefox, WebKit, Mobile Chrome and Mobile Safari, but desktop Chromium did not run after installation failed. The replacement five-project matrix is pending. |
 | Disposable PostgreSQL | Seven real PostgreSQL 16 integration tests passed for migrations/seed, grants/RLS, concurrent holds/settlements, over-cost recovery, succeeded-webhook race, admin replay/race and price history. This is not hosted Supabase evidence. |
 | Dependency/security hygiene | Clean lockfile install and zero-finding moderate-level audit; 2,691-file high-confidence secret/artifact scan found zero hits; 237 production files had zero test/mock framework imports. Generic credential-shaped assignments were reviewed without printing values. |
 | Technical SEO/content | All-route unique metadata/canonical/social tags, exact 21-route sitemap, robots/private exclusions, internal links/fragments and parsed JSON-LD passed. QA-009 corrected stale pricing offer wording; no ratings/reviews are claimed. |
 | Accessibility | Twenty-one-route axe corpus passed in five managed projects; scripted keyboard/focus/reflow/reduced-motion checks passed. Complete manual WCAG, named AT, physical devices and authenticated states remain open. |
-| Performance | QA-010 reproduced intermittent home/mobile LCP around 3.3s and corrected late Inter swapping. The final retained local Lighthouse matrix at application revision `3c0f0f5c6bff7dbb6bc3baa552b62be3263de51d` passed **24/24**, with JSON/HTML reports preserved. Field CWV remains unavailable. |
-| CI discrimination | Runs `42065241613` and `42067360809` exposed database/browser/harness failures; `42069035875` passed all nine jobs. Run `42071353363` failed performance and stalled during Mobile Safari WebKit installation. Bounded final application run `42074366023` passed **all nine jobs**, including performance and every browser project. |
+| Performance | QA-010 corrected intermittent late-Inter LCP. TEST-007 then retained mobile TBT failures in runs `42082108844` and `42086200854` and prompted public-hydration remediation. The exact-`4244b69` local matrix passed **24/24**, with fewer resources and JSON/HTML reports preserved. Replacement final-HEAD CI and field CWV remain open. |
+| CI discrimination | Historical green runs did not hide later failures. Run `42084593285` passed all nine jobs; PR run `42086200854` then failed home/pricing/article mobile TBT and desktop-Chromium installation. `4244b69` addresses the repeatable public main-thread cost, and its final-HEAD CI retest is pending. |
 | Deployment/live money | No production deployment, live payment, destructive production test or unrestricted AI was authorized or performed. |
 
 ## Confirmed defects and closure

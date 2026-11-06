@@ -4,13 +4,13 @@ Current status: **not production ready / NO-GO**. This checklist concerns a real
 
 ## Evidence now established
 
-- [x] Fresh local static/component/build checks: strict TypeScript, ESLint, Drizzle migration-chain check, 25 unit files/124 tests and 45-page production build.
+- [x] Fresh local static/component/build checks: strict TypeScript, ESLint, Drizzle migration-chain check, 26 unit files/126 tests and 45-page production build.
 - [x] Public production browser corpus: 21 indexable routes, four products, six articles, metadata/sitemap/internal links/JSON-LD, navigation/forms, fail-closed auth and private-route boundaries.
-- [x] Five managed browser/emulation projects passed in CI run `42069035875`; later failures and the final application run are preserved in `failure-report.md` rather than hidden.
-- [x] Automated public accessibility/reflow scope: 21-route axe corpus, four core widths and scripted keyboard/focus/reduced-motion checks. This is not WCAG certification.
+- [x] Five managed browser/emulation projects passed in previous CI run `42084593285`; subsequent PR failures and the pending replacement run are preserved in `failure-report.md` rather than hidden.
+- [x] Automated public accessibility/reflow scope: 21-route axe corpus, four core widths and scripted native-popover/dialog/disclosure keyboard/focus/reduced-motion checks. This is not WCAG certification.
 - [x] Disposable PostgreSQL 16 migration/seed/grant/RLS/concurrency/replay tests, explicitly separate from hosted Supabase.
 - [x] Security/financial corrections QA-001–QA-009 and performance correction QA-010 have scoped local regressions; `bug-register.md` retains boundaries.
-- [x] Repeated Lighthouse lab matrix passed after the home/mobile LCP correction; JSON/HTML reports persist in `performance-results/` and are uploaded by CI.
+- [x] Exact-`4244b69` Lighthouse lab matrix passed 24/24 after the LCP and public-hydration corrections; JSON/HTML reports persist in `performance-results/` and are uploaded by CI. Replacement final-HEAD CI remains pending.
 - [x] Dependency audit, high-confidence secret/artifact scan and production mock-import scan were reviewed with no unaccepted local release finding.
 
 ## Public website and content gate
@@ -39,7 +39,7 @@ Current status: **not production ready / NO-GO**. This checklist concerns a real
 ## Operational and release gate
 
 - [ ] Monitoring, redacted hosted logs, alerts, spending quotas, incident contacts and rollback are tested on authorized staging.
-- [x] Final application revision completed all nine CI jobs with usable artifacts in run `42074366023`; no known open reproduced P0/P1 defect remains in the available local/CI scope.
+- [ ] Current application revision `4244b69` and final docs HEAD must complete all nine CI jobs with usable artifacts. Previous run `42084593285` passed; subsequent PR run `42086200854` failed and remains open evidence until the replacement run passes.
 - [ ] All blocked critical cases in `test-matrix.md` are resolved with genuine evidence; blocked is never counted as passed.
 - [ ] Legal, support, finance, security and operations owners explicitly approve the release.
 - [ ] Production deployment is explicitly authorized for target/revision/schema/provider modes/time window; post-deployment smoke and rollback watch complete.

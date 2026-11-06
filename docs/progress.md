@@ -1,16 +1,16 @@
 # Progress
 
-Last updated: **2026-11-05**.
+Last updated: **2026-11-06**.
 
 ## Current status
 
-**Prompt 6 independent execution and report reconciliation are complete for the available local/disposable-CI scope; release remains NO-GO.** Final application revision is `3c0f0f5c6bff7dbb6bc3baa552b62be3263de51d`, with bounded workflow revision `9e84adca291ca9e38f376132f0af91fd5e4275c6`. Final application CI run `42074366023` passed all nine jobs. Later documentation/CI-only HEAD checks are indexed by the branch/PR checks; application evidence remains tied to these revisions, and later failed WebKit/performance attempts, including TEST-007, are retained in `failure-report.md`.
+**Prompt 6 independent execution and report reconciliation are complete for the available local/disposable-CI scope; replacement final-HEAD CI is pending and release remains NO-GO.** Current application revision is `4244b6962a1506316e559efaa4ef8436c61c0f47`, with CI hardening inherited through `cd6775bb5f61451ca3963610dd9908ed53723287`. Previous push run `42084593285` passed all nine jobs, but fresh PR run `42086200854` failed three mobile TBT groups and desktop-Chromium installation. Those failures prompted the current native-interaction/hydration remediation; they remain preserved in `failure-report.md`.
 
 ## Prompt 6 observed execution — 2026-11-05
 
 - Reviewed all 54 inherited Markdown documents plus the root README and independently inventoried routes, tests, server modules, migrations and runtime availability before test execution; created the independent matrix, scenarios, specialized plans, registers, runbooks and domain reports.
 - Reproduced and corrected QA-001 through QA-010 with scoped regressions: website isolation/DTOs, admin/payment/request/environment controls, dependency/social/structured-data consistency, and intermittent home/mobile late-font LCP.
-- Local gates passed: typecheck, ESLint, diff check, Drizzle check, 45-page production build, **25 unit files/124 tests**, production Chromium **80/80**, zero-finding dependency audit, reviewed secret/artifact/mock-import scans, and final retained Lighthouse **24/24** after QA-010.
+- Local gates passed: typecheck, ESLint, diff check, Drizzle check, 45-page production build, **26 unit files/126 tests**, production Chromium **80/80**, zero-finding dependency audit, reviewed secret/artifact/mock-import scans, and exact-`4244b69` Lighthouse **24/24** after the TEST-007 public-hydration remediation. Earlier QA-010 font evidence remains archived.
 - CI run `42069035875` passed all nine jobs for `7ba4bc7`. Later run `42071353363` failed performance and stalled during WebKit installation, leading to QA-010 and bounded job timeouts rather than being hidden by the earlier green result.
 - Disposable PostgreSQL 16 supplied real migration/seed/grant/RLS/lock/race evidence. It is not hosted Supabase. Managed Firefox/WebKit and mobile profiles are browser automation/emulation, not physical devices.
 - No live payment, production deployment, unrestricted AI or destructive production test occurred. Hosted Supabase/Dodo/Gateway/R2/Inngest/E2B/Vercel/Upstash/Resend, staging recovery, complete manual WCAG/AT/physical-device, field monitoring and owner approvals remain blockers.
@@ -154,7 +154,7 @@ No Prompt 2 result demonstrates real authentication, email delivery, authorizati
 
 ## Prompt 1 delivered
 
-- Next.js App Router project with strict TypeScript, Tailwind 4, shadcn-compatible/Radix primitives, Lucide, local Poppins/Inter fonts and sparse reduced-motion-safe Framer Motion.
+- Next.js App Router project with strict TypeScript, Tailwind 4, Lucide and local Poppins/Inter fonts. Public navigation, disclosures and motion use native browser/CSS primitives; richer authenticated admin/dashboard interactions retain reviewed Radix primitives.
 - Premium-white responsive system, original four-part Orindle mark, sticky desktop navigation, keyboard-safe mobile dialog, complete footer and custom error/404 states.
 - Homepage with the exact brand promise/supporting message, four-product ecosystem, distinct product chapters, model ecosystem, Why Orindle, connected workflow, use cases, shared credits, pricing preview, FAQs and final CTA.
 - `/features` plus four substantial product pages; `/pricing`, `/models`, `/blog`, `/about`, `/contact`, `/faq`, `/privacy`, `/terms` and `/credits-policy`.
