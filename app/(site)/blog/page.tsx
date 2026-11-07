@@ -9,10 +9,22 @@ import { articles } from "@/lib/content/articles";
 import { createMetadata } from "@/lib/site";
 
 export const metadata: Metadata = createMetadata({
-  title: "AI Creator Guides & Practical Workflows",
-  description: "Original Orindle guides to AI model selection, creator tools, image prompting, AI video, no-code websites and small-business content workflows.",
+  title: "Blogs",
+  description: "Explore the Orindle AI blog for practical guides, tutorials, AI tool comparisons, creative tips, and insights to help you use artificial intelligence more effectively.",
   path: "/blog",
-  keywords: ["AI guides", "AI for creators", "AI for small business", "AI tutorials"],
+  absoluteTitle: true,
+  keywords: [
+    "AI blog",
+    "artificial intelligence blog",
+    "AI guides",
+    "AI tutorials",
+    "AI tips",
+    "AI tools guide",
+    "generative AI tutorials",
+    "AI for creators",
+    "AI productivity tips",
+    "latest AI insights",
+  ],
 });
 
 export default function BlogPage() {

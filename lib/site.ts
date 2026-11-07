@@ -46,6 +46,11 @@ type PageMetadata = {
   publishedTime?: string;
   modifiedTime?: string;
   noindex?: boolean;
+  /**
+   * Absolute meta title for search results. Bypasses the root `%s | Orindle` template,
+   * so SEO copy can differ from the shorter on-page heading without duplicating the brand.
+   */
+  absoluteTitle?: boolean;
 };
 
 export function createMetadata({
@@ -57,11 +62,13 @@ export function createMetadata({
   publishedTime,
   modifiedTime,
   noindex = false,
+  absoluteTitle = false,
 }: PageMetadata): Metadata {
   const url = absoluteUrl(path);
+  const metaTitle = absoluteTitle ? { absolute: title } : title;
 
   return {
-    title,
+    title: metaTitle,
     description,
     keywords,
     alternates: { canonical: url },

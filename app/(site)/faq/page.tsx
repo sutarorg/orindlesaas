@@ -11,9 +11,22 @@ import { creditFaqs } from "@/lib/content/pricing";
 import { createMetadata } from "@/lib/site";
 
 export const metadata: Metadata = createMetadata({
-  title: "Frequently Asked Questions",
-  description: "Answers about Orindle’s four AI products, planned models, one-time credit packs, shared wallet and connected workspace.",
+  title: "FAQ",
+  description: "Find answers to frequently asked questions about Orindle, including AI features, credit packs, account access, AI image generation, video creation, and website building.",
   path: "/faq",
+  absoluteTitle: true,
+  keywords: [
+    "Orindle FAQ",
+    "Orindle help",
+    "Orindle questions",
+    "AI platform FAQ",
+    "AI credits explained",
+    "AI tool support",
+    "account help",
+    "AI image generator FAQ",
+    "AI video generator help",
+    "AI website builder questions",
+  ],
 });
 
 const allFaqs = [...generalFaqs, ...accountFaqs, ...creditFaqs];

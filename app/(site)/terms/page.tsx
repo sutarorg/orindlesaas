@@ -4,9 +4,21 @@ import { LegalPage, LegalSection } from "@/components/marketing/legal-page";
 import { createMetadata } from "@/lib/site";
 
 export const metadata: Metadata = createMetadata({
-  title: "Terms of Use",
-  description: "Terms governing the Orindle public website, future accounts, AI-generated content, acceptable use and connected creative products.",
+  title: "Terms of Service",
+  description: "Review the Orindle Terms of Service to understand the conditions, responsibilities, and rules that apply when accessing and using the Orindle platform and its AI features.",
   path: "/terms",
+  absoluteTitle: true,
+  keywords: [
+    "Orindle terms of service",
+    "Orindle terms",
+    "user agreement",
+    "terms and conditions",
+    "AI platform terms",
+    "platform usage rules",
+    "service agreement",
+    "acceptable use policy",
+    "user responsibilities",
+  ],
 });
 
 export default function TermsPage() {

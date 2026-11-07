@@ -15,10 +15,22 @@ import { absoluteUrl, createMetadata } from "@/lib/site";
 import { formatNumber } from "@/lib/utils";
 
 export const metadata: Metadata = createMetadata({
-  title: "One-Time AI Credit Pricing",
-  description: "Choose Creator, Pro or Studio one-time credit packs. Use one shared balance across Orindle Chat, Image Studio, Video Studio and Websites.",
+  title: "Orindle Pricing",
+  description: "Explore Orindle pricing and choose an AI credit pack for your needs. Access AI chat, image generation, video creation, and website building with flexible credit options.",
   path: "/pricing",
-  keywords: ["Orindle pricing", "AI credits", "one-time AI pricing", "AI credit packs"],
+  absoluteTitle: true,
+  keywords: [
+    "Orindle pricing",
+    "AI pricing",
+    "AI credit packs",
+    "AI credits",
+    "affordable AI tools",
+    "pay as you go AI",
+    "AI platform cost",
+    "AI tool plans",
+    "AI image generator pricing",
+    "AI video generator pricing",
+  ],
 });
 
 export default function PricingPage() {

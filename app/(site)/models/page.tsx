@@ -10,10 +10,22 @@ import { modelFamilies, modelPrinciples } from "@/lib/content/models";
 import { createMetadata } from "@/lib/site";
 
 export const metadata: Metadata = createMetadata({
-  title: "AI Models for Different Creative Tasks",
-  description: "Learn how Orindle approaches GPT, Claude and Gemini model selection. Compare models by task, quality, credit use and your own evaluation.",
+  title: "Explore AI Models for Chat Image and Video Generation",
+  description: "Explore AI models available on Orindle for conversations, creative tasks, image generation, and video workflows. Discover AI model options for different use cases.",
   path: "/models",
-  keywords: ["GPT vs Claude vs Gemini", "AI model selection", "Orindle AI models"],
+  absoluteTitle: true,
+  keywords: [
+    "AI models",
+    "AI model directory",
+    "list of AI models",
+    "AI language models",
+    "large language models",
+    "LLM models",
+    "generative AI models",
+    "AI model catalogue",
+    "AI model options",
+    "image generation models",
+  ],
 });
 
 export default function ModelsPage() {

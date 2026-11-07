@@ -23,10 +23,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const product = getProduct(slug);
   if (!product) return {};
   return createMetadata({
-    title: `${product.name} — ${product.tagline}`,
-    description: product.description,
+    title: product.seoTitle,
+    description: product.seoDescription,
     path: product.route,
-    keywords: [product.name, product.shortName, "Orindle", "connected AI workspace"],
+    absoluteTitle: true,
+    keywords: [...product.seoKeywords],
   });
 }
 

@@ -10,6 +10,12 @@ export type Product = {
   eyebrow: string;
   tagline: string;
   description: string;
+  /** Absolute meta title used for search results and social previews. */
+  seoTitle: string;
+  /** Meta description used for search results and social previews. */
+  seoDescription: string;
+  /** Search keywords for this product page. */
+  seoKeywords: readonly string[];
   longDescription: string;
   accent: ProductAccent;
   benefits: ReadonlyArray<{ title: string; description: string }>;
@@ -27,6 +33,20 @@ export const products: readonly Product[] = [
     name: "Orindle Chat",
     shortName: "Chat",
     route: "/features/ai-chat",
+    seoTitle: "AI Chat for Writing Research and Productivity",
+    seoDescription: "Chat with AI using Orindle to brainstorm ideas, write content, research topics, summarize information, and improve everyday productivity with AI assistance.",
+    seoKeywords: [
+      "AI chat",
+      "AI chatbot online",
+      "chat with AI",
+      "AI writing assistant",
+      "AI research assistant",
+      "conversational AI",
+      "AI productivity assistant",
+      "online AI assistant",
+      "AI chat platform",
+      "artificial intelligence chatbot",
+    ],
     eyebrow: "Think with more clarity",
     tagline: "A conversation that keeps the work moving.",
     description:
@@ -67,6 +87,20 @@ export const products: readonly Product[] = [
     name: "Orindle Image Studio",
     shortName: "Image Studio",
     route: "/features/ai-image-generator",
+    seoTitle: "AI Image Generator for Creative Images and AI Art",
+    seoDescription: "Create original visuals with the Orindle AI image generator. Turn text prompts into AI images, explore creative styles, and bring your visual ideas to life.",
+    seoKeywords: [
+      "AI image generator",
+      "AI art generator",
+      "text to image AI",
+      "image generation AI",
+      "create images with AI",
+      "AI picture generator",
+      "AI visual creation",
+      "AI image creator",
+      "generative AI art",
+      "online image generator",
+    ],
     eyebrow: "Make the idea visible",
     tagline: "Art direction, without the scattered tabs.",
     description:
@@ -104,6 +138,20 @@ export const products: readonly Product[] = [
     name: "Orindle Video Studio",
     shortName: "Video Studio",
     route: "/features/ai-video-generator",
+    seoTitle: "AI Video Generator for Text to Video Creation",
+    seoDescription: "Create engaging videos with the Orindle AI video generator. Transform ideas and text prompts into AI generated video content for creative and digital projects.",
+    seoKeywords: [
+      "AI video generator",
+      "text to video AI",
+      "AI video maker",
+      "generate videos with AI",
+      "AI video creation",
+      "video generation AI",
+      "AI video creator",
+      "generative video tools",
+      "AI content creation",
+      "online AI video generator",
+    ],
     eyebrow: "Give the story motion",
     tagline: "From a single frame to a considered sequence.",
     description:
@@ -141,6 +189,20 @@ export const products: readonly Product[] = [
     name: "Orindle Websites",
     shortName: "Websites",
     route: "/features/ai-website-builder",
+    seoTitle: "AI Website Builder to Create Websites Without Coding",
+    seoDescription: "Build websites with AI using Orindle. Turn your ideas into website experiences with an AI powered website builder designed to simplify website creation.",
+    seoKeywords: [
+      "AI website builder",
+      "build website with AI",
+      "AI website generator",
+      "create website without coding",
+      "AI web design",
+      "AI website creator",
+      "no code website builder",
+      "website creation AI",
+      "AI web development tools",
+      "automated website design",
+    ],
     eyebrow: "Give the work a home",
     tagline: "A professional website begins with a better brief.",
     description:

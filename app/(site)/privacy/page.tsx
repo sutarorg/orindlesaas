@@ -5,8 +5,20 @@ import { createMetadata } from "@/lib/site";
 
 export const metadata: Metadata = createMetadata({
   title: "Privacy Policy",
-  description: "How Orindle approaches personal information, AI content, cookies, retention and privacy choices across its public website and future workspace.",
+  description: "Read the Orindle Privacy Policy to understand how personal information is collected, used, stored, and protected when you access or use our AI platform.",
   path: "/privacy",
+  absoluteTitle: true,
+  keywords: [
+    "Orindle privacy policy",
+    "data privacy",
+    "data protection",
+    "personal information protection",
+    "user privacy",
+    "online privacy policy",
+    "information security",
+    "AI platform privacy",
+    "privacy practices",
+  ],
 });
 
 export default function PrivacyPage() {

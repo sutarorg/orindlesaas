@@ -29,6 +29,8 @@ export type Article = {
   description: string;
   excerpt: string;
   category: "Creator workflows" | "Model guides" | "Image" | "Video" | "Websites" | "Small business";
+  /** Search keywords for this article page. */
+  seoKeywords: readonly string[];
   publishedAt: string;
   updatedAt: string;
   sections: readonly ArticleSection[];

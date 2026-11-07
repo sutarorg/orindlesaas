@@ -10,9 +10,21 @@ import { products } from "@/lib/content/products";
 import { createMetadata } from "@/lib/site";
 
 export const metadata: Metadata = createMetadata({
-  title: "About Orindle",
-  description: "Orindle is being built around a simple idea: creative AI works better when conversations, images, video and websites share one thoughtful workspace.",
+  title: "About",
+  description: "Learn about Orindle and our mission to make AI powered creativity more accessible through tools for AI chat, image generation, video creation, and website building.",
   path: "/about",
+  absoluteTitle: true,
+  keywords: [
+    "about Orindle",
+    "Orindle AI",
+    "AI platform",
+    "all in one AI software",
+    "AI innovation",
+    "AI creativity tools",
+    "accessible AI technology",
+    "AI productivity platform",
+    "artificial intelligence solutions",
+  ],
 });
 
 export default function AboutPage() {
