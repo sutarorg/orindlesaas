@@ -19,9 +19,9 @@
     "env:check": "tsx scripts/env-check.ts",
     "setup:guided": "tsx scripts/setup-guided.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx scripts/db-migrate.ts",
-    "db:seed": "tsx scripts/db-seed.ts",
-    "catalog:sync": "tsx scripts/catalog-sync.ts"
+    "db:migrate": "tsx scripts/db-migrate.mts",
+    "db:seed": "tsx scripts/db-seed.mts",
+    "catalog:sync": "tsx scripts/catalog-sync.mts"
   },
   "dependencies": {
     "@ai-sdk/react": "^4.0.167",
