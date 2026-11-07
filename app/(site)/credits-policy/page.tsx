@@ -6,9 +6,22 @@ import { formatNumber } from "@/lib/utils";
 import { createMetadata } from "@/lib/site";
 
 export const metadata: Metadata = createMetadata({
-  title: "Credits Policy",
-  description: "Understand Orindle one-time credit purchases, the shared wallet, variable AI usage, additional packs, disputes and statutory consumer rights.",
+  title: "AI Credits Policy",
+  description: "Learn how Orindle AI credits work, including credit purchases, usage, balance deductions, payments, and the policies that apply to AI credit packs.",
   path: "/credits-policy",
+  absoluteTitle: true,
+  keywords: [
+    "Orindle credits policy",
+    "AI credits",
+    "AI credit usage",
+    "AI credit packs",
+    "credit balance",
+    "AI usage charges",
+    "AI platform billing",
+    "credit purchase policy",
+    "AI payment policy",
+    "Orindle payments",
+  ],
 });
 
 export default function CreditsPolicyPage() {

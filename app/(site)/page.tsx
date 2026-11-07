@@ -17,10 +17,22 @@ import { createMetadata, absoluteUrl } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = createMetadata({
-  title: "Everything AI. One Platform.",
-  description: "Bring your ideas to life with AI-powered conversations, image generation, video creation and website building — all in one powerful workspace.",
+  title: "AI Platform for Chat Images Video and Websites",
+  description: "Discover Orindle, an all in one AI platform for AI chat, image generation, video creation, and website building. Create, explore, and bring your ideas to life with AI.",
   path: "/",
-  keywords: ["AI workspace", "AI chat", "AI image generator", "AI video generator", "AI website builder"],
+  absoluteTitle: true,
+  keywords: [
+    "Orindle",
+    "all in one AI platform",
+    "AI tools online",
+    "AI chat platform",
+    "AI image generator",
+    "AI video generator",
+    "AI website builder",
+    "AI content creation",
+    "generative AI tools",
+    "AI productivity platform",
+  ],
 });
 
 const productIcons = { chat: MessageSquareText, image: WandSparkles, video: Video, websites: PanelsTopLeft } as const;

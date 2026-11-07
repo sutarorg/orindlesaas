@@ -11,10 +11,22 @@ import { products } from "@/lib/content/products";
 import { createMetadata } from "@/lib/site";
 
 export const metadata: Metadata = createMetadata({
-  title: "AI Creation Tools, Connected in One Workspace",
-  description: "Explore Orindle Chat, Image Studio, Video Studio and Websites: four distinct AI products connected by shared projects, assets and credits.",
+  title: "AI Tools and Features for Creators and Businesses",
+  description: "Explore Orindle AI features for intelligent chat, AI image generation, video creation, and website building. Find creative AI tools for your ideas and projects.",
   path: "/features",
-  keywords: ["AI platform features", "AI creative tools", "connected AI workspace"],
+  absoluteTitle: true,
+  keywords: [
+    "AI tools and features",
+    "AI platform features",
+    "AI tools for creators",
+    "AI tools for business",
+    "AI content creation tools",
+    "AI chat tools",
+    "AI image creation",
+    "AI video creation",
+    "AI website builder",
+    "online AI software",
+  ],
 });
 
 export default function FeaturesPage() {

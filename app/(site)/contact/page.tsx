@@ -7,9 +7,22 @@ import { Container } from "@/components/layout/container";
 import { createMetadata } from "@/lib/site";
 
 export const metadata: Metadata = createMetadata({
-  title: "Contact Orindle",
-  description: "Prepare a question for the Orindle team and find answers about products, pricing, credits and accessibility.",
+  title: "Contact",
+  description: "Contact the Orindle team for product questions, account assistance, technical support, business enquiries, or help with our AI chat, image, video, and website tools.",
   path: "/contact",
+  absoluteTitle: true,
+  keywords: [
+    "contact Orindle",
+    "Orindle support",
+    "Orindle contact information",
+    "AI platform support",
+    "customer support",
+    "technical support",
+    "account assistance",
+    "AI software help",
+    "business enquiries",
+    "Orindle customer service",
+  ],
 });
 
 export default function ContactPage() {
