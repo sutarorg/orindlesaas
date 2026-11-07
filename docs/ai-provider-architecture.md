@@ -10,7 +10,7 @@ Orindle remains one Next.js modular monolith. Extend these existing modules rath
 |---|---|
 | Gateway SDK, discovery reads, generation lookup | `lib/server/ai/gateway.ts` |
 | Registry reads, product resolution, quotes | `lib/server/ai/models.ts` |
-| Discovery normalization and synchronization | `lib/server/ai/catalog-sync.ts`, `scripts/catalog-sync.ts` |
+| Discovery normalization and synchronization | `lib/server/ai/catalog-sync.ts`, `scripts/catalog-sync.mts` |
 | Generation validation and idempotency | `lib/server/generations/` |
 | Chat/media/website execution | `lib/server/chat/service.ts`, `lib/server/generations/runners.ts` |
 | Holds, settlement, usage evidence | `lib/server/credits/` and existing tables |
