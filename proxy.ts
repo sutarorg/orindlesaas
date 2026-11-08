@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { getSupabasePublicConfig } from "@/lib/server/env";
 import { requiresPrivateSession, safeNextPath } from "@/lib/server/auth/safe-redirect";
-import { AUTH_SESSION_POLICY_COOKIE, sessionMaxAge } from "@/lib/supabase/config";
+import { AUTH_REQUEST_TIMEOUT_MS, AUTH_SESSION_POLICY_COOKIE, sessionMaxAge } from "@/lib/supabase/config";
 
 export async function proxy(request: NextRequest) {
   // Only /app and /admin read the session on the server. Every public marketing page is static or
@@ -36,13 +36,32 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  const { data } = await supabase.auth.getClaims();
+  // Bound the refresh round-trip. An unreachable Auth host would otherwise hold every /app
+  // request open, which the browser shows as the login page never navigating. A timeout is treated
+  // as "no verified session" so the user lands on /login instead of hanging.
+  const claims = await withTimeout(supabase.auth.getClaims(), AUTH_REQUEST_TIMEOUT_MS);
+  const data = claims?.data ?? null;
   if (!data?.claims.sub) {
     const login = new URL("/login", request.url);
     login.searchParams.set("next", safeNextPath(`${request.nextUrl.pathname}${request.nextUrl.search}`));
     return NextResponse.redirect(login);
   }
   return response;
+}
+
+/** Resolves to null instead of rejecting or hanging past `ms`. */
+async function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      Promise.resolve(promise),
+      new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), ms); }),
+    ]);
+  } catch {
+    return null;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 
 export const config = {
