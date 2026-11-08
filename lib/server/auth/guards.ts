@@ -59,6 +59,27 @@ export async function getVerifiedIdentity(): Promise<VerifiedIdentity | null> {
   };
 }
 
+/**
+ * Like `requireUser`, but the two distinct failures are reported instead of collapsed into one
+ * thrown error: a missing session is a redirect to /login, and a profile that is absent or not
+ * active is the account's own state, not a transient fault. Without this the dashboard could only
+ * ever say "couldn't load — retry", so a suspended account retried forever.
+ */
+export type WorkspaceDenial = "unauthenticated" | "inactive" | "missing";
+
+export async function resolveWorkspaceAccess(): Promise<{ identity: VerifiedIdentity } | { denial: WorkspaceDenial }> {
+  const identity = await getVerifiedIdentity();
+  if (!identity) return { denial: "unauthenticated" };
+  const [profile] = await getDb()
+    .select({ id: profiles.id, status: profiles.status })
+    .from(profiles)
+    .where(eq(profiles.id, identity.userId))
+    .limit(1);
+  if (!profile) return { denial: "missing" };
+  if (profile.status !== "active") return { denial: "inactive" };
+  return { identity };
+}
+
 export async function requireUser() {
   const identity = await getVerifiedIdentity();
   if (!identity) throw new AppError("unauthorized", 401, "Sign in to continue.");

@@ -5,6 +5,25 @@ import { listEnabledCatalog } from "@/lib/server/ai/models";
 import { AppError } from "@/lib/server/errors";
 
 /**
+ * A workspace needs exactly one wallet row per profile. The `on_orindle_auth_user_created` trigger
+ * normally creates both when the auth user appears, but a database that predates the trigger (or an
+ * account created while it was missing) can leave a profile with no wallet. Nothing recovered from
+ * that: getWorkspaceSnapshot threw "The workspace has not been initialized", so the account was
+ * locked out of /app permanently and every login looked like a hang.
+ *
+ * Creating the row is idempotent and derives from the profile's own id, so it cannot be used to
+ * grant credits — a new wallet starts at zero, which is exactly what signup provisions. Failures
+ * are swallowed so the caller still raises the normal 403 instead of a 500.
+ */
+async function ensureWallet(userId: string) {
+  try {
+    await getDb().insert(wallets).values({ userId }).onConflictDoNothing({ target: wallets.userId });
+  } catch (error) {
+    console.error("[workspace] Could not provision the missing wallet row.", error);
+  }
+}
+
+/**
  * The model catalogue is discovery data owned by the Gateway sync, not workspace state. A database
  * that has not had the catalogue migrations applied yet (or is waiting on a first sync) must still
  * render the workspace, so a failure here degrades the catalogue to empty instead of failing the
@@ -33,8 +52,16 @@ export async function getWorkspaceSnapshot(userId: string) {
     loadEnabledCatalogSafely(),
   ]);
   const profile = profileRows[0];
-  const wallet = walletRows[0];
-  if (!profile || !wallet) throw new AppError("forbidden", 403, "The workspace has not been initialized.");
+  if (!profile) throw new AppError("forbidden", 403, "The workspace has not been initialized.");
+  // A profile without a wallet is a provisioning gap, not an uninitialised workspace: repair it and
+  // carry on rather than locking the account out of /app forever.
+  let wallet = walletRows[0];
+  if (!wallet) {
+    await ensureWallet(userId);
+    const [repaired] = await db.select().from(wallets).where(eq(wallets.userId, userId)).limit(1);
+    if (!repaired) throw new AppError("forbidden", 403, "The workspace has not been initialized.");
+    wallet = repaired;
+  }
   const deletion = await db.select({ id: accountDeletionRequests.id, status: accountDeletionRequests.status, createdAt: accountDeletionRequests.createdAt }).from(accountDeletionRequests).where(eq(accountDeletionRequests.userId, userId)).orderBy(desc(accountDeletionRequests.createdAt)).limit(1);
   return {
     profile,
