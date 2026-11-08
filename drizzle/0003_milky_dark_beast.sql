@@ -1,4 +1,4 @@
-CREATE TABLE "catalog_price_observations" (
+CREATE TABLE IF NOT EXISTS "catalog_price_observations" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"run_id" uuid NOT NULL,
 	"model_id" text NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE "catalog_price_observations" (
 );
 --> statement-breakpoint
 ALTER TABLE "catalog_price_observations" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-CREATE TABLE "catalog_sync_runs" (
+CREATE TABLE IF NOT EXISTS "catalog_sync_runs" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"request_id" text NOT NULL,
 	"trigger" text NOT NULL,
@@ -31,31 +31,45 @@ CREATE TABLE "catalog_sync_runs" (
 );
 --> statement-breakpoint
 ALTER TABLE "catalog_sync_runs" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-ALTER TABLE "model_prices" DROP CONSTRAINT "model_prices_model_id_models_id_fk";
+ALTER TABLE "model_prices" DROP CONSTRAINT IF EXISTS "model_prices_model_id_models_id_fk";
 --> statement-breakpoint
 ALTER TABLE "models" ALTER COLUMN "kind" DROP NOT NULL;--> statement-breakpoint
-ALTER TABLE "model_prices" ADD COLUMN "pricing_data" jsonb;--> statement-breakpoint
-ALTER TABLE "model_prices" ADD COLUMN "quote_rule" jsonb;--> statement-breakpoint
-ALTER TABLE "models" ADD COLUMN "catalog_type" text DEFAULT 'unknown' NOT NULL;--> statement-breakpoint
-ALTER TABLE "models" ADD COLUMN "gateway_metadata" jsonb DEFAULT '{}'::jsonb NOT NULL;--> statement-breakpoint
-ALTER TABLE "models" ADD COLUMN "product_compatibility" jsonb DEFAULT '{}'::jsonb NOT NULL;--> statement-breakpoint
-ALTER TABLE "models" ADD COLUMN "compatibility_version" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
-ALTER TABLE "models" ADD COLUMN "discovery_status" text DEFAULT 'present' NOT NULL;--> statement-breakpoint
-ALTER TABLE "models" ADD COLUMN "catalog_hash" text;--> statement-breakpoint
-ALTER TABLE "models" ADD COLUMN "first_discovered_at" timestamp with time zone;--> statement-breakpoint
-ALTER TABLE "models" ADD COLUMN "last_seen_at" timestamp with time zone;--> statement-breakpoint
-ALTER TABLE "providers" ADD COLUMN "first_discovered_at" timestamp with time zone;--> statement-breakpoint
-ALTER TABLE "providers" ADD COLUMN "last_seen_at" timestamp with time zone;--> statement-breakpoint
-ALTER TABLE "catalog_price_observations" ADD CONSTRAINT "catalog_price_observations_run_id_catalog_sync_runs_id_fk" FOREIGN KEY ("run_id") REFERENCES "public"."catalog_sync_runs"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "catalog_price_observations" ADD CONSTRAINT "catalog_price_observations_model_id_models_id_fk" FOREIGN KEY ("model_id") REFERENCES "public"."models"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "catalog_sync_runs" ADD CONSTRAINT "catalog_sync_runs_actor_id_profiles_id_fk" FOREIGN KEY ("actor_id") REFERENCES "public"."profiles"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "catalog_price_observations_model_observed_idx" ON "catalog_price_observations" USING btree ("model_id","observed_at");--> statement-breakpoint
-CREATE INDEX "catalog_sync_runs_started_idx" ON "catalog_sync_runs" USING btree ("started_at");--> statement-breakpoint
-ALTER TABLE "model_prices" ADD CONSTRAINT "model_prices_model_id_models_id_fk" FOREIGN KEY ("model_id") REFERENCES "public"."models"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "models_discovery_status_idx" ON "models" USING btree ("discovery_status","last_seen_at");--> statement-breakpoint
-ALTER TABLE "models" ADD CONSTRAINT "models_discovery_status_valid" CHECK ("models"."discovery_status" in ('present', 'missing', 'reference', 'invalid'));--> statement-breakpoint
-ALTER TABLE "models" ADD CONSTRAINT "models_enabled_has_product" CHECK ("models"."enabled" = false OR "models"."kind" IS NOT NULL);--> statement-breakpoint
-ALTER TABLE "models" ADD CONSTRAINT "models_compatibility_version_nonnegative" CHECK ("models"."compatibility_version" >= 0);
+ALTER TABLE "model_prices" ADD COLUMN IF NOT EXISTS "pricing_data" jsonb;--> statement-breakpoint
+ALTER TABLE "model_prices" ADD COLUMN IF NOT EXISTS "quote_rule" jsonb;--> statement-breakpoint
+ALTER TABLE "models" ADD COLUMN IF NOT EXISTS "catalog_type" text DEFAULT 'unknown' NOT NULL;--> statement-breakpoint
+ALTER TABLE "models" ADD COLUMN IF NOT EXISTS "gateway_metadata" jsonb DEFAULT '{}'::jsonb NOT NULL;--> statement-breakpoint
+ALTER TABLE "models" ADD COLUMN IF NOT EXISTS "product_compatibility" jsonb DEFAULT '{}'::jsonb NOT NULL;--> statement-breakpoint
+ALTER TABLE "models" ADD COLUMN IF NOT EXISTS "compatibility_version" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE "models" ADD COLUMN IF NOT EXISTS "discovery_status" text DEFAULT 'present' NOT NULL;--> statement-breakpoint
+ALTER TABLE "models" ADD COLUMN IF NOT EXISTS "catalog_hash" text;--> statement-breakpoint
+ALTER TABLE "models" ADD COLUMN IF NOT EXISTS "first_discovered_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "models" ADD COLUMN IF NOT EXISTS "last_seen_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "providers" ADD COLUMN IF NOT EXISTS "first_discovered_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "providers" ADD COLUMN IF NOT EXISTS "last_seen_at" timestamp with time zone;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "catalog_price_observations" ADD CONSTRAINT "catalog_price_observations_run_id_catalog_sync_runs_id_fk" FOREIGN KEY ("run_id") REFERENCES "public"."catalog_sync_runs"("id") ON DELETE restrict ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "catalog_price_observations" ADD CONSTRAINT "catalog_price_observations_model_id_models_id_fk" FOREIGN KEY ("model_id") REFERENCES "public"."models"("id") ON DELETE restrict ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "catalog_sync_runs" ADD CONSTRAINT "catalog_sync_runs_actor_id_profiles_id_fk" FOREIGN KEY ("actor_id") REFERENCES "public"."profiles"("id") ON DELETE restrict ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "catalog_price_observations_model_observed_idx" ON "catalog_price_observations" USING btree ("model_id","observed_at");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "catalog_sync_runs_started_idx" ON "catalog_sync_runs" USING btree ("started_at");--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "model_prices" ADD CONSTRAINT "model_prices_model_id_models_id_fk" FOREIGN KEY ("model_id") REFERENCES "public"."models"("id") ON DELETE restrict ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "models_discovery_status_idx" ON "models" USING btree ("discovery_status","last_seen_at");--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "models" ADD CONSTRAINT "models_discovery_status_valid" CHECK ("models"."discovery_status" in ('present', 'missing', 'reference', 'invalid'));
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "models" ADD CONSTRAINT "models_enabled_has_product" CHECK ("models"."enabled" = false OR "models"."kind" IS NOT NULL);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "models" ADD CONSTRAINT "models_compatibility_version_nonnegative" CHECK ("models"."compatibility_version" >= 0);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Reviewed dynamic Gateway catalogue additions; additive and idempotent.
 UPDATE "public"."models" SET
@@ -97,9 +111,17 @@ RETURNS trigger LANGUAGE plpgsql SET search_path = '' AS $$
 BEGIN RAISE EXCEPTION '% rows are historical and cannot be deleted', TG_TABLE_NAME; END;
 $$;--> statement-breakpoint
 REVOKE ALL ON FUNCTION "public"."orindle_prevent_catalog_delete"() FROM PUBLIC;--> statement-breakpoint
+DROP TRIGGER IF EXISTS "providers_prevent_delete" ON "public"."providers";
+--> statement-breakpoint
 CREATE TRIGGER "providers_prevent_delete" BEFORE DELETE ON "public"."providers" FOR EACH ROW EXECUTE FUNCTION "public"."orindle_prevent_catalog_delete"();--> statement-breakpoint
+DROP TRIGGER IF EXISTS "models_prevent_delete" ON "public"."models";
+--> statement-breakpoint
 CREATE TRIGGER "models_prevent_delete" BEFORE DELETE ON "public"."models" FOR EACH ROW EXECUTE FUNCTION "public"."orindle_prevent_catalog_delete"();--> statement-breakpoint
+DROP TRIGGER IF EXISTS "catalog_sync_runs_prevent_delete" ON "public"."catalog_sync_runs";
+--> statement-breakpoint
 CREATE TRIGGER "catalog_sync_runs_prevent_delete" BEFORE DELETE ON "public"."catalog_sync_runs" FOR EACH ROW EXECUTE FUNCTION "public"."orindle_prevent_catalog_delete"();--> statement-breakpoint
+DROP TRIGGER IF EXISTS "catalog_price_observations_append_only" ON "public"."catalog_price_observations";
+--> statement-breakpoint
 CREATE TRIGGER "catalog_price_observations_append_only" BEFORE UPDATE OR DELETE ON "public"."catalog_price_observations" FOR EACH ROW EXECUTE FUNCTION "public"."orindle_prevent_append_only_mutation"();--> statement-breakpoint
 REVOKE ALL ON "public"."catalog_sync_runs", "public"."catalog_price_observations" FROM "anon", "authenticated";--> statement-breakpoint
 REVOKE SELECT ON "public"."models" FROM "anon", "authenticated";--> statement-breakpoint

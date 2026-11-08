@@ -17,10 +17,24 @@ import type {
 } from "@/lib/contracts/authentication";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import {
+  AUTH_REQUEST_TIMEOUT_MS,
   AUTH_SESSION_POLICY_COOKIE,
   DEFAULT_SESSION_MAX_AGE,
   PERSISTENT_SESSION_MAX_AGE,
 } from "@/lib/supabase/config";
+
+/** Resolves to null if `promise` has not settled within `ms`, so callers never wait forever. */
+async function withDeadline<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      Promise.resolve(promise),
+      new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), ms); }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
 
 function success(operation: AuthenticationOperation, next: Extract<AuthenticationResult, { status: "success" }>["next"], message: string): AuthenticationResult {
   return { status: "success", operation, next, message };
@@ -70,15 +84,31 @@ export class SupabaseAuthenticationService implements AuthenticationService {
     const maxAge = request.rememberMe ? PERSISTENT_SESSION_MAX_AGE : DEFAULT_SESSION_MAX_AGE;
     const client = createSupabaseBrowserClient(maxAge);
     if (!client) return unavailable("login");
+    // Bound the round-trip so an unreachable Auth host surfaces as an error, not a frozen button.
     this.setSessionPolicy(request.rememberMe);
-    const { error } = await client.auth.signInWithPassword({ email: request.email, password: request.password });
-    if (error) {
-      const code = providerErrorCode(error);
+    let signInError: { code?: string; message?: string } | null = null;
+    try {
+      const outcome = await withDeadline(
+        client.auth.signInWithPassword({ email: request.email, password: request.password }),
+        AUTH_REQUEST_TIMEOUT_MS,
+      );
+      if (!outcome) {
+        return failure("login", "network_failure", "The authentication service did not respond in time. Check your connection and try again; no session was created.");
+      }
+      signInError = outcome.error;
+    } catch {
+      return failure("login", "network_failure", "The authentication service could not be reached. No session was created; try again.");
+    }
+    if (signInError) {
+      const code = providerErrorCode(signInError);
+      // Tell the user what actually happened: a network fault must not look like a wrong password.
       const message = code === "verification_required"
         ? "Verify your email before logging in."
         : code === "rate_limited"
           ? "Too many attempts. Wait before trying again."
-          : "The email or password was not accepted.";
+          : code === "network_failure"
+            ? "We couldn’t reach the authentication service. Check your connection and try again; no session was created."
+            : "The email or password was not accepted.";
       return failure("login", code, message);
     }
     return success("login", "dashboard", "You are logged in. Opening your workspace…");
