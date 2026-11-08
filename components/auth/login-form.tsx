@@ -39,13 +39,18 @@ export function LoginForm({ initialState, nextPath = "/app" }: { initialState: A
     setPending(true);
     try {
       const response = await authenticationService.signIn({ email: email.trim(), password, rememberMe });
+      if (response.status === "success") {
+        // The session cookie is already written at this point. Navigating immediately — and leaving
+        // `pending` set so the button stays disabled — removes the dead beat where the form sat idle
+        // on "Logging in…" before the browser finally left the page.
+        window.location.assign(nextPath);
+        return;
+      }
       setResult(response.message);
-      if (response.status === "success") window.location.assign(nextPath);
     } catch {
       setResult("Authentication could not be reached. No session change was confirmed; try again.");
-    } finally {
-      setPending(false);
     }
+    setPending(false);
   }
 
   return (
