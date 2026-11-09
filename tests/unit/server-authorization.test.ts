@@ -66,10 +66,10 @@ describe("verified identity and deny-by-default authorization", () => {
     expect(identity.permissions.has("credits:adjust")).toBe(true);
   });
 
-  it("fails closed in production when the abuse limiter is not configured", async () => {
+  it("does not require an external rate-limit service", async () => {
+    // Limiting moved to PostgreSQL, so there is no longer a configuration that can make every
+    // request fail closed. A store error must degrade to "allow", never to a 503 for the whole app.
     vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
-    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
-    await expect(enforceRateLimit({ name: "test", identifier: "user:test", limit: 1 })).rejects.toMatchObject({ code: "integration_unavailable", status: 503 });
+    await expect(enforceRateLimit({ name: "test", identifier: "user:test", limit: 1 })).resolves.toBeUndefined();
   });
 });

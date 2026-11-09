@@ -674,6 +674,25 @@ export const auditEvents = pgTable(
   (table) => [index("audit_events_target_created_idx").on(table.targetType, table.targetId, table.createdAt)],
 ).enableRLS();
 
+/**
+ * Fixed-window counters for abuse limiting. Replaces the Upstash Redis integration: the unique key
+ * makes increments atomic, so two concurrent requests cannot both pass the same limit.
+ */
+export const rateLimits = pgTable(
+  "rate_limits",
+  {
+    name: text("name").notNull(),
+    identifier: text("identifier").notNull(),
+    windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
+    count: integer("count").notNull().default(0),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.name, table.identifier, table.windowStart] }),
+    index("rate_limits_expires_idx").on(table.expiresAt),
+  ],
+).enableRLS();
+
 export const schema = {
   profiles,
   adminRoles,
@@ -701,6 +720,7 @@ export const schema = {
   emailOutbox,
   outboxEvents,
   auditEvents,
+  rateLimits,
 };
 
 export type DatabaseSchema = typeof schema;
