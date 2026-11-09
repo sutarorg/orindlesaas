@@ -25,12 +25,11 @@ Never place `DATABASE_URL`, service-role/secret keys, Dodo/Gateway/R2/Inngest/E2
 | `DODO_PRODUCT_CREATOR_ID`, `DODO_PRODUCT_PRO_ID`, `DODO_PRODUCT_STUDIO_ID` | Checkout/webhook expectation | Environment-specific one-time product IDs; server-only and not shared across test/live |
 | `AI_GATEWAY_API_KEY` | AI/catalog/cost | Server secret; Vercel OIDC may be supported by the SDK on Vercel but is not assumed locally |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | R2 | Server-only account/bucket and scoped S3 credentials |
-| `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY` | Production jobs | Separate event-write and invocation-signing secrets; optional fallback signing key only during documented rotation |
+| `JOBS_TICK_SECRET` | Scheduled jobs | Bearer secret required by `GET /api/v1/jobs/tick`; the outbox is drained in-process, so no hosted queue or signing key exists |
 | `E2B_API_KEY` | Website validation | Server secret; never forwarded into the created sandbox |
 | `VERCEL_API_TOKEN`, `VERCEL_TEAM_ID` | Website deployment | Narrow server credential/team scope |
 | `VERCEL_PROJECT_PREFIX` | Website deployment | Optional safe project-name prefix; default is server-controlled |
 | `VERCEL_DEPLOY_TARGET` | Website deployment | `preview` default; `production` requires separate authorized operational change |
-| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Server rate limiting | Required for sensitive production endpoints; no public fallback credentials |
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `SUPPORT_EMAIL` | Contact/receipt delivery | Verified sender and support destination; auth email delivery additionally requires Supabase SMTP/template configuration |
 | `AI_ALLOWED_ASSET_HOSTS` | Hosted media download | Optional comma-separated exact HTTPS provider hosts; inline provider bytes do not need it |
 | `LOG_LEVEL` | Observability | `info` default; safe values only, never enables payload logging |
