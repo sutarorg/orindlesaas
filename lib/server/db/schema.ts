@@ -691,7 +691,7 @@ export const rateLimits = pgTable(
     primaryKey({ columns: [table.name, table.identifier, table.windowStart] }),
     index("rate_limits_expires_idx").on(table.expiresAt),
   ],
-);
+).enableRLS();
 
 export const schema = {
   profiles,

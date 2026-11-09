@@ -67,4 +67,18 @@ describe("hosted integrations are gone", () => {
     // A counter-store outage must not take the product down.
     expect(limiter).toContain("allowing the request");
   });
+
+  /**
+   * rate_limits is reachable through the browser-facing Data API, so it must carry the same
+   * protections as every other table. The integration suite asserts this against a live database;
+   * this keeps the failure local and fast when a new migration forgets it.
+   */
+  it("gives the new rate-limit table the same protections as every other table", () => {
+    const migration = read("drizzle/0004_local_jobs_and_rate_limits.sql");
+    expect(migration).toMatch(/ALTER TABLE "rate_limits" ENABLE ROW LEVEL SECURITY/);
+    expect(migration).toMatch(/REVOKE ALL ON "public"\."rate_limits" FROM "anon", "authenticated"/);
+
+    const schema = read("lib/server/db/schema.ts");
+    expect(schema).toMatch(/export const rateLimits[\s\S]*?\n\)\.enableRLS\(\);/);
+  });
 });

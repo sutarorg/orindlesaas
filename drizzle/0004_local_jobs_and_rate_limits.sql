@@ -19,7 +19,9 @@ CREATE TABLE IF NOT EXISTS "rate_limits" (
 );--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "rate_limits_expires_idx" ON "rate_limits" USING btree ("expires_at");--> statement-breakpoint
 
--- Counters are server-only state; the browser Data API must never read or write them.
+-- Counters are server-only state; the browser Data API must never read or write them. RLS is enabled
+-- to match every other table in the schema, and the grants revoked so no permissive policy is needed.
+ALTER TABLE "rate_limits" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 REVOKE ALL ON "public"."rate_limits" FROM "anon", "authenticated";--> statement-breakpoint
 
 -- The hosted queue is gone, so any row still marked as handed to it must be re-driven locally.
