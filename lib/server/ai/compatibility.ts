@@ -26,7 +26,24 @@ function strings(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
-function hasV4(metadata: Record<string, unknown>): boolean {
+/**
+ * Whether Orindle has evidence that this model can be driven through the AI SDK.
+ *
+ * On Vercel AI Gateway this was expressed as a `supported_specifications` entry of `"v4"`, and that
+ * field does not exist in OpenRouter's catalogue. Keeping the Gateways-only test would therefore
+ * reject every OpenRouter model with "SDK v4 support is not evidenced" — invalidating the entire
+ * catalogue while looking like a compatibility rule rather than a migration bug.
+ *
+ * OpenRouter's evidence is different and just as concrete: the model is served over its chat
+ * completions API and the catalogue declares its input/output modalities. So a model whose metadata
+ * carries the canonical OpenRouter identity is judged on modality evidence, and a historical Gateway
+ * row keeps the original rule so its behaviour cannot change retroactively.
+ */
+function hasSdkSupport(metadata: Record<string, unknown>): boolean {
+  if (typeof metadata.openrouterId === "string") {
+    const declared = record(metadata.modalities);
+    return strings(declared.input).length > 0 && strings(declared.output).length > 0;
+  }
   return strings(metadata.supported_specifications).includes("v4");
 }
 
@@ -58,7 +75,7 @@ export function assessProductCompatibility(model: CompatibilityModel, product: P
   if (parameters.resolutions) parameters.resolutions = unique(parameters.resolutions);
   if (parameters.durations) parameters.durations = [...new Set(parameters.durations)];
   const metadata = model.gatewayMetadata;
-  if (!hasV4(metadata)) return { supported: false, reviewed, parameters, reason: "Gateway SDK v4 support is not evidenced." };
+  if (!hasSdkSupport(metadata)) return { supported: false, reviewed, parameters, reason: "AI SDK support is not evidenced by the catalogue metadata." };
 
   if (product === "chat" || product === "website") {
     if (model.catalogType !== "language" || !["chat", "website"].includes(model.kind ?? "") || (product === "chat" && model.kind !== "chat")) {
@@ -78,7 +95,7 @@ export function assessProductCompatibility(model: CompatibilityModel, product: P
   const output = product === "image" ? "image" : "video";
   if (!modalities(metadata, "output").includes(output)) return { supported: false, reviewed, parameters, reason: `${output} output is not evidenced.` };
   if (!reviewed && model.catalogType !== product) return { supported: false, reviewed, parameters, reason: "Cross-type media routing requires reviewed compatibility." };
-  if (model.catalogType !== product && !reviewed) return { supported: false, reviewed, parameters, reason: "The Gateway model type does not match this media product." };
+  if (model.catalogType !== product && !reviewed) return { supported: false, reviewed, parameters, reason: "The catalogue model type does not match this media product." };
   if (product === "image") {
     parameters.sizes ??= [];
     parameters.aspectRatios ??= [];
@@ -89,9 +106,19 @@ export function assessProductCompatibility(model: CompatibilityModel, product: P
   if (!reviewed || !parameters.durations?.length || !parameters.resolutions?.length) {
     return { supported: false, reviewed, parameters, reason: "Video routing requires reviewed durations and resolutions." };
   }
-  const mapping = parameters.resolutionPricing ?? {};
-  if (parameters.resolutions.some((resolution) => !mapping[resolution])) {
-    return { supported: false, reviewed, parameters, reason: "Every video resolution needs an exact Gateway pricing label." };
+  /**
+   * `resolutionPricing` mapped a resolution to a Gateway pricing SKU. OpenRouter video endpoints price
+   * per second of output (`per-video-second`, sometimes tiered as `per-video-second-1080p`), so the
+   * requirement no longer applies to them: demanding it would make every OpenRouter video model
+   * impossible to enable. The label is still required for historical Gateway rows, whose quotes are
+   * resolved through that mapping and must not change behaviour retroactively.
+   */
+  const openRouterModel = typeof model.gatewayMetadata.openrouterId === "string";
+  if (!openRouterModel) {
+    const mapping = parameters.resolutionPricing ?? {};
+    if (parameters.resolutions.some((resolution) => !mapping[resolution])) {
+      return { supported: false, reviewed, parameters, reason: "Every video resolution needs an exact pricing label." };
+    }
   }
   parameters.aspectRatios ??= [];
   parameters.generateAudio ??= false;

@@ -5,7 +5,7 @@ import { creditReservations, generationJobs, outboxEvents } from "@/lib/server/d
 import { AppError } from "@/lib/server/errors";
 import { resolveGenerationModel, type GenerationKind } from "@/lib/server/ai/models";
 import { holdCredits, lockCreditWallet, settleReservation } from "@/lib/server/credits/ledger";
-import { lookupActualGenerationCost } from "@/lib/server/ai/gateway";
+import { classifyGenerationId, lookupOpenRouterGenerationCost, type UsageEvidence } from "@/lib/server/ai/usage";
 
 function stableJson(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
@@ -121,16 +121,29 @@ export async function markSubmissionUncertain(jobId: string, userId: string, cod
   );
 }
 
+/**
+ * Persists the provider's own references.
+ *
+ * OpenRouter generation IDs (`gen-`) and Gateway IDs (`gen_`) are written to separate columns. If a
+ * value were stored in whichever column happened to be free, settlement would later have to guess
+ * which provider to ask, and a Gateway ID sent to OpenRouter's lookup would simply 404.
+ */
 export async function recordProviderReference(input: {
   jobId: string;
   userId: string;
   generationId?: string | null;
+  providerJobId?: string | null;
   providerOperation?: Record<string, unknown>;
   awaitingProvider?: boolean;
 }) {
+  const origin = input.generationId ? classifyGenerationId(input.generationId) : null;
   const [job] = await getDb().update(generationJobs).set({
     submissionState: "completed",
-    gatewayGenerationId: input.generationId ?? null,
+    // A generation ID we cannot classify is not silently written into a provider column.
+    providerGenerationId: origin === "openrouter" ? input.generationId ?? null : null,
+    gatewayGenerationId: origin === "legacy_gateway" ? input.generationId ?? null : null,
+    providerJobId: input.providerJobId ?? null,
+    provider: "openrouter",
     providerOperation: input.providerOperation,
     status: input.awaitingProvider ? "awaiting_provider" : "running",
     updatedAt: new Date(),
@@ -139,6 +152,29 @@ export async function recordProviderReference(input: {
   ).returning();
   if (!job) throw new AppError("conflict", 409, "The generation submission state changed unexpectedly.");
   return job;
+}
+
+
+/**
+ * Looks up the authoritative cost, tolerating OpenRouter's short propagation delay.
+ *
+ * The documentation does not promise that the usage record exists the instant a stream ends, and a
+ * video job only reports its generation ID at completion. Treating "not yet available" as failure
+ * would push ordinary traffic into reconciliation, while treating it as success would invent a
+ * cost. The middle ground is a short bounded retry; after that the job genuinely needs a human.
+ */
+async function lookupCostWithGrace(generationId: string, attempts = 3): Promise<UsageEvidence> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      return await lookupOpenRouterGenerationCost(generationId);
+    } catch (error) {
+      lastError = error;
+      if (attempt === attempts - 1) break;
+      await new Promise((resolve) => setTimeout(resolve, 1_500 * (attempt + 1)));
+    }
+  }
+  throw lastError;
 }
 
 export async function settleGeneration(input: {
@@ -151,7 +187,8 @@ export async function settleGeneration(input: {
     and(eq(generationJobs.id, input.jobId), eq(generationJobs.userId, input.userId)),
   ).limit(1);
   if (!job) throw new AppError("not_found", 404, "The generation was not found.");
-  if (!job.gatewayGenerationId || !job.reservationId) {
+  const generationReference = job.providerGenerationId ?? job.gatewayGenerationId;
+  if (!generationReference || !job.reservationId) {
     await markSubmissionUncertain(job.id, job.userId, "actual_cost_unavailable");
     return { status: "reconciliation_required" as const };
   }
@@ -162,8 +199,10 @@ export async function settleGeneration(input: {
   }
   let actual;
   try {
-    actual = await lookupActualGenerationCost(job.gatewayGenerationId);
+    actual = await lookupCostWithGrace(generationReference);
   } catch {
+    // Deliberately not settled on a lookup failure: an unknown cost is not a zero cost, and
+    // charging the reservation would guess. The reservation stays held for reconciliation.
     await markSubmissionUncertain(job.id, job.userId, "actual_cost_unavailable");
     return { status: "reconciliation_required" as const };
   }
@@ -171,7 +210,14 @@ export async function settleGeneration(input: {
     const settlement = await settleReservation(tx, {
       reservationId: job.reservationId!,
       actualCostUsd: actual.actualCostUsd,
-      gatewayGenerationId: job.gatewayGenerationId!,
+      // The historical column is only populated for genuinely historical Gateway references;
+      // writing an OpenRouter ID there would blur two different ID spaces.
+      gatewayGenerationId: job.gatewayGenerationId ?? undefined,
+      providerGenerationId: job.providerGenerationId ?? undefined,
+      provider: actual.provider,
+      providerEndpoint: actual.providerEndpoint,
+      costSource: actual.costSource,
+      usageEvidence: actual,
       usage: actual.usage,
       correlationId: job.id,
     });

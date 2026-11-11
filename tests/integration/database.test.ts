@@ -10,7 +10,7 @@ import { fulfillDodoPayment } from "@/lib/server/payments/fulfillment";
 import { paymentWebhookSchema } from "@/lib/server/payments/payment-validation";
 import { creditPacks as contentPacks } from "@/lib/content/pricing";
 import { catalogPriceObservations, catalogSyncRuns, creditPacks, modelPrices, models, providers } from "@/lib/server/db/schema";
-import { syncGatewayCatalog } from "@/lib/server/ai/catalog-sync";
+import { syncOpenRouterCatalog } from "@/lib/server/ai/catalog-sync";
 import type { VerifiedIdentity } from "@/lib/server/auth/guards";
 
 let admin: ReturnType<typeof postgres>;
@@ -285,47 +285,48 @@ describe("disposable real PostgreSQL verification", () => {
   });
 
   it("applies discovery idempotently, never enables, and quarantines invalid entries", async () => {
-    const fetchImpl: typeof fetch = (async () => new Response(JSON.stringify({ object: "list", data: [] }), { status: 200 })) as unknown as typeof fetch;
+    const fetchImpl: typeof fetch = (async () => new Response(JSON.stringify({ data: [] }), { status: 200 })) as unknown as typeof fetch;
     const [lease] = await admin<{ id: string }[]>`insert into public.catalog_sync_runs (trigger, mode, status, started_at, request_id, lease_expires_at)
       values ('manual', 'full', 'running', now(), ${"qa-lease"}, now() + interval '30 minutes') returning id`;
-    await expect(syncGatewayCatalog({ trigger: "scheduled", mode: "full", fetchImpl, includeAvailability: false })).rejects.toMatchObject({ code: "conflict" });
+    await expect(syncOpenRouterCatalog({ trigger: "scheduled", mode: "full", fetchImpl })).rejects.toMatchObject({ code: "conflict" });
     await admin`update public.catalog_sync_runs set status = 'failed', lease_expires_at = now() - interval '1 minute' where id = ${lease!.id}`;
 
+    // The OpenRouter shape: identity is author/slug, the product comes from output modalities, and
+    // per-token prices are `prompt`/`completion` strings.
     const response = {
-      object: "list",
       data: [
-        { id: "qa-alpha/model-one", name: "QA One", type: "language", owned_by: "QA Alpha", pricing: { input: "0.000001", output: "0.000002" }, supported_specifications: ["v4"], modalities: { input: ["text"], output: ["text"] } },
-        { id: "qa-alpha/model-two", name: "QA Two", type: "image", owned_by: "QA Alpha", pricing: null, supported_specifications: ["v4"], modalities: { input: ["text"], output: ["image"] } },
-        { id: "qa-alpha/not a valid id", name: "Broken", type: "language" },
+        { id: "qa-alpha/model-one", name: "QA One", architecture: { input_modalities: ["text"], output_modalities: ["text"] }, pricing: { prompt: "0.000001", completion: "0.000002" }, context_length: 128000, supported_parameters: ["max_tokens"] },
+        { id: "qa-alpha/model-two", name: "QA Two", architecture: { input_modalities: ["text"], output_modalities: ["image"] }, pricing: null, supported_parameters: [] },
+        { id: "qa-alpha/not a valid id", name: "Broken", architecture: { output_modalities: ["text"] } },
       ],
     };
     const catalogFetch = (async () => new Response(JSON.stringify(response), { status: 200, headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
-    const first = await syncGatewayCatalog({ trigger: "manual", mode: "full", fetchImpl: catalogFetch, includeAvailability: false });
+    const first = await syncOpenRouterCatalog({ trigger: "manual", mode: "full", fetchImpl: catalogFetch });
     expect(first).toMatchObject({ status: "partial", models: 2, invalid: 1 });
     const [alpha] = await admin<{ enabled: boolean }[]>`select enabled from public.providers where id = 'qa-alpha'`;
     expect(alpha).toEqual({ enabled: false });
     const discovered = await admin<{ id: string; enabled: boolean; discovery_status: string; kind: string | null }[]>`
-      select id, enabled, discovery_status, kind from public.models where provider_id = 'qa-alpha' order by id`;
+      select id, enabled, discovery_status, kind from public.models where provider_id = 'qa-alpha' and id like 'qa-alpha/%' order by id`;
     expect(discovered).toEqual([
-      { id: "gateway:qa-alpha/model-one", enabled: false, discovery_status: "present", kind: "chat" },
-      { id: "gateway:qa-alpha/model-two", enabled: false, discovery_status: "present", kind: "image" },
+      { id: "qa-alpha/model-one", enabled: false, discovery_status: "present", kind: "chat" },
+      { id: "qa-alpha/model-two", enabled: false, discovery_status: "present", kind: "image" },
     ]);
     const prices = await admin<{ model_id: string; input: string | null; source: string; open: boolean }[]>`
       select p.model_id, p.pricing_data->>'input' input, p.source, p.effective_to is null open from public.model_prices p
-      where p.model_id like 'gateway:qa-alpha/%' order by p.model_id`;
-    expect(prices).toEqual([{ model_id: "gateway:qa-alpha/model-one", input: "0.000001", source: "gateway_catalog", open: true }]);
+      where p.model_id like 'qa-alpha/%' order by p.model_id`;
+    expect(prices).toEqual([{ model_id: "qa-alpha/model-one", input: "0.000001", source: "openrouter_catalog", open: true }]);
 
-    const second = await syncGatewayCatalog({ trigger: "scheduled", mode: "incremental", fetchImpl: catalogFetch, includeAvailability: false });
+    const second = await syncOpenRouterCatalog({ trigger: "scheduled", mode: "incremental", fetchImpl: catalogFetch });
     expect(second).toMatchObject({ status: "partial", models: 2, invalid: 1, changed: 0 });
-    const [priceCount] = await admin<{ count: number }[]>`select count(*)::int count from public.model_prices where model_id like 'gateway:qa-alpha/%'`;
+    const [priceCount] = await admin<{ count: number }[]>`select count(*)::int count from public.model_prices where model_id like 'qa-alpha/%'`;
     expect(priceCount?.count).toBe(1);
 
     // A model that vanishes from discovery is marked missing, not deleted or enabled.
-    const reduced = { object: "list", data: [response.data[0]] };
+    const reduced = { data: [response.data[0]] };
     const reducedFetch = (async () => new Response(JSON.stringify(reduced), { status: 200, headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
-    const third = await syncGatewayCatalog({ trigger: "scheduled", mode: "full", fetchImpl: reducedFetch, includeAvailability: false });
+    const third = await syncOpenRouterCatalog({ trigger: "scheduled", mode: "full", fetchImpl: reducedFetch });
     expect(third).toMatchObject({ status: "succeeded", models: 1, invalid: 0 });
-    const [gone] = await admin<{ discovery_status: string; enabled: boolean }[]>`select discovery_status, enabled from public.models where id = 'gateway:qa-alpha/model-two'`;
+    const [gone] = await admin<{ discovery_status: string; enabled: boolean }[]>`select discovery_status, enabled from public.models where id = 'qa-alpha/model-two'`;
     expect(gone).toEqual({ discovery_status: "missing", enabled: false });
 
     const [runs] = await admin<{ succeeded: number; partial: number }[]>`select
@@ -337,5 +338,80 @@ describe("disposable real PostgreSQL verification", () => {
     expect(await admin`select id from public.catalog_sync_runs where status = 'running'`).toHaveLength(0);
     expect(await getDb().select({ id: catalogSyncRuns.id }).from(catalogSyncRuns).where(eq(catalogSyncRuns.status, "running"))).toEqual([]);
     expect(await getDb().select({ id: catalogPriceObservations.id }).from(catalogPriceObservations).limit(1)).toHaveLength(1);
+  });
+
+  it("quotes endpoint-priced models, gates enablement, and validates a policy change", async () => {
+    // Endpoint discovery is credential-gated: without a key the sync records models but skips endpoint
+    // enrichment. The value is never used because `fetchImpl` replaces the network entirely.
+    process.env.OPENROUTER_API_KEY = "qa-not-a-real-key";
+    // A model served by two providers at different rates. The quote must take the dearest, because
+    // OpenRouter may fall back to either one for a single request.
+    const catalogue = {
+      data: [
+        { id: "qa-beta/chat-one", name: "QA Beta Chat", architecture: { input_modalities: ["text"], output_modalities: ["text"] }, pricing: { prompt: "0.000002", completion: "0.000006" }, supported_parameters: ["max_tokens"] },
+      ],
+    };
+    const endpoints = {
+      data: { endpoints: [
+        { provider_name: "Cheap", provider_slug: "cheap", pricing: { prompt: "0.000001", completion: "0.000003" } },
+        { provider_name: "Dear", provider_slug: "dear", pricing: { prompt: "0.000004", completion: "0.000009" } },
+      ] },
+    };
+    const fetchImpl = (async (input: RequestInfo | URL) => {
+      const body = String(input).includes("/endpoints") ? endpoints : catalogue;
+      return new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json" } });
+    }) as unknown as typeof fetch;
+    await syncOpenRouterCatalog({ trigger: "manual", mode: "full", fetchImpl });
+
+    const [model] = await admin<{ id: string; enabled: boolean }[]>`select id, enabled from public.models where id = 'qa-beta/chat-one'`;
+    expect(model).toBeDefined();
+    // Discovery never enables, and never approves.
+    expect(model!.enabled).toBe(false);
+    const unapproved = await admin<{ approved: boolean; enabled: boolean }[]>`select approved, enabled from public.model_endpoints where model_id = 'qa-beta/chat-one' order by provider_name`;
+    expect(unapproved).toEqual([{ approved: false, enabled: false }, { approved: false, enabled: false }]);
+
+    // The enablement gate refuses a model with no approved endpoint instead of letting it look live.
+    await admin`update public.providers set enabled = true where id = 'qa-beta'`;
+    await admin`update public.models set enabled = true where id = 'qa-beta/chat-one'`;
+    const [enabledRow] = await admin<{ enabled: boolean }[]>`select enabled from public.models where id = 'qa-beta/chat-one'`;
+    expect(enabledRow!.enabled).toBe(true); // the database allows it; the *application* gate refuses it
+
+    const { assertModelCanBeEnabled, resolveGenerationModel, validateModelQuote } = await import("@/lib/server/ai/models");
+    // Read through Drizzle, not raw SQL: the application expects the camelCase row shape, and a raw
+    // snake_case row would fail on `productCompatibility` for reasons that have nothing to do with the
+    // behaviour under test.
+    const [row] = await getDb().select().from(models).where(eq(models.id, "qa-beta/chat-one"));
+    const withoutEndpoints = await assertModelCanBeEnabled(row as never, true, undefined, 0);
+    expect(withoutEndpoints).toMatchObject({ ok: false });
+    expect(withoutEndpoints.reason).toMatch(/approve.*endpoint/i);
+
+    // With no approved endpoint the model cannot be quoted at all, so it cannot be sold.
+    await expect(resolveGenerationModel({ modelId: "qa-beta/chat-one", kind: "chat", prompt: "hello", options: {} }))
+      .rejects.toMatchObject({ code: "conflict" });
+
+    // Approve both endpoints: now it quotes, and quotes the dearest rate.
+    await admin`update public.model_endpoints set approved = true, enabled = true where model_id = 'qa-beta/chat-one'`;
+    expect(await assertModelCanBeEnabled(row as never, true, undefined, 2)).toMatchObject({ ok: true });
+
+    const quote = await resolveGenerationModel({ modelId: "qa-beta/chat-one", kind: "chat", prompt: "x".repeat(400), options: { maxOutputTokens: 100 } });
+    expect(quote.routing?.maximumRates).toEqual({ prompt: "0.000004", completion: "0.000009" });
+    expect(quote.routing?.allowFallbacks).toBe(true);
+    expect(quote.estimatedCostUsd).toBe("0.00130000");
+
+    // Editing the policy of an enabled endpoint-priced model must not be blocked for lack of a
+    // `model_prices` row; that was the bug this covers.
+    const policy = await validateModelQuote(row as never, "chat", undefined);
+    expect(policy.reason).toBeUndefined();
+    expect(policy).toMatchObject({ ok: true });
+
+    // Revoking an endpoint removes the model from the customer selector.
+    const { listEnabledCatalog } = await import("@/lib/server/ai/models");
+    expect((await listEnabledCatalog("chat")).some((entry) => entry.id === "qa-beta/chat-one")).toBe(true);
+    await admin`update public.model_endpoints set approved = false, enabled = false where model_id = 'qa-beta/chat-one'`;
+    expect((await listEnabledCatalog("chat")).some((entry) => entry.id === "qa-beta/chat-one")).toBe(false);
+
+    // Clean up so later assertions about catalogue counts stay independent.
+    await admin`update public.models set discovery_status = 'missing', enabled = false where id = 'qa-beta/chat-one'`;
+    delete process.env.OPENROUTER_API_KEY;
   });
 });

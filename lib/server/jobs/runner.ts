@@ -1,4 +1,4 @@
-import { markExpiredSyncRuns, syncGatewayCatalog } from "@/lib/server/ai/catalog-sync";
+import { markExpiredSyncRuns, syncOpenRouterCatalog } from "@/lib/server/ai/catalog-sync";
 import { pollVideoGeneration, runGenerationJob, validateWebsiteBuild } from "@/lib/server/generations/runners";
 import { deliverEmail } from "@/lib/server/email/service";
 import { pollDeployment, submitDeployment } from "@/lib/server/websites/deployments";
@@ -116,7 +116,7 @@ export async function runCronTask(task: CronTask) {
     case "catalog": {
       await markExpiredSyncRuns();
       const day = new Date().toISOString().slice(0, 10);
-      return syncGatewayCatalog({ trigger: "scheduled", mode: "incremental", requestId: `catalog-sync:scheduled:${day}` });
+      return syncOpenRouterCatalog({ trigger: "scheduled", mode: "incremental", requestId: `catalog-sync:scheduled:${day}` });
     }
   }
 }

@@ -16,7 +16,7 @@ The generation transaction creates the owned job, validates the idempotency requ
 
 ## Actual metering
 
-AI Gateway `providerMetadata.gateway.generationId` identifies a generation. The server reconciles the stored provider-metadata generation ID with `gateway.getGenerationInfo({ id })`. The returned `totalCost` is converted to an eight-decimal actual-cost string; catalog prices are not substituted for actual metering. Usage quantities are recorded separately from money, and conflicting stored cost/generation evidence is rejected during settlement.
+OpenRouter identifies a generation with an ID of the form `gen-…` (hyphen). For chat it is taken from `step.response.id`; for media it is the ID returned by the submission. The server reconciles that ID with `GET /api/v1/generation`, whose `data.total_cost` is the authoritative actual cost, converted to an eight-decimal string without a float step. Catalogue prices are never substituted for actual metering. Legacy Vercel AI Gateway IDs (`gen_…`, underscore) are stored in a separate `gateway_generation_id` column, still resolve, and remain labelled `vercel_ai_gateway` / `legacy_gateway_lookup`. Usage quantities are recorded separately from money, and conflicting stored cost/generation evidence is rejected during settlement. See `openrouter-cost-reconciliation.md`.
 
 AI cost is parsed to non-negative integer nanodollars. Final credits use exact integer ceiling arithmetic equivalent to `ceil(actual_cost_usd × 200)`. Internal actual cost is never sent to the customer. If actual cost is not yet available, the generation enters reconciliation rather than substituting an estimate and calling it actual.
 

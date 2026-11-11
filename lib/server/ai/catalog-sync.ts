@@ -1,9 +1,14 @@
 import { createHash, randomUUID } from "node:crypto";
 import { and, desc, eq, gt, isNull, lt, notInArray, sql } from "drizzle-orm";
 import { z } from "zod";
-import { exactDecimalToNano, parseGatewayJson, type PricingData } from "@/lib/server/ai/pricing";
+import { exactDecimalToNano, type PricingData } from "@/lib/server/ai/pricing";
+import { listModelEndpoints, listModels } from "@/lib/server/ai/openrouter-api";
+import { openRouterEndpointSchema, openRouterModelSchema } from "@/lib/server/ai/contracts";
+
+/** An endpoint listing as returned by `GET /models/{author}/{slug}/endpoints`. */
+type EndpointListing = ReturnType<typeof openRouterEndpointSchema.parse>;
 import { getDb } from "@/lib/server/db/client";
-import { auditEvents, catalogPriceObservations, catalogSyncRuns, idempotencyRecords, modelPrices, models, providers } from "@/lib/server/db/schema";
+import { auditEvents, catalogPriceObservations, catalogSyncRuns, idempotencyRecords, modelEndpoints, modelPrices, models, providers } from "@/lib/server/db/schema";
 import type { DbTransaction } from "@/lib/server/db/types";
 import { readServerEnvironment } from "@/lib/server/env";
 import { AppError } from "@/lib/server/errors";
@@ -11,39 +16,38 @@ import { AppError } from "@/lib/server/errors";
 const catalogLockKey = 1_313_825_345;
 const syncLeaseMs = 120_000;
 
-export const gatewayCatalogEntrySchema = z.looseObject({
-  id: z.string().min(3).max(320).regex(/^[a-z0-9-]+\/[^\s/]+$/),
-  name: z.string().trim().min(1).max(240),
-  type: z.string().trim().min(1).max(80).optional(),
-  owned_by: z.string().trim().min(1).max(160).optional(),
-  pricing: z.record(z.string(), z.unknown()).nullish(),
-  modalities: z.looseObject({
-    input: z.array(z.string().max(80)).max(40).optional(),
-    output: z.array(z.string().max(80)).max(40).optional(),
-  }).nullish(),
-  supported_specifications: z.array(z.string().max(80)).max(40).nullish(),
-  context_window: z.number().int().nonnegative().max(100_000_000).nullish(),
-  max_tokens: z.number().int().nonnegative().max(100_000_000).nullish(),
-  model_eligibility: z.record(z.string(), z.unknown()).nullish(),
-});
+/**
+ * Catalogue normalisation for OpenRouter.
+ *
+ * The Gateway shape and the OpenRouter shape are not interchangeable, so this is a rewrite rather
+ * than a URL swap. The differences that matter:
+ *
+ * - Identity is `author/slug` and the *author* is the publisher, **not** the serving provider.
+ *   Conflating them would attribute a model to a company that merely publishes it, and would make
+ *   endpoint pricing nonsense. Serving providers are modelled separately in `model_endpoints`.
+ * - Product type comes from `architecture.output_modalities`, not from a `type` field.
+ * - Prices are per-token decimal strings in `pricing`, and may be `"0"` or absent; both are
+ *   unverified, and an unverified price must never become a billable quote.
+ */
+export const openRouterCatalogEntry = openRouterModelSchema;
 
-export type GatewayCatalogEntry = z.infer<typeof gatewayCatalogEntrySchema>;
 export type GenerationKind = "chat" | "image" | "video" | "website";
 
 export type CatalogSyncRow = {
-  providerId: string;
-  providerName: string;
   id: string;
-  gatewayModelId: string;
+  providerModelId: string;
+  author: string;
   name: string;
   kind: GenerationKind | null;
   catalogType: string;
   modalities: string[];
   capabilities: Record<string, unknown>;
-  gatewayMetadata: Record<string, unknown>;
+  metadata: Record<string, unknown>;
   catalogHash: string;
+  /** Raw advertised pricing retained verbatim; never coerced into a float. */
   pricingData: PricingData | null;
   pricingHash: string;
+  /** Bounded projection used only for the legacy nano-dollar estimate columns. */
   inputNano: number | null;
   outputNano: number | null;
   operationNano: number | null;
@@ -83,10 +87,26 @@ export function hashCatalogValue(value: unknown): string {
   return createHash("sha256").update(stableJson(value)).digest("hex");
 }
 
-export function generationKindForCatalogType(type: string): GenerationKind | null {
-  if (type === "language") return "chat";
-  if (type === "image" || type === "video") return type;
+/**
+ * Maps an OpenRouter model's output modalities onto an Orindle product.
+ *
+ * Only text, image and video have a product today. Audio, speech, transcription, embeddings,
+ * reranking and future categories are preserved in the registry as `unknown` (and therefore
+ * non-selectable) rather than being coerced into a product they cannot serve.
+ */
+export function generationKindForModalities(output: string[]): GenerationKind | null {
+  if (output.includes("video")) return "video";
+  if (output.includes("image")) return "image";
+  if (output.includes("text")) return "chat";
   return null;
+}
+
+/** The catalogue "type" column, kept for admin filtering and compatibility evidence. */
+export function catalogTypeForModalities(output: string[]): string {
+  if (output.includes("video")) return "video";
+  if (output.includes("image")) return "image";
+  if (output.includes("text")) return "language";
+  return output[0] ?? "unknown";
 }
 
 function safeLegacyNano(value: unknown): number | null {
@@ -100,39 +120,87 @@ function safeLegacyNano(value: unknown): number | null {
   }
 }
 
-export function normalizeGatewayCatalog(entries: unknown[]): { rows: CatalogSyncRow[]; invalid: number } {
+/**
+ * Converts the model-level `pricing` map into the shape the existing quote engine understands.
+ *
+ * OpenRouter prices per token (`prompt`, `completion`) and per image sometimes as `image`. The
+ * quote engine already speaks `input` / `output` / `image`, so the keys are mapped explicitly rather
+ * than by position. Values are copied as strings, untouched.
+ */
+export function pricingForQuote(pricing: Record<string, unknown> | null | undefined): PricingData | null {
+  if (!pricing || typeof pricing !== "object") return null;
+  const mapped: Record<string, unknown> = {};
+  const take = (source: string, target: string) => {
+    const value = pricing[source];
+    if (typeof value === "string" && value.trim() !== "") mapped[target] = value;
+    else if (typeof value === "number" && Number.isFinite(value)) mapped[target] = String(value);
+  };
+  take("prompt", "input");
+  take("completion", "output");
+  take("image", "image");
+  // Retained for auditing and for endpoint comparisons; never used as a quote by itself.
+  for (const [key, value] of Object.entries(pricing)) {
+    if (key === "prompt" || key === "completion" || key === "image") continue;
+    if (typeof value === "string" || typeof value === "number") mapped[`raw_${key}`] = String(value);
+  }
+  return Object.keys(mapped).length > 0 ? mapped : null;
+}
+
+export function normalizeOpenRouterCatalog(entries: readonly unknown[]): { rows: CatalogSyncRow[]; invalid: number } {
   const rows: CatalogSyncRow[] = [];
   const seen = new Set<string>();
   let invalid = 0;
   for (const candidate of entries) {
-    const parsed = gatewayCatalogEntrySchema.safeParse(candidate);
-    if (!parsed.success || seen.has(parsed.success ? parsed.data.id : "")) {
-      invalid += 1;
-      continue;
-    }
+    const parsed = openRouterCatalogEntry.safeParse(candidate);
+    if (!parsed.success) { invalid += 1; continue; }
     const entry = parsed.data;
+    // A duplicate canonical ID is a catalogue defect, not a second model.
+    if (seen.has(entry.id)) { invalid += 1; continue; }
     seen.add(entry.id);
-    const catalogType = entry.type ?? "unknown";
-    const providerId = entry.id.split("/")[0]!;
-    const pricingData = entry.pricing && typeof entry.pricing === "object" ? entry.pricing : null;
-    const inputModalities = entry.modalities?.input ?? [];
-    const outputModalities = entry.modalities?.output ?? [];
+    const input = entry.architecture?.input_modalities ?? [];
+    const output = entry.architecture?.output_modalities ?? [];
+    const catalogType = catalogTypeForModalities(output);
+    const pricingData = pricingForQuote(entry.pricing);
+    const supported = entry.supported_parameters;
+    const parameters = Array.isArray(supported) ? supported : supported ? Object.keys(supported) : [];
     rows.push({
-      providerId,
-      providerName: entry.owned_by ?? providerId,
-      id: `gateway:${entry.id}`,
-      gatewayModelId: entry.id,
+      // The internal ID is the canonical OpenRouter ID. Keeping them identical means existing
+      // foreign keys stay stable and there is exactly one identity to reason about.
+      id: entry.id,
+      providerModelId: entry.id,
+      author: entry.id.split("/")[0]!,
       name: entry.name,
-      kind: generationKindForCatalogType(catalogType),
+      kind: generationKindForModalities(output),
       catalogType,
-      modalities: [...new Set([...inputModalities, ...outputModalities])],
+      modalities: [...new Set([...input, ...output])],
       capabilities: {
-        gatewayModelType: catalogType,
-        specificationVersion: entry.supported_specifications?.[0] ?? null,
-        tags: Array.isArray(entry.tags) ? entry.tags.filter((tag): tag is string => typeof tag === "string") : [],
+        catalogType,
+        inputModalities: input,
+        outputModalities: output,
+        supportedParameters: parameters.slice(0, 120),
+        // Evidence the existing compatibility layer reads. OpenRouter serves the AI SDK v4 wire
+        // shape for chat models, and the catalogue proves text in/out directly.
+        specificationVersion: output.includes("text") ? "v4" : null,
+        modalities: { input, output },
+        contextWindow: entry.context_length ?? entry.top_provider?.context_length ?? null,
+        maxTokens: entry.top_provider?.max_completion_tokens ?? null,
+        structuredOutput: parameters.includes("response_format") || parameters.includes("structured_outputs"),
       },
-      gatewayMetadata: entry as Record<string, unknown>,
-      catalogHash: hashCatalogValue(entry),
+      metadata: {
+        // Stored under the historical column name so every existing reader keeps working.
+        openrouterId: entry.id,
+        canonicalSlug: entry.canonical_slug ?? entry.id,
+        author: entry.id.split("/")[0]!,
+        description: entry.description ?? null,
+        created: entry.created ?? null,
+        context_window: entry.context_length ?? null,
+        max_tokens: entry.top_provider?.max_completion_tokens ?? null,
+        modalities: { input, output },
+        supported_parameters: parameters.slice(0, 120),
+        endpoints: entry.endpoints ?? null,
+        top_provider: entry.top_provider ?? null,
+      },
+      catalogHash: hashCatalogValue({ id: entry.id, name: entry.name, architecture: entry.architecture, pricing: entry.pricing, context: entry.context_length, supported: entry.supported_parameters }),
       pricingData,
       pricingHash: hashCatalogValue(pricingData),
       inputNano: safeLegacyNano(pricingData?.input),
@@ -143,33 +211,53 @@ export function normalizeGatewayCatalog(entries: unknown[]): { rows: CatalogSync
   return { rows, invalid };
 }
 
-export async function fetchGatewayCatalog(options: { fetchImpl?: typeof fetch; includeAvailability?: boolean } = {}) {
-  const env = readServerEnvironment();
-  const includeAvailability = options.includeAvailability ?? Boolean(env.AI_GATEWAY_API_KEY);
-  if (includeAvailability && !env.AI_GATEWAY_API_KEY) throw new AppError("integration_unavailable", 503, "Authenticated availability requires the existing Gateway credential.");
-  const url = new URL("https://ai-gateway.vercel.sh/v1/models");
-  if (includeAvailability) url.searchParams.set("include_availability", "true");
-  const fetchImpl = options.fetchImpl ?? fetch;
-  const response = await fetchImpl(url, {
-    headers: {
-      Accept: "application/json",
-      ...(includeAvailability ? { Authorization: `Bearer ${env.AI_GATEWAY_API_KEY}` } : {}),
-    },
-    signal: AbortSignal.timeout(30_000),
-    cache: "no-store",
-  });
-  if (!response.ok) throw new AppError("integration_unavailable", 503, `Gateway catalogue discovery failed with HTTP ${response.status}; no catalogue rows were changed.`);
-  const body = await response.text();
-  if (body.length > 20_000_000) throw new AppError("bad_request", 502, "Gateway catalogue response exceeded the 20 MB safety bound.");
-  let payload: unknown;
-  try {
-    payload = parseGatewayJson(body);
-  } catch {
-    throw new AppError("integration_unavailable", 502, "Gateway catalogue returned invalid JSON; no catalogue rows were changed.");
+/**
+ * Fetches every catalogue category Orindle cares about.
+ *
+ * `output_modalities` is mandatory: the endpoint defaults to `text`, so image and video models are
+ * invisible without it, which would silently empty two products.
+ */
+export async function fetchOpenRouterCatalog(options: { fetchImpl?: typeof fetch; modalities?: string[] } = {}) {
+  const modalities = options.modalities ?? ["text", "image", "video"];
+  const discovered = await listModels({ outputModalities: modalities, fetchImpl: options.fetchImpl });
+  return {
+    entries: discovered.models,
+    invalid: discovered.invalid,
+    responseHash: createHash("sha256").update(stableJson(discovered.models)).digest("hex"),
+  };
+}
+
+
+/** How many endpoint lookups one sync will make. Keeps a scheduled sync inside its budget. */
+const MAX_ENDPOINT_LOOKUPS = 60;
+
+/**
+ * Fetches serving endpoints for the models that can actually be sold.
+ *
+ * Only models with a product mapping are queried: an embeddings or audio model has no Orindle
+ * product, so its endpoints are irrelevant and each lookup costs a request. Failures are collected
+ * rather than thrown — one unavailable model must not fail the whole catalogue.
+ */
+async function discoverEndpoints(
+  rows: CatalogSyncRow[],
+  options: { fetchImpl?: typeof fetch; modalities?: string[] },
+): Promise<EndpointDiscovery> {
+  const byModel = new Map<string, EndpointListing[]>();
+  const failed = new Set<string>();
+  const sellable = rows.filter((row) => row.kind !== null).slice(0, MAX_ENDPOINT_LOOKUPS);
+  // Endpoint discovery needs its own credentials. If they are absent the catalogue itself is still
+  // worth recording, so this is skipped rather than failing the whole sync: models land with
+  // `endpoint_status = unknown` and stay unbillable until an administrator configures the key.
+  if (!readServerEnvironment().OPENROUTER_API_KEY) return { byModel, failed };
+  for (const row of sellable) {
+    try {
+      const result = await listModelEndpoints(row.id, { fetchImpl: options.fetchImpl });
+      byModel.set(row.id, result.endpoints);
+    } catch {
+      failed.add(row.id);
+    }
   }
-  const envelope = z.looseObject({ object: z.literal("list"), data: z.array(z.unknown()).min(1).max(5_000) }).safeParse(payload);
-  if (!envelope.success) throw new AppError("integration_unavailable", 502, "Gateway catalogue returned an invalid or empty model list; no catalogue rows were changed.");
-  return { entries: envelope.data.data, responseHash: createHash("sha256").update(body).digest("hex") };
+  return { byModel, failed };
 }
 
 async function currentRun(requestId: string) {
@@ -207,10 +295,10 @@ async function closeAndInsertPrice(tx: DbTransaction, row: CatalogSyncRow, runId
     });
   }
   if (!row.pricingData) {
-    if (current?.source === "gateway_catalog") await tx.update(modelPrices).set({ effectiveTo: now }).where(eq(modelPrices.id, current.id));
+    if (current?.source === "openrouter_catalog") await tx.update(modelPrices).set({ effectiveTo: now }).where(eq(modelPrices.id, current.id));
     return;
   }
-  if (current && (current.source !== "gateway_catalog" || !changed)) return;
+  if (current && (current.source !== "openrouter_catalog" || !changed)) return;
   if (current) await tx.update(modelPrices).set({ effectiveTo: now }).where(eq(modelPrices.id, current.id));
   await tx.insert(modelPrices).values({
     modelId: row.id,
@@ -218,13 +306,94 @@ async function closeAndInsertPrice(tx: DbTransaction, row: CatalogSyncRow, runId
     outputNanoUsdPerToken: row.outputNano,
     operationNanoUsd: row.operationNano,
     pricingData: row.pricingData,
-    source: "gateway_catalog",
+    source: "openrouter_catalog",
     effectiveFrom: now,
     createdAt: now,
   });
 }
 
-async function applyCatalogTransaction(runId: string, actorId: string | undefined, requestId: string, normalized: { rows: CatalogSyncRow[]; invalid: number }, responseHash: string, mode: CatalogSyncMode, now: Date): Promise<CatalogSyncSummary> {
+/**
+ * Records the serving endpoints for one model.
+ *
+ * Endpoint prices are the basis of every quote, so they are stored per endpoint instead of being
+ * flattened. Crucially, an endpoint that already exists keeps its `approved`/`enabled` flags: a
+ * re-sync must never silently approve a newly discovered or re-priced route, and it must never
+ * discard an administrator's decision. A price change on an approved endpoint clears
+ * `approved_pricing_hash` so the operator has to re-approve the new figure — otherwise a partner
+ * could raise prices and Orindle would keep quoting the old, cheaper bound.
+ */
+async function recordEndpoints(tx: DbTransaction, modelId: string, endpoints: EndpointListing[], now: Date) {
+  let written = 0;
+  for (const endpoint of endpoints) {
+    const rates = endpointRates(endpoint.pricing);
+    if (!rates) continue;
+    const pricingHash = hashCatalogValue(rates);
+    const [existing] = await tx.select().from(modelEndpoints)
+      .where(and(eq(modelEndpoints.modelId, modelId), eq(modelEndpoints.providerName, endpoint.provider_name))).limit(1);
+    if (!existing) {
+      await tx.insert(modelEndpoints).values({
+        modelId,
+        providerName: endpoint.provider_name,
+        providerSlug: endpoint.provider_slug ?? null,
+        pricingData: rates,
+        capabilities: {
+          supportedParameters: endpoint.supported_parameters ?? null,
+          contextLength: endpoint.context_length ?? null,
+          maxCompletionTokens: endpoint.max_completion_tokens ?? null,
+          quantization: endpoint.quantization ?? null,
+        },
+        contextLength: endpoint.context_length ?? null,
+        maxCompletionTokens: endpoint.max_completion_tokens ?? null,
+        approved: false,
+        enabled: false,
+        approvedPricingHash: null,
+        lastSeenAt: now,
+        createdAt: now,
+        updatedAt: now,
+      });
+      written += 1;
+      continue;
+    }
+    const priceChanged = existing.approvedPricingHash !== null && existing.approvedPricingHash !== pricingHash;
+    await tx.update(modelEndpoints).set({
+      providerSlug: endpoint.provider_slug ?? existing.providerSlug,
+      pricingData: rates,
+      capabilities: {
+        supportedParameters: endpoint.supported_parameters ?? null,
+        contextLength: endpoint.context_length ?? null,
+        maxCompletionTokens: endpoint.max_completion_tokens ?? null,
+        quantization: endpoint.quantization ?? null,
+      },
+      contextLength: endpoint.context_length ?? existing.contextLength,
+      maxCompletionTokens: endpoint.max_completion_tokens ?? existing.maxCompletionTokens,
+      // A price change on an approved endpoint revokes approval until an operator re-reviews it.
+      ...(priceChanged ? { approved: false, enabled: false, approvedPricingHash: null } : {}),
+      lastSeenAt: now,
+      updatedAt: now,
+    }).where(eq(modelEndpoints.id, existing.id));
+    written += 1;
+  }
+  return written;
+}
+
+/** Normalises an endpoint's advertised pricing into exact decimal strings keyed by dimension. */
+export function endpointRates(pricing: Record<string, unknown> | null | undefined): Record<string, string> | null {
+  if (!pricing || typeof pricing !== "object") return null;
+  const rates: Record<string, string> = {};
+  for (const [key, value] of Object.entries(pricing)) {
+    if (typeof value === "string" && value.trim() !== "") rates[key] = value;
+    else if (typeof value === "number" && Number.isFinite(value) && value >= 0) rates[key] = String(value);
+  }
+  return Object.keys(rates).length > 0 ? rates : null;
+}
+
+type EndpointDiscovery = {
+  byModel: Map<string, EndpointListing[]>;
+  /** Models whose endpoint discovery failed; they keep their previous state and are never approved. */
+  failed: Set<string>;
+};
+
+async function applyCatalogTransaction(runId: string, actorId: string | undefined, requestId: string, normalized: { rows: CatalogSyncRow[]; invalid: number }, responseHash: string, mode: CatalogSyncMode, now: Date, endpointDiscovery: EndpointDiscovery = { byModel: new Map(), failed: new Set() }): Promise<CatalogSyncSummary> {
   return getDb().transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(${catalogLockKey})`);
     const [run] = await tx.select().from(catalogSyncRuns).where(eq(catalogSyncRuns.id, runId)).limit(1).for("update");
@@ -234,27 +403,36 @@ async function applyCatalogTransaction(runId: string, actorId: string | undefine
 
     const existing = await tx.select({ id: models.id, catalogHash: models.catalogHash }).from(models);
     const existingById = new Map(existing.map((model) => [model.id, model]));
-    const seenProvider = new Set<string>();
+    const seenAuthor = new Set<string>();
     let changed = 0;
     for (const row of normalized.rows) {
-      if (!seenProvider.has(row.providerId)) {
-        seenProvider.add(row.providerId);
-        await tx.insert(providers).values({ id: row.providerId, name: row.providerName, enabled: false, firstDiscoveredAt: now, lastSeenAt: now, createdAt: now, updatedAt: now })
+      // The registry's "provider" row records the model PUBLISHER (author). Serving providers live
+      // in model_endpoints; conflating the two would mislabel every endpoint price.
+      if (!seenAuthor.has(row.author)) {
+        seenAuthor.add(row.author);
+        await tx.insert(providers).values({ id: row.author, name: row.author, enabled: false, firstDiscoveredAt: now, lastSeenAt: now, createdAt: now, updatedAt: now })
           .onConflictDoUpdate({ target: providers.id, set: { lastSeenAt: now, updatedAt: now } });
       }
       const previous = existingById.get(row.id);
       const metadataChanged = previous?.catalogHash !== row.catalogHash;
       if (metadataChanged) changed += 1;
+      // `gatewayModelId` stays NOT NULL UNIQUE, so a brand-new OpenRouter model needs a value for it.
+      // The canonical ID is used, which keeps one identity per model and leaves the historical
+      // column meaningful for rows that predate this migration.
       const values = {
         id: row.id,
-        providerId: row.providerId,
-        gatewayModelId: row.gatewayModelId,
+        providerId: row.author,
+        gatewayModelId: row.id,
+        providerModelId: row.providerModelId,
+        author: row.author,
+        provider: "openrouter" as const,
+        endpointStatus: "unknown" as const,
         name: row.name,
         kind: row.kind,
         catalogType: row.catalogType,
         modalities: row.modalities,
         capabilities: row.capabilities,
-        gatewayMetadata: row.gatewayMetadata,
+        gatewayMetadata: row.metadata,
         enabled: false,
         discoveryStatus: "present" as const,
         catalogHash: row.catalogHash,
@@ -267,20 +445,24 @@ async function applyCatalogTransaction(runId: string, actorId: string | undefine
       const discoveryOnly = mode === "incremental" && !metadataChanged;
       await tx.insert(models).values(values).onConflictDoUpdate({
         target: models.id,
+        // `enabled` is deliberately absent from both branches: a sync must never enable a model,
+        // and must never disable one an administrator turned on.
         set: discoveryOnly ? {
           discoveryStatus: "present",
           lastSeenAt: now,
           catalogSyncedAt: now,
           updatedAt: now,
         } : {
-          providerId: row.providerId,
-          gatewayModelId: row.gatewayModelId,
+          providerId: row.author,
+          providerModelId: row.providerModelId,
+          author: row.author,
+          provider: "openrouter",
           name: row.name,
           kind: row.kind,
           catalogType: row.catalogType,
           modalities: row.modalities,
           capabilities: row.capabilities,
-          gatewayMetadata: row.gatewayMetadata,
+          gatewayMetadata: row.metadata,
           discoveryStatus: "present",
           catalogHash: row.catalogHash,
           lastSeenAt: now,
@@ -289,10 +471,25 @@ async function applyCatalogTransaction(runId: string, actorId: string | undefine
         },
       });
       await closeAndInsertPrice(tx, row, runId, now);
+
+      // Endpoint state drives whether the model is priceable at all, so it is updated in the same
+      // transaction as the model row. A failed discovery keeps the previous endpoints untouched:
+      // revoking approval because a network call failed would silently stop a working product.
+      const listings = endpointDiscovery.byModel.get(row.id);
+      if (listings) {
+        const written = await recordEndpoints(tx, row.id, listings, now);
+        await tx.update(models).set({
+          endpointStatus: written > 0 ? "discovered" : "empty",
+          endpointSyncedAt: now,
+          updatedAt: now,
+        }).where(eq(models.id, row.id));
+      } else if (endpointDiscovery.failed.has(row.id)) {
+        await tx.update(models).set({ endpointStatus: "failed", updatedAt: now }).where(eq(models.id, row.id));
+      }
     }
-    const acceptedIds = normalized.rows.map((row) => row.gatewayModelId);
+    const acceptedIds = normalized.rows.map((row) => row.id);
     const missing = await tx.update(models).set({ discoveryStatus: "missing", updatedAt: now })
-      .where(and(eq(models.discoveryStatus, "present"), notInArray(models.gatewayModelId, acceptedIds))).returning({ id: models.id });
+      .where(and(eq(models.discoveryStatus, "present"), eq(models.provider, "openrouter"), notInArray(models.id, acceptedIds))).returning({ id: models.id });
     const status = normalized.invalid > 0 ? "partial" as const : "succeeded" as const;
     await tx.update(catalogSyncRuns).set({
       status,
@@ -310,7 +507,7 @@ async function applyCatalogTransaction(runId: string, actorId: string | undefine
         action: "admin.catalog_sync",
         targetType: "catalog_sync_run",
         targetId: runId,
-        reason: "Manual Gateway catalogue synchronization.",
+        reason: "Manual OpenRouter catalogue synchronization.",
         requestId,
         before: null,
         after: { status, accepted: normalized.rows.length, invalid: normalized.invalid, changed, missing: missing.length, mode, responseHash },
@@ -320,14 +517,14 @@ async function applyCatalogTransaction(runId: string, actorId: string | undefine
   });
 }
 
-export async function syncGatewayCatalog(options: {
+export async function syncOpenRouterCatalog(options: {
   trigger?: CatalogSyncTrigger;
   mode?: CatalogSyncMode;
   actorId?: string;
   requestId?: string;
   correlationId?: string;
   fetchImpl?: typeof fetch;
-  includeAvailability?: boolean;
+  modalities?: string[];
   now?: Date;
 } = {}): Promise<CatalogSyncSummary> {
   const trigger = options.trigger ?? "manual";
@@ -352,9 +549,13 @@ export async function syncGatewayCatalog(options: {
     return created!;
   });
   try {
-    const discovered = await fetchGatewayCatalog({ fetchImpl: options.fetchImpl, includeAvailability: options.includeAvailability });
-    const normalized = normalizeGatewayCatalog(discovered.entries);
-    return await applyCatalogTransaction(run.id, options.actorId, options.correlationId ?? requestId, normalized, discovered.responseHash, mode, new Date());
+    const discovered = await fetchOpenRouterCatalog({ fetchImpl: options.fetchImpl, modalities: options.modalities });
+    const normalized = normalizeOpenRouterCatalog(discovered.entries);
+    // Entries rejected at the wire-schema boundary never reach the normaliser, so their count must be
+    // carried forward. Reporting only one of the two would understate a partial sync in the audit log.
+    normalized.invalid += discovered.invalid;
+    const endpointDiscovery = await discoverEndpoints(normalized.rows, options);
+    return await applyCatalogTransaction(run.id, options.actorId, options.correlationId ?? requestId, normalized, discovered.responseHash, mode, new Date(), endpointDiscovery);
   } catch (error) {
     const message = error instanceof Error ? error.message.slice(0, 500) : "Catalogue sync failed.";
     await getDb().update(catalogSyncRuns).set({ status: "failed", error: message, finishedAt: new Date() }).where(and(eq(catalogSyncRuns.id, run.id), eq(catalogSyncRuns.status, "running")));
@@ -400,7 +601,7 @@ export async function runAdminCatalogSync(input: {
     return { id: existing.id, duplicate: true as const, result: stored.data };
   });
   if (claimed.duplicate) return { ...claimed.result, duplicate: true };
-  const summary = await syncGatewayCatalog({
+  const summary = await syncOpenRouterCatalog({
     trigger: "manual",
     mode: input.mode,
     actorId: input.actorId,

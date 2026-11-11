@@ -18,7 +18,7 @@ export const serverEnvironmentSchema = z.object({
   DODO_PRODUCT_CREATOR_ID: optionalString,
   DODO_PRODUCT_PRO_ID: optionalString,
   DODO_PRODUCT_STUDIO_ID: optionalString,
-  AI_GATEWAY_API_KEY: optionalString,
+  OPENROUTER_API_KEY: optionalString,
   R2_ACCOUNT_ID: optionalString,
   R2_ACCESS_KEY_ID: optionalString,
   R2_SECRET_ACCESS_KEY: optionalString,

@@ -12,7 +12,7 @@ Orindle remains one Next.js 16 App Router deployment. Server-only modules are di
 - `lib/server/db`: Drizzle schema, connection ownership, transaction helpers and migrations.
 - `lib/server/credits`: the only write path for wallets, reservations and append-only ledger entries.
 - `lib/server/payments`: server pack lookup, Dodo Checkout Sessions and verified webhook fulfillment.
-- `lib/server/ai`: model/capability/price registries, AI Gateway calls, usage lookup and generation state.
+- `lib/server/ai`: model/capability/price registries, OpenRouter calls (`openrouter.ts`, `openrouter-api.ts`), usage lookup and generation state.
 - `lib/server/jobs`: transactional outbox and Inngest functions for media, websites, email and reconciliation.
 - `lib/server/storage`: R2 object keys, generated writes, bounded owner reads and short-lived signed download URLs.
 - `lib/server/websites`: source validation, E2B build validation and scoped Vercel deployment.
@@ -39,11 +39,11 @@ A local PostgreSQL transaction can atomically cover a wallet, its ledger, a gene
 
 Orindle owns the authoritative wallet and ledger. Dodo is used for one-time payment collection, not simultaneous automatic entitlement/meter deductions. This avoids double fulfillment and asynchronous remote-balance races. Purchased credits have no application-created expiry.
 
-A reservation moves estimated credits from available to reserved in one ledger transaction. Settlement uses verified AI Gateway cost and actual usage. Over-reservation is released; an actual charge above available funds enters an explicit reconciliation state rather than producing a negative wallet or silently undercharging. Pre-provider validation fails before job dispatch where possible; the current worker does not auto-release after a possibly submitted call. Post-submission failure records actual cost where evidence is available. Compensation/reversal kinds exist for controlled future workflows, but no automatic compensation or browser cancellation policy is exposed.
+A reservation moves estimated credits from available to reserved in one ledger transaction. Settlement uses verified OpenRouter actual cost (`GET /api/v1/generation`) and actual usage. Over-reservation is released; an actual charge above available funds enters an explicit reconciliation state rather than producing a negative wallet or silently undercharging. Pre-provider validation fails before job dispatch where possible; the current worker does not auto-release after a possibly submitted call. Post-submission failure records actual cost where evidence is available. Compensation/reversal kinds exist for controlled future workflows, but no automatic compensation or browser cancellation policy is exposed.
 
 ## Model and price authority
 
-The server allowlist contains only model IDs and capabilities found in current official AI Gateway/AI SDK documentation. A setup sync reads the authenticated Gateway catalog and writes versioned price data; it does not invent prices. Generation rejects an unknown, disabled, capability-incompatible or unpriced model. Browser input is a model ID and operation options only.
+The server allowlist contains only model IDs and capabilities found in current official AI Gateway/AI SDK documentation. A setup sync reads the OpenRouter catalogue and its per-endpoint rates and writes versioned price data; it does not invent prices. Endpoints require operator approval before a model can be enabled. Generation rejects an unknown, disabled, capability-incompatible or unpriced model. Browser input is a model ID and operation options only.
 
 Final deduction is `ceil(actual_metered_ai_cost_usd × 200)`. AI costs are stored as non-negative decimal nanodollars and converted with integer arithmetic. Estimated cost, estimated credits, actual Gateway cost and final credits are separate fields. No profitability or fixed-margin claim follows from the markup rule.
 
