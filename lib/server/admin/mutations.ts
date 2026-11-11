@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { AdminPermission } from "@/lib/contracts/admin";
 import { assessProductCompatibility, productPolicySchema } from "@/lib/server/ai/compatibility";
 import { assertModelCanBeEnabled, validateModelPrice } from "@/lib/server/ai/models";
+import { modelEndpoints } from "@/lib/server/db/schema";
 import { exactDecimalToNano, nanoToDecimal } from "@/lib/server/ai/pricing";
 import type { VerifiedIdentity } from "@/lib/server/auth/guards";
 import { getDb } from "@/lib/server/db/client";
@@ -96,7 +97,12 @@ export async function applyAdminMutation(admin: VerifiedIdentity, rawInput: unkn
       if (current.model.enabled !== input.expectedEnabled) throw new AppError("conflict", 409, "The model state changed. Refresh before retrying.");
       const [price] = await tx.select().from(modelPrices).where(and(eq(modelPrices.modelId, current.model.id), isNull(modelPrices.effectiveTo), lte(modelPrices.effectiveFrom, new Date()))).limit(1);
       if (input.enabled) {
-        const eligibility = assertModelCanBeEnabled(current.model, current.providerEnabled, price);
+        const approvedEndpoints = await tx.select({ id: modelEndpoints.id }).from(modelEndpoints).where(and(
+          eq(modelEndpoints.modelId, current.model.id),
+          eq(modelEndpoints.approved, true),
+          eq(modelEndpoints.enabled, true),
+        ));
+        const eligibility = assertModelCanBeEnabled(current.model, current.providerEnabled, price, approvedEndpoints.length);
         if (!eligibility.ok) throw new AppError("conflict", 409, eligibility.reason ?? "The model is not eligible for customer routing.");
       }
       const changed = current.model.enabled !== input.enabled;

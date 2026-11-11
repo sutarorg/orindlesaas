@@ -6,7 +6,10 @@ import { conversations, messages, generationJobs } from "@/lib/server/db/schema"
 import { AppError } from "@/lib/server/errors";
 import { resolveGenerationModel } from "@/lib/server/ai/models";
 import { holdCredits, lockCreditWallet } from "@/lib/server/credits/ledger";
-import { getGateway, extractGatewayGenerationId } from "@/lib/server/ai/gateway";
+import { openRouterLanguageModel } from "@/lib/server/ai/openrouter";
+import { providerRoutingBody } from "@/lib/server/ai/routing";
+import { isOpenRouterGenerationId } from "@/lib/server/ai/usage";
+import { classifyOpenRouterError } from "@/lib/server/ai/errors";
 import { generationRequestHash, markSubmissionAttempt, markSubmissionUncertain, recordProviderReference, settleGeneration } from "@/lib/server/generations/service";
 
 export const chatRequestSchema = z.object({
@@ -15,6 +18,20 @@ export const chatRequestSchema = z.object({
   message: z.string().trim().min(1).max(8000),
   idempotencyKey: z.string().trim().min(12).max(100).regex(/^[a-zA-Z0-9:_-]+$/),
 }).strict();
+
+
+/**
+ * Extracts the OpenRouter generation ID from an AI SDK step's response metadata.
+ *
+ * Verified against `@openrouter/ai-sdk-provider@3.1.0`: `doGenerate`/`doStream` return
+ * `response: { id, modelId, headers, body }`, where `id` is the OpenRouter generation ID. The value
+ * is validated against the documented `gen-` form so a malformed or missing ID cannot be mistaken
+ * for a real reference — an unclassifiable reference would make settlement look up the wrong thing.
+ */
+function openRouterGenerationIdFrom(response: { id?: string } | undefined): string | null {
+  const id = response?.id;
+  return typeof id === "string" && isOpenRouterGenerationId(id) ? id : null;
+}
 
 async function modelMessages(conversationId: string | undefined, message: string) {
   if (!conversationId) return [{ role: "user", content: message }] satisfies ModelMessage[];
@@ -61,21 +78,31 @@ export async function createChatStream(userId: string, rawInput: unknown, correl
   const attempted = await markSubmissionAttempt(jobId, userId);
   if (!attempted) throw new AppError("conflict", 409, "This chat request was already submitted.");
 
+  // Routing is built from the server-side plan, never from the request body. `max_price` bounds the
+  // provider's spend to the figure the reservation was quoted from.
+  const routing = model.routing ? providerRoutingBody(model.routing) : undefined;
   const result = streamText({
-    model: getGateway().languageModel(model.gatewayModelId),
+    model: openRouterLanguageModel(model.providerModelId, routing ? { provider: routing } : undefined),
     system: "You are Orindle's helpful AI workspace assistant. Be clear about uncertainty. Never claim to have performed external actions or persist memory beyond this conversation.",
     messages: modelHistory,
     maxOutputTokens,
+    // A paid generation is never automatically repeated: an uncertain outcome must be reconciled,
+    // not resubmitted, or the customer could be charged twice for one click.
     maxRetries: 0,
     streamRetries: 0,
-    providerOptions: { gateway: { user: userId, tags: [`generation:${jobId}`] } },
+    // Attribution only. The OpenRouter provider reads `user` for abuse detection; it is not a
+    // routing or pricing control.
+    providerOptions: { openrouter: { user: userId } },
     onStepEnd: async (step) => {
-      const generationId = extractGatewayGenerationId(step.providerMetadata);
+      const generationId = openRouterGenerationIdFrom(step.response);
       if (generationId) await recordProviderReference({ jobId, userId, generationId });
     },
     onEnd: async (event) => {
       try {
-        const generationId = extractGatewayGenerationId(event.finalStep.providerMetadata);
+        // The OpenRouter generation ID is the provider's response `id`, surfaced by the AI SDK as
+        // `response.id`. It is NOT `providerMetadata.gateway.generationId` (a Gateway-only field),
+        // and reading the wrong location would send every chat job to reconciliation.
+        const generationId = openRouterGenerationIdFrom(event.finalStep.response);
         if (!generationId) {
           await markSubmissionUncertain(jobId, userId, "missing_generation_id");
           return;
@@ -89,7 +116,17 @@ export async function createChatStream(userId: string, rawInput: unknown, correl
         await markSubmissionUncertain(jobId, userId, "chat_postprocessing_uncertain");
       }
     },
-    onError: async () => { await markSubmissionUncertain(jobId, userId, "stream_error"); },
+    /**
+     * OpenRouter can return HTTP 200 and then fail inside the stream, so this callback is the only
+     * place a mid-stream failure is visible. The job is *not* settled here even when text arrived:
+     * credits follow the provider's billed cost, not the first token, and an errored stream may have
+     * been partially billed. The classification is recorded so an operator can tell a content
+     * rejection apart from an outage without reading provider logs.
+     */
+    onError: async (error) => {
+      const normalized = classifyOpenRouterError(error);
+      await markSubmissionUncertain(jobId, userId, `stream_${normalized.kind}`);
+    },
     onAbort: async () => { await markSubmissionUncertain(jobId, userId, "stream_aborted"); },
   });
 

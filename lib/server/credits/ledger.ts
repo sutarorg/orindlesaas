@@ -218,10 +218,28 @@ export async function releaseReservation(tx: DbTransaction, reservationId: strin
   return { reservation: updated, duplicate: false };
 }
 
+/**
+ * Provider-neutral cost evidence accepted by the ledger.
+ *
+ * `gatewayGenerationId` is retained so historical Gateway settlements keep working unchanged; a new
+ * OpenRouter settlement fills the provider-neutral fields instead. Both are stored, so an auditor
+ * can always see which provider produced a figure and from which source.
+ */
+export type SettlementEvidence = {
+  actualCostUsd: string;
+  gatewayGenerationId?: string;
+  providerGenerationId?: string;
+  provider?: "openrouter" | "vercel_ai_gateway";
+  providerEndpoint?: string | null;
+  costSource?: string;
+  usageEvidence?: Record<string, unknown>;
+  usage?: Record<string, number>;
+};
+
 async function recordUsageEvidence(
   tx: DbTransaction,
   reservation: typeof creditReservations.$inferSelect,
-  input: { actualCostUsd: string; gatewayGenerationId?: string; usage?: Record<string, number> },
+  input: SettlementEvidence,
   status: "required" | "settled",
   chargedCredits: number | null,
 ) {
@@ -230,8 +248,15 @@ async function recordUsageEvidence(
     userId: reservation.userId,
     generationJobId: reservation.jobId,
     gatewayGenerationId: input.gatewayGenerationId,
+    providerGenerationId: input.providerGenerationId,
+    provider: input.provider,
+    providerEndpoint: input.providerEndpoint ?? null,
+    costSource: input.costSource,
+    usageEvidence: input.usageEvidence,
     usage: input.usage ?? {},
-    source: "gateway_actual" as const,
+    // The existing enum keeps its historical member so old rows stay valid; new OpenRouter
+    // settlements are labelled explicitly rather than masquerading as Gateway actuals.
+    source: (input.provider === "openrouter" ? "openrouter_actual" : "gateway_actual") as "gateway_actual" | "openrouter_actual",
     actualCostUsd: input.actualCostUsd,
     chargedCredits,
     reconciliationStatus: status,
@@ -245,7 +270,8 @@ async function recordUsageEvidence(
     existing.userId !== reservation.userId ||
     !existing.actualCostUsd ||
     parseUsdNanodollars(existing.actualCostUsd) !== parseUsdNanodollars(input.actualCostUsd) ||
-    (input.gatewayGenerationId && existing.gatewayGenerationId !== input.gatewayGenerationId) ||
+    (input.gatewayGenerationId && existing.gatewayGenerationId && existing.gatewayGenerationId !== input.gatewayGenerationId) ||
+    (input.providerGenerationId && existing.providerGenerationId && existing.providerGenerationId !== input.providerGenerationId) ||
     (existing.reconciliationStatus === "settled" && status !== "settled")
   ) {
     throw new AppError("conflict", 409, "Stored metering evidence does not match this settlement.");
@@ -257,13 +283,7 @@ async function recordUsageEvidence(
 
 export async function settleReservation(
   tx: DbTransaction,
-  input: {
-    reservationId: string;
-    actualCostUsd: string;
-    gatewayGenerationId?: string;
-    usage?: Record<string, number>;
-    correlationId: string;
-  },
+  input: SettlementEvidence & { reservationId: string; correlationId: string },
 ) {
   const actualNanodollars = parseUsdNanodollars(input.actualCostUsd);
   const actualCredits = nanodollarsToSafeNumber(creditsForActualCost(actualNanodollars));

@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray, isNull, lte } from "drizzle-orm";
 import { count, sum } from "drizzle-orm";
 import { getDb } from "@/lib/server/db/client";
-import { auditEvents, catalogSyncRuns, creditPacks, creditReservations, generationJobs, modelPrices, models, payments, profiles, providers, usageEvents, walletLedger, wallets, websiteProjects } from "@/lib/server/db/schema";
+import { auditEvents, catalogSyncRuns, creditPacks, creditReservations, generationJobs, modelEndpoints, modelPrices, models, payments, profiles, providers, usageEvents, walletLedger, wallets, websiteProjects } from "@/lib/server/db/schema";
 import { requireAdmin } from "@/lib/server/auth/guards";
 import type { AdminPermission } from "@/lib/contracts/admin";
 import { readServerEnvironment } from "@/lib/server/env";
@@ -28,6 +28,8 @@ export type AdminPageData = {
   compatibilityModels?: AdminCompatibilityModel[];
   syncRuns?: AdminSyncRun[];
   canSync?: boolean;
+  /** Serving endpoints with their own prices; the basis of every quote and approval decision. */
+  endpointTable?: AdminTable;
 };
 const permissions: Record<AdminSection, AdminPermission> = { overview: "admin:read", users: "users:read", models: "catalog:read", providers: "catalog:read", pricing: "pricing:read", usage: "usage:read", jobs: "jobs:read", websites: "websites:read", packs: "pricing:read", payments: "payments:read", transactions: "credits:read", adjustments: "credits:read", settings: "settings:read" };
 const iso = (value: Date | null) => value?.toISOString() ?? null;
@@ -69,16 +71,66 @@ export async function getAdminSection(section: AdminSection): Promise<AdminPageD
       return { title: "AI providers", description: "Catalog enablement only. No credentials or live health claim is inferred from these records.", metrics: [{ label: "Enabled providers", value: rows.filter((row) => row.enabled).length.toLocaleString() }], tableTitle: "Provider catalog", table: { columns: ["ID", "Name", "Enabled", "Updated"], rows: rows.map((row) => ({ id: row.id, cells: [row.id, row.name, row.enabled ? "yes" : "no", iso(row.updatedAt)] })) }, toggleControls: identity.permissions.has("catalog:manage") ? rows.map((row) => ({ action: "set_provider_enabled" as const, targetId: row.id, label: row.name, enabled: row.enabled })) : [] };
     }
     const canManage = identity.permissions.has("catalog:manage");
-    const [rows, runs] = await Promise.all([
-      db.select({ id: models.id, gatewayId: models.gatewayModelId, name: models.name, kind: models.kind, catalogType: models.catalogType, discoveryStatus: models.discoveryStatus, compatibilityVersion: models.compatibilityVersion, productCompatibility: models.productCompatibility, provider: providers.name, enabled: models.enabled, updatedAt: models.updatedAt }).from(models).innerJoin(providers, eq(models.providerId, providers.id)).orderBy(models.id).limit(100),
+    const [rows, runs, endpoints] = await Promise.all([
+      db.select({ id: models.id, gatewayId: models.providerModelId, name: models.name, kind: models.kind, catalogType: models.catalogType, discoveryStatus: models.discoveryStatus, compatibilityVersion: models.compatibilityVersion, productCompatibility: models.productCompatibility, provider: providers.name, enabled: models.enabled, endpointStatus: models.endpointStatus, providerKey: models.provider, updatedAt: models.updatedAt }).from(models).innerJoin(providers, eq(models.providerId, providers.id)).orderBy(models.id).limit(100),
       canManage ? db.select().from(catalogSyncRuns).orderBy(desc(catalogSyncRuns.startedAt)).limit(10) : Promise.resolve([]),
+      // Endpoint state is what decides whether a model can be sold at all, so it is surfaced here
+      // rather than hidden behind the sync log.
+      db.select({
+        id: modelEndpoints.id,
+        modelId: modelEndpoints.modelId,
+        providerName: modelEndpoints.providerName,
+        providerSlug: modelEndpoints.providerSlug,
+        pricingData: modelEndpoints.pricingData,
+        approved: modelEndpoints.approved,
+        enabled: modelEndpoints.enabled,
+        lastSeenAt: modelEndpoints.lastSeenAt,
+      }).from(modelEndpoints).orderBy(modelEndpoints.modelId, modelEndpoints.providerName).limit(300),
     ]);
     return {
       title: "AI models",
-      description: "Live Gateway discovery, disabled-by-default mappings, reviewed product compatibility, and synchronized price history. Reference/missing records remain historical.",
-      metrics: [{ label: "Enabled models shown", value: rows.filter((row) => row.enabled).length.toLocaleString() }, { label: "Reference/missing shown", value: rows.filter((row) => row.discoveryStatus !== "present").length.toLocaleString() }],
+      description: "Live OpenRouter discovery, disabled-by-default mappings, endpoint-level pricing and reviewed product compatibility. Historical Gateway records remain visible as history.",
+      metrics: [
+        { label: "Enabled models shown", value: rows.filter((row) => row.enabled).length.toLocaleString() },
+        { label: "Reference/missing shown", value: rows.filter((row) => row.discoveryStatus !== "present").length.toLocaleString() },
+        { label: "Approved endpoints", value: endpoints.filter((endpoint) => endpoint.approved && endpoint.enabled).length.toLocaleString() },
+        { label: "Endpoints awaiting approval", value: endpoints.filter((endpoint) => !endpoint.approved).length.toLocaleString() },
+      ],
       tableTitle: "Model catalog",
-      table: { columns: ["Model", "Catalog type", "Product", "Provider", "Gateway ID", "Discovery", "Enabled", "Updated"], rows: rows.map((row) => ({ id: row.id, cells: [row.name, row.catalogType, row.kind, row.provider, row.gatewayId, row.discoveryStatus, row.enabled ? "yes" : "no", iso(row.updatedAt)] })) },
+      table: { columns: ["Model", "Catalog type", "Product", "Publisher", "OpenRouter ID", "Endpoints", "Discovery", "Enabled", "Updated"], rows: rows.map((row) => {
+        const owned = endpoints.filter((endpoint) => endpoint.modelId === row.id);
+        const approved = owned.filter((endpoint) => endpoint.approved && endpoint.enabled).length;
+        return {
+          id: row.id,
+          cells: [
+            row.name,
+            row.catalogType,
+            row.kind,
+            row.provider,
+            row.gatewayId ?? "—",
+            owned.length === 0 ? "none discovered" : `${approved}/${owned.length} approved`,
+            row.discoveryStatus,
+            row.enabled ? "yes" : "no",
+            iso(row.updatedAt),
+          ],
+        };
+      }) },
+      endpointTable: {
+        columns: ["Model", "Serving provider", "Slug", "Prompt", "Completion", "Approved", "Enabled", "Last seen"],
+        rows: endpoints.map((endpoint) => ({
+          id: endpoint.id,
+          cells: [
+            endpoint.modelId,
+            endpoint.providerName,
+            endpoint.providerSlug ?? "—",
+            String((endpoint.pricingData as Record<string, unknown>).prompt ?? "—"),
+            String((endpoint.pricingData as Record<string, unknown>).completion ?? "—"),
+            endpoint.approved ? "yes" : "no",
+            endpoint.enabled ? "yes" : "no",
+            iso(endpoint.lastSeenAt),
+          ],
+        })),
+      },
       toggleControls: canManage ? rows.map((row) => ({ action: "set_model_enabled" as const, targetId: row.id, label: row.name, enabled: row.enabled })) : [],
       compatibilityModels: canManage ? rows.map((row) => ({ modelId: row.id, label: row.name, kind: row.kind, catalogType: row.catalogType, discoveryStatus: row.discoveryStatus, compatibilityVersion: row.compatibilityVersion, productCompatibility: row.productCompatibility })) : [],
       canSync: canManage,
@@ -91,12 +143,12 @@ export async function getAdminSection(section: AdminSection): Promise<AdminPageD
       db.select({ id: modelPrices.id, modelId: modelPrices.modelId, input: modelPrices.inputNanoUsdPerToken, output: modelPrices.outputNanoUsdPerToken, operation: modelPrices.operationNanoUsd, pricingData: modelPrices.pricingData, source: modelPrices.source, from: modelPrices.effectiveFrom, to: modelPrices.effectiveTo }).from(modelPrices).orderBy(desc(modelPrices.effectiveFrom)).limit(100),
       identity.permissions.has("pricing:manage") ? db.select({ modelId: models.id, name: models.name, kind: models.kind, currentPriceId: modelPrices.id, input: modelPrices.inputNanoUsdPerToken, output: modelPrices.outputNanoUsdPerToken, operation: modelPrices.operationNanoUsd, pricingData: modelPrices.pricingData }).from(models).leftJoin(modelPrices, and(eq(modelPrices.modelId, models.id), isNull(modelPrices.effectiveTo), lte(modelPrices.effectiveFrom, now))).orderBy(models.id).limit(100) : Promise.resolve([]),
     ]);
-    return { title: "Model pricing", description: "Restricted estimate-pricing inputs in nanodollars. Actual billing always uses verified Gateway generation cost.", metrics: [{ label: "Current prices", value: rows.filter((row) => !row.to).length.toLocaleString() }], tableTitle: "Price versions", table: { columns: ["Model", "Input/token", "Output/token", "Operation", "Source", "Effective from", "Effective to"], rows: rows.map((row) => ({ id: row.id, cells: [row.modelId, row.input, row.output, row.operation, row.source, iso(row.from), iso(row.to)] })) }, priceModels: priceModels.map((row) => ({ modelId: row.modelId, label: row.name, kind: row.kind, currentPriceId: row.currentPriceId, input: row.input, output: row.output, operation: row.operation, pricingData: row.pricingData })) };
+    return { title: "Model pricing", description: "Restricted estimate-pricing inputs in nanodollars. Actual billing always uses the verified OpenRouter generation cost.", metrics: [{ label: "Current prices", value: rows.filter((row) => !row.to).length.toLocaleString() }], tableTitle: "Price versions", table: { columns: ["Model", "Input/token", "Output/token", "Operation", "Source", "Effective from", "Effective to"], rows: rows.map((row) => ({ id: row.id, cells: [row.modelId, row.input, row.output, row.operation, row.source, iso(row.from), iso(row.to)] })) }, priceModels: priceModels.map((row) => ({ modelId: row.modelId, label: row.name, kind: row.kind, currentPriceId: row.currentPriceId, input: row.input, output: row.output, operation: row.operation, pricingData: row.pricingData })) };
   }
   if (section === "usage") {
-    const rows = await db.select({ id: usageEvents.id, userId: usageEvents.userId, jobId: usageEvents.generationJobId, gatewayGenerationId: usageEvents.gatewayGenerationId, product: generationJobs.kind, modelId: generationJobs.modelId, source: usageEvents.source, actualCost: usageEvents.actualCostUsd, charged: usageEvents.chargedCredits, reconciliation: usageEvents.reconciliationStatus, createdAt: usageEvents.createdAt }).from(usageEvents).innerJoin(generationJobs, eq(usageEvents.generationJobId, generationJobs.id)).orderBy(desc(usageEvents.createdAt)).limit(100);
+    const rows = await db.select({ id: usageEvents.id, userId: usageEvents.userId, jobId: usageEvents.generationJobId, gatewayGenerationId: usageEvents.providerGenerationId, product: generationJobs.kind, modelId: generationJobs.modelId, source: usageEvents.source, actualCost: usageEvents.actualCostUsd, charged: usageEvents.chargedCredits, reconciliation: usageEvents.reconciliationStatus, createdAt: usageEvents.createdAt }).from(usageEvents).innerJoin(generationJobs, eq(usageEvents.generationJobId, generationJobs.id)).orderBy(desc(usageEvents.createdAt)).limit(100);
     const actualTotal = rows.reduce((total, row) => total + (row.actualCost ? Number(row.actualCost) : 0), 0);
-    return { title: "AI usage & costs", description: "Restricted actual metering records joined to safe job model/product metadata. Estimates are not treated as actuals; totals cover only the bounded rows shown.", metrics: [{ label: "Reconciliation required", value: rows.filter((row) => row.reconciliation === "required").length.toLocaleString() }, { label: "Actual USD shown", value: actualTotal.toFixed(8) }], tableTitle: "Usage events", table: { columns: ["Job", "Gateway generation", "User", "Product", "Model", "Source", "Actual USD", "Charged credits", "Reconciliation", "Created"], rows: rows.map((row) => ({ id: row.id, cells: [row.jobId, row.gatewayGenerationId, row.userId, row.product, row.modelId, row.source, row.actualCost, row.charged, row.reconciliation, iso(row.createdAt)] })) } };
+    return { title: "AI usage & costs", description: "Restricted actual metering records joined to safe job model/product metadata. Estimates are not treated as actuals; totals cover only the bounded rows shown.", metrics: [{ label: "Reconciliation required", value: rows.filter((row) => row.reconciliation === "required").length.toLocaleString() }, { label: "Actual USD shown", value: actualTotal.toFixed(8) }], tableTitle: "Usage events", table: { columns: ["Job", "Provider generation", "User", "Product", "Model", "Source", "Actual USD", "Charged credits", "Reconciliation", "Created"], rows: rows.map((row) => ({ id: row.id, cells: [row.jobId, row.gatewayGenerationId, row.userId, row.product, row.modelId, row.source, row.actualCost, row.charged, row.reconciliation, iso(row.createdAt)] })) } };
   }
   if (section === "jobs") {
     const rows = await db.select({ id: generationJobs.id, userId: generationJobs.userId, kind: generationJobs.kind, modelId: generationJobs.modelId, status: generationJobs.status, error: generationJobs.errorCode, estimate: creditReservations.estimatedCredits, actual: creditReservations.actualCredits, createdAt: generationJobs.createdAt }).from(generationJobs).leftJoin(creditReservations, eq(generationJobs.reservationId, creditReservations.id)).orderBy(desc(generationJobs.createdAt)).limit(100);
@@ -120,6 +172,6 @@ export async function getAdminSection(section: AdminSection): Promise<AdminPageD
     return { title: section === "adjustments" ? "Adjustments & disputes" : "Transactions", description: section === "adjustments" ? "Append-only administrative and reversal movements. New adjustments require AAL2, a substantive reason and audit persistence." : "Restricted append-only wallet movements across customer accounts.", metrics: [{ label: "Movements shown", value: rows.length.toLocaleString() }], tableTitle: section === "adjustments" ? "Adjustment and reversal ledger" : "Wallet ledger", table: { columns: ["Entry", "User", "Kind", "Available delta", "Reserved delta", "Available after", "Description", "Created"], rows: rows.map((row) => ({ id: row.id, cells: [row.id, row.userId, row.kind, row.available, row.reserved, row.after, row.description, iso(row.createdAt)] })) } };
   }
   const env = readServerEnvironment();
-  const integrations: [string, boolean][] = [["Supabase", Boolean(env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY && env.DATABASE_URL)], ["Dodo test/live configuration", Boolean(env.DODO_PAYMENTS_API_KEY && env.DODO_PAYMENTS_WEBHOOK_KEY)], ["AI Gateway", Boolean(env.AI_GATEWAY_API_KEY)], ["Cloudflare R2", Boolean(env.R2_ACCOUNT_ID && env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY && env.R2_BUCKET)], ["E2B", Boolean(env.E2B_API_KEY)], ["Vercel", Boolean(env.VERCEL_API_TOKEN)], ["Resend", Boolean(env.RESEND_API_KEY && env.RESEND_FROM_EMAIL)]];
+  const integrations: [string, boolean][] = [["Supabase", Boolean(env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY && env.DATABASE_URL)], ["Dodo test/live configuration", Boolean(env.DODO_PAYMENTS_API_KEY && env.DODO_PAYMENTS_WEBHOOK_KEY)], ["OpenRouter", Boolean(env.OPENROUTER_API_KEY)], ["Cloudflare R2", Boolean(env.R2_ACCOUNT_ID && env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY && env.R2_BUCKET)], ["E2B", Boolean(env.E2B_API_KEY)], ["Vercel", Boolean(env.VERCEL_API_TOKEN)], ["Resend", Boolean(env.RESEND_API_KEY && env.RESEND_FROM_EMAIL)]];
   return { title: "Admin settings", description: "Non-secret integration readiness. Presence of environment values does not prove a successful live connection.", metrics: [], tableTitle: "Integration configuration presence", table: { columns: ["Integration", "Required values present"], rows: integrations.map(([name, ready]) => ({ id: String(name), cells: [name, ready ? "yes" : "no"] })) }, notice: `Dodo mode: ${env.DODO_PAYMENTS_ENVIRONMENT}. Vercel target: ${env.VERCEL_DEPLOY_TARGET}. No secret values are returned.` };
 }

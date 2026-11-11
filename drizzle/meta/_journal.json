@@ -36,6 +36,13 @@
       "when": 1794210305413,
       "tag": "0004_local_jobs_and_rate_limits",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794394050967,
+      "tag": "0005_openrouter_provider_neutral",
+      "breakpoints": true
     }
   ]
 }

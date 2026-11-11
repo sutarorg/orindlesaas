@@ -1,6 +1,6 @@
 # AI provider architecture
 
-Status: **documentation design gate completed, 2026-11-06; implementation not yet claimed**. The existing Prompt 5 implementation is the baseline. Source A is preserved at `docs/vercel_ai_gateway_llm_model_ids-1.txt` and independently verified as 166 unique IDs in 28 namespaces; see `ai-catalogue-verification.md`. The dynamic ecosystem described here is **not implemented yet**.
+Status: **superseded — the provider is now OpenRouter.** This document describes the earlier Vercel AI Gateway design and is retained for historical context only. The implemented architecture is described in `openrouter-migration.md` and its linked `openrouter-*` documents; where the two disagree, the OpenRouter set is authoritative. `lib/server/ai/gateway.ts` referenced throughout this document no longer exists; `lib/server/ai/openrouter.ts` replaces it. The Gateway-era reference material remains at `docs/vercel_ai_gateway_llm_model_ids-1.txt` (166 IDs in 28 namespaces) purely as a historical record; see `ai-catalogue-verification.md`.
 
 ## Non-negotiable extension boundaries
 

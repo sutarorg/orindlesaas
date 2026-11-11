@@ -25,10 +25,29 @@ Use a disposable Supabase/PostgreSQL project and test-mode provider accounts fir
 6. **Bootstrap administration deliberately:** there is no default admin, public role grant, or implemented bootstrap script. A security owner must approve an existing user UUID and explicit permission bundle through a reviewed operator migration or future tested tool. Test wrong roles, expired membership, recent AAL2, and audit rollback before using admin actions.
 7. **Configure Dodo test mode:** create three one-time products matching exact pack pre-tax USD values, environment-specific server product IDs, and the raw webhook signing secret. Do not attach Dodo credit entitlements. Test signature/replay/mismatch/duplicate fulfillment and receipt outbox behavior with real PostgreSQL.
 8. **Configure Gateway and catalog:** set the authorized Gateway credential and run `npm run catalog:sync` as a deliberate external read plus database write. New providers/models remain disabled. Review capabilities and exact prices, configure media operation prices manually from authoritative evidence, then enable only approved entries.
-9. **Configure durable jobs and abuse controls:** register the Inngest endpoint/functions, event/signing keys and optional rotation procedure; configure Upstash. Verify outbox recovery, per-user limits, failure/timeout behavior, and no blind charged retry.
+9. **Configure durable jobs and abuse controls:** schedule `GET /api/v1/jobs/tick` with `JOBS_TICK_SECRET` for `?task=outbox`, `?task=metering` and `?task=catalog`. Durable jobs run in-process from the outbox table; Inngest and Upstash were removed and must not be reintroduced. Verify outbox recovery, per-user limits, failure/timeout behavior, and no blind charged retry. See `openrouter-operations.md`.
 10. **Configure storage/email:** use scoped R2 credentials and exact `AI_ALLOWED_ASSET_HOSTS`; verify owner-signed access, bounded downloads, checksum behavior and orphan-object reconciliation. Configure verified Resend sender/support inbox and test support/receipt idempotency and failure states.
 11. **Configure website execution:** set E2B and narrowly scoped Vercel preview credentials. Keep `VERCEL_DEPLOY_TARGET=preview`; the service rejects production targets. Test isolation, current-source build eligibility, bounded polling, unknown create outcomes and provider-ID reconciliation. Customer code must never execute on the app server.
 12. **Run credentialed acceptance tests:** complete customer and admin journeys, security/authorization negatives, financial reconciliation, accessibility/responsive regressions, dependency/secret review, monitoring/alert tests and operational drills before requesting production approval.
+
+## OpenRouter migration (applies to every environment)
+
+The provider is OpenRouter; `AI_GATEWAY_API_KEY` is no longer read, and `lib/server/ai/gateway.ts` no
+longer exists. However `0003` has already been applied to the hosted database, it should be treated as
+partially migrated rather than empty.
+
+1. Set `OPENROUTER_API_KEY` server-side. Never expose it to the browser.
+2. Apply `0005_openrouter_provider_neutral.sql` with `npx tsx scripts/db-migrate.mts`. It is additive and
+   idempotent (verified three consecutive runs on a disposable cluster) and has **not** been applied to
+   the hosted database; that requires owner authorisation.
+3. Schedule the three tick tasks (step 9 above) so settlement and catalogue refresh are not manual.
+4. Run `npm run catalog:sync`, approve serving endpoints in the admin dashboard, then enable models.
+   A model cannot be enabled without at least one approved, priced endpoint — this is the intended gate,
+   not a bug.
+5. Verify a model appears in the customer selector for the expected products.
+
+Full detail and the verified-versus-unverified boundary: `openrouter-operations.md` and
+`openrouter-migration.md`.
 
 ## Production deployment gate
 

@@ -11,7 +11,7 @@ Status: **Prompt 5 validated configuration contract**. `.env.example` contains n
 | `NEXT_PUBLIC_SUPABASE_URL` | Public client-safe | Auth | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Public client-safe | Auth | Current Supabase publishable key (not a secret/service key) |
 
-Never place `DATABASE_URL`, service-role/secret keys, Dodo/Gateway/R2/Inngest/E2B/Vercel/Upstash/Resend credentials or provider product mappings in `NEXT_PUBLIC_*` variables.
+Never place `DATABASE_URL`, service-role/secret keys, Dodo/OpenRouter/R2/E2B/Vercel/Resend credentials or provider product mappings in `NEXT_PUBLIC_*` variables.
 
 ## Server-only integrations
 
@@ -23,7 +23,7 @@ Never place `DATABASE_URL`, service-role/secret keys, Dodo/Gateway/R2/Inngest/E2
 | `DODO_PAYMENTS_WEBHOOK_KEY` | Dodo webhook | Standard Webhooks signing secret |
 | `DODO_PAYMENTS_ENVIRONMENT` | Dodo | `test_mode` by default; `live_mode` only through deliberate production configuration |
 | `DODO_PRODUCT_CREATOR_ID`, `DODO_PRODUCT_PRO_ID`, `DODO_PRODUCT_STUDIO_ID` | Checkout/webhook expectation | Environment-specific one-time product IDs; server-only and not shared across test/live |
-| `AI_GATEWAY_API_KEY` | AI/catalog/cost | Server secret; Vercel OIDC may be supported by the SDK on Vercel but is not assumed locally |
+| `OPENROUTER_API_KEY` | AI/catalog/cost | Server secret, never `NEXT_PUBLIC_`. Replaces `AI_GATEWAY_API_KEY`. Public catalogue and media-discovery reads work without it; generation and cost lookup require it. See `openrouter-provider.md` |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | R2 | Server-only account/bucket and scoped S3 credentials |
 | `JOBS_TICK_SECRET` | Scheduled jobs | Bearer secret required by `GET /api/v1/jobs/tick`; the outbox is drained in-process, so no hosted queue or signing key exists |
 | `E2B_API_KEY` | Website validation | Server secret; never forwarded into the created sandbox |
@@ -40,10 +40,10 @@ Local development may use explicit injected fakes in tests and a bounded process
 
 ## Validation
 
-`npm run env:check` validates variable presence groups, URL/enumeration formats, Dodo key/mode consistency and forbidden public-secret patterns without printing secret values. Build scripts do not require live secrets merely to compile. `npm run setup:guided` prints a configuration checklist; it does not create paid resources. See `deployment-runbook.md` for migration, catalog sync, admin bootstrap, webhook and Inngest sync order.
+`npm run env:check` validates variable presence groups, URL/enumeration formats, Dodo key/mode consistency and forbidden public-secret patterns without printing secret values. Build scripts do not require live secrets merely to compile. `npm run setup:guided` prints a configuration checklist; it does not create paid resources. See `deployment-runbook.md` for migration, catalog sync, admin bootstrap, webhook and scheduler order, and `openrouter-operations.md` for the tick tasks.
 
 ## Dynamic AI operations note
 
-The planned dynamic registry/sync uses the existing `AI_GATEWAY_API_KEY`, database, and Inngest configuration; no duplicate Gateway credential or parallel service URL is introduced. Public model discovery needs no key, while team private/virtual models and `include_availability` require authenticated server reads. Availability responses must remain private/no-store.
+The dynamic registry/sync uses `OPENROUTER_API_KEY`, the existing database and the in-process jobs/outbox/tick scheduler. Inngest and Upstash were removed and are not required. Public model and media discovery need no key; generation, cost lookup and endpoint-enriched reads do. `JOBS_TICK_SECRET` protects `GET /api/v1/jobs/tick`, which must be scheduled with `?task=outbox`, `?task=metering` and `?task=catalog`; see `openrouter-operations.md`.
 
 The existing optional live-AI smoke policy remains disabled by default and separately authorized. Any new schedule or live test flag must be documented before use; no such flag has been enabled and no hosted sync or paid call has run for the dynamic stage. See `ai-catalog-sync.md` and `ai-testing-strategy.md`.

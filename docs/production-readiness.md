@@ -26,7 +26,7 @@ Current status: **not production ready / NO-GO**. This checklist concerns a real
 - [ ] Hosted Supabase signup/verification/login/refresh/logout/recovery/OAuth, active-profile, inactive/expired-session and two-user ownership tests pass.
 - [ ] Every admin route/action/field denies wrong role/permission and stale step-up; recent AAL2/TOTP is proven for high-impact actions.
 - [ ] Dodo test-mode checkout/webhook/signature/replay/mismatch/exactly-once/receipt behavior passes with safe test records and no real money.
-- [ ] Gateway actual cost/metering, Inngest recovery, R2 ownership/failures, E2B/Vercel sandbox/deployment, Upstash limits and Resend delivery are tested in authorized intended environments.
+- [ ] OpenRouter actual cost/metering (`GET /api/v1/generation`), in-process outbox/tick recovery, R2 ownership/failures, E2B/Vercel sandbox/deployment and Resend delivery are tested in authorized intended environments.
 - [ ] Backup restoration, crash/recovery injection and wallet/ledger/payment/provider reconciliation pass without untracked balance repair.
 - [ ] Finance/security owners review admin metric definitions, redacted diagnostics and customer-code/deployment field restrictions in the real environment.
 

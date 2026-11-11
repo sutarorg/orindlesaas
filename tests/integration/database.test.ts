@@ -10,7 +10,7 @@ import { fulfillDodoPayment } from "@/lib/server/payments/fulfillment";
 import { paymentWebhookSchema } from "@/lib/server/payments/payment-validation";
 import { creditPacks as contentPacks } from "@/lib/content/pricing";
 import { catalogPriceObservations, catalogSyncRuns, creditPacks, modelPrices, models, providers } from "@/lib/server/db/schema";
-import { syncGatewayCatalog } from "@/lib/server/ai/catalog-sync";
+import { syncOpenRouterCatalog } from "@/lib/server/ai/catalog-sync";
 import type { VerifiedIdentity } from "@/lib/server/auth/guards";
 
 let admin: ReturnType<typeof postgres>;
@@ -285,47 +285,48 @@ describe("disposable real PostgreSQL verification", () => {
   });
 
   it("applies discovery idempotently, never enables, and quarantines invalid entries", async () => {
-    const fetchImpl: typeof fetch = (async () => new Response(JSON.stringify({ object: "list", data: [] }), { status: 200 })) as unknown as typeof fetch;
+    const fetchImpl: typeof fetch = (async () => new Response(JSON.stringify({ data: [] }), { status: 200 })) as unknown as typeof fetch;
     const [lease] = await admin<{ id: string }[]>`insert into public.catalog_sync_runs (trigger, mode, status, started_at, request_id, lease_expires_at)
       values ('manual', 'full', 'running', now(), ${"qa-lease"}, now() + interval '30 minutes') returning id`;
-    await expect(syncGatewayCatalog({ trigger: "scheduled", mode: "full", fetchImpl, includeAvailability: false })).rejects.toMatchObject({ code: "conflict" });
+    await expect(syncOpenRouterCatalog({ trigger: "scheduled", mode: "full", fetchImpl })).rejects.toMatchObject({ code: "conflict" });
     await admin`update public.catalog_sync_runs set status = 'failed', lease_expires_at = now() - interval '1 minute' where id = ${lease!.id}`;
 
+    // The OpenRouter shape: identity is author/slug, the product comes from output modalities, and
+    // per-token prices are `prompt`/`completion` strings.
     const response = {
-      object: "list",
       data: [
-        { id: "qa-alpha/model-one", name: "QA One", type: "language", owned_by: "QA Alpha", pricing: { input: "0.000001", output: "0.000002" }, supported_specifications: ["v4"], modalities: { input: ["text"], output: ["text"] } },
-        { id: "qa-alpha/model-two", name: "QA Two", type: "image", owned_by: "QA Alpha", pricing: null, supported_specifications: ["v4"], modalities: { input: ["text"], output: ["image"] } },
-        { id: "qa-alpha/not a valid id", name: "Broken", type: "language" },
+        { id: "qa-alpha/model-one", name: "QA One", architecture: { input_modalities: ["text"], output_modalities: ["text"] }, pricing: { prompt: "0.000001", completion: "0.000002" }, context_length: 128000, supported_parameters: ["max_tokens"] },
+        { id: "qa-alpha/model-two", name: "QA Two", architecture: { input_modalities: ["text"], output_modalities: ["image"] }, pricing: null, supported_parameters: [] },
+        { id: "qa-alpha/not a valid id", name: "Broken", architecture: { output_modalities: ["text"] } },
       ],
     };
     const catalogFetch = (async () => new Response(JSON.stringify(response), { status: 200, headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
-    const first = await syncGatewayCatalog({ trigger: "manual", mode: "full", fetchImpl: catalogFetch, includeAvailability: false });
+    const first = await syncOpenRouterCatalog({ trigger: "manual", mode: "full", fetchImpl: catalogFetch });
     expect(first).toMatchObject({ status: "partial", models: 2, invalid: 1 });
     const [alpha] = await admin<{ enabled: boolean }[]>`select enabled from public.providers where id = 'qa-alpha'`;
     expect(alpha).toEqual({ enabled: false });
     const discovered = await admin<{ id: string; enabled: boolean; discovery_status: string; kind: string | null }[]>`
-      select id, enabled, discovery_status, kind from public.models where provider_id = 'qa-alpha' order by id`;
+      select id, enabled, discovery_status, kind from public.models where provider_id = 'qa-alpha' and id like 'qa-alpha/%' order by id`;
     expect(discovered).toEqual([
-      { id: "gateway:qa-alpha/model-one", enabled: false, discovery_status: "present", kind: "chat" },
-      { id: "gateway:qa-alpha/model-two", enabled: false, discovery_status: "present", kind: "image" },
+      { id: "qa-alpha/model-one", enabled: false, discovery_status: "present", kind: "chat" },
+      { id: "qa-alpha/model-two", enabled: false, discovery_status: "present", kind: "image" },
     ]);
     const prices = await admin<{ model_id: string; input: string | null; source: string; open: boolean }[]>`
       select p.model_id, p.pricing_data->>'input' input, p.source, p.effective_to is null open from public.model_prices p
-      where p.model_id like 'gateway:qa-alpha/%' order by p.model_id`;
-    expect(prices).toEqual([{ model_id: "gateway:qa-alpha/model-one", input: "0.000001", source: "gateway_catalog", open: true }]);
+      where p.model_id like 'qa-alpha/%' order by p.model_id`;
+    expect(prices).toEqual([{ model_id: "qa-alpha/model-one", input: "0.000001", source: "openrouter_catalog", open: true }]);
 
-    const second = await syncGatewayCatalog({ trigger: "scheduled", mode: "incremental", fetchImpl: catalogFetch, includeAvailability: false });
+    const second = await syncOpenRouterCatalog({ trigger: "scheduled", mode: "incremental", fetchImpl: catalogFetch });
     expect(second).toMatchObject({ status: "partial", models: 2, invalid: 1, changed: 0 });
-    const [priceCount] = await admin<{ count: number }[]>`select count(*)::int count from public.model_prices where model_id like 'gateway:qa-alpha/%'`;
+    const [priceCount] = await admin<{ count: number }[]>`select count(*)::int count from public.model_prices where model_id like 'qa-alpha/%'`;
     expect(priceCount?.count).toBe(1);
 
     // A model that vanishes from discovery is marked missing, not deleted or enabled.
-    const reduced = { object: "list", data: [response.data[0]] };
+    const reduced = { data: [response.data[0]] };
     const reducedFetch = (async () => new Response(JSON.stringify(reduced), { status: 200, headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
-    const third = await syncGatewayCatalog({ trigger: "scheduled", mode: "full", fetchImpl: reducedFetch, includeAvailability: false });
+    const third = await syncOpenRouterCatalog({ trigger: "scheduled", mode: "full", fetchImpl: reducedFetch });
     expect(third).toMatchObject({ status: "succeeded", models: 1, invalid: 0 });
-    const [gone] = await admin<{ discovery_status: string; enabled: boolean }[]>`select discovery_status, enabled from public.models where id = 'gateway:qa-alpha/model-two'`;
+    const [gone] = await admin<{ discovery_status: string; enabled: boolean }[]>`select discovery_status, enabled from public.models where id = 'qa-alpha/model-two'`;
     expect(gone).toEqual({ discovery_status: "missing", enabled: false });
 
     const [runs] = await admin<{ succeeded: number; partial: number }[]>`select

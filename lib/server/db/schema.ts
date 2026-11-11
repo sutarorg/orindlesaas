@@ -308,7 +308,23 @@ export const models = pgTable(
   {
     id: text("id").primaryKey(),
     providerId: text("provider_id").notNull().references(() => providers.id, { onDelete: "restrict" }),
+    /**
+     * Historical Vercel AI Gateway identifier. Retained, not renamed: existing rows, prices and
+     * usage records reference it, and a mass rename would destroy the audit trail. New OpenRouter
+     * rows store their canonical ID in `providerModelId` and leave this populated in parallel so
+     * the column stays NOT NULL UNIQUE without losing the old value.
+     */
     gatewayModelId: text("gateway_model_id").notNull().unique(),
+    /** Canonical OpenRouter model ID (`author/slug`). NULL for models that were never on OpenRouter. */
+    providerModelId: text("provider_model_id").unique(),
+    /** Model publisher/author, which is NOT the serving provider. Kept separate on purpose. */
+    author: text("author"),
+    /** Which AI provider new generations for this model are submitted to. */
+    provider: text("provider", { enum: ["openrouter", "vercel_ai_gateway"] }).notNull().default("vercel_ai_gateway"),
+    endpointStatus: text("endpoint_status", { enum: ["unknown", "discovered", "empty", "failed"] }).notNull().default("unknown"),
+    endpointSyncedAt: timestamp("endpoint_synced_at", { withTimezone: true }),
+    /** Worst-case priced rates across approved endpoints; what a quote is built from. */
+    routingPlan: jsonb("routing_plan").$type<Record<string, unknown>>(),
     name: text("name").notNull(),
     kind: generationKind("kind"),
     catalogType: text("catalog_type").notNull().default("unknown"),
@@ -333,6 +349,41 @@ export const models = pgTable(
     check("models_enabled_has_product", sql`${table.enabled} = false OR ${table.kind} IS NOT NULL`),
     check("models_compatibility_version_nonnegative", sql`${table.compatibilityVersion} >= 0`),
     pgPolicy("models_read_catalog", { for: "select", to: ["anon", "authenticated"], using: sql`${table.enabled} = true` }),
+  ],
+).enableRLS();
+
+/**
+ * One row per serving endpoint of a model.
+ *
+ * A single OpenRouter model can be served by several providers at different prices with different
+ * capabilities. Flattening that into one price on `models` would make every quote wrong for all but
+ * one route, so the endpoint is modelled explicitly and the quote is derived from these rows.
+ */
+export const modelEndpoints = pgTable(
+  "model_endpoints",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    modelId: text("model_id").notNull().references(() => models.id, { onDelete: "cascade" }),
+    providerName: text("provider_name").notNull(),
+    providerSlug: text("provider_slug"),
+    /** Exact advertised rates as decimal strings, keyed by dimension (prompt/completion/image/...). */
+    pricingData: jsonb("pricing_data").$type<Record<string, unknown>>().notNull().default({}),
+    capabilities: jsonb("capabilities").$type<Record<string, unknown>>().notNull().default({}),
+    contextLength: integer("context_length"),
+    maxCompletionTokens: integer("max_completion_tokens"),
+    /** Administrator approval. A new endpoint is never billable until an operator approves it. */
+    approved: boolean("approved").notNull().default(false),
+    enabled: boolean("enabled").notNull().default(false),
+    /** Snapshot of the rates at approval time; a change here is what triggers re-review. */
+    approvedPricingHash: text("approved_pricing_hash"),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (table) => [
+    uniqueIndex("model_endpoints_model_provider_unique").on(table.modelId, table.providerName),
+    index("model_endpoints_model_approved_idx").on(table.modelId, table.approved, table.enabled),
+    check("model_endpoints_provider_name_length", sql`length(${table.providerName}) BETWEEN 1 AND 240`),
   ],
 ).enableRLS();
 
@@ -413,7 +464,21 @@ export const generationJobs = pgTable(
     submissionState: text("submission_state", { enum: ["not_submitted", "attempted", "completed", "uncertain"] }).notNull().default("not_submitted"),
     result: jsonb("result").$type<Record<string, unknown>>(),
     providerOperation: jsonb("provider_operation").$type<Record<string, unknown>>(),
+    /** Historical Vercel AI Gateway generation reference. Never reinterpreted as an OpenRouter ID. */
     gatewayGenerationId: text("gateway_generation_id"),
+    /**
+     * OpenRouter generation ID (`gen-` prefix, hyphen). Separate from the Gateway column so a
+     * historical `gen_...` value can never be mistaken for an OpenRouter one during settlement.
+     */
+    providerGenerationId: text("provider_generation_id"),
+    /** OpenRouter asynchronous job ID for video. Distinct from both generation ID and job ID. */
+    providerJobId: text("provider_job_id"),
+    /** Which provider this specific job was submitted to. */
+    provider: text("provider", { enum: ["openrouter", "vercel_ai_gateway"] }),
+    /** Serving endpoint actually used, when the provider reports it. */
+    providerEndpoint: text("provider_endpoint"),
+    /** Cost evidence source, so an audit can tell a lookup from a response-side estimate. */
+    costSource: text("cost_source"),
     reservationId: uuid("reservation_id").references(() => creditReservations.id, { onDelete: "restrict" }),
     idempotencyKey: text("idempotency_key").notNull(),
     attempt: integer("attempt").notNull().default(0),
@@ -441,8 +506,16 @@ export const usageEvents = pgTable(
     userId: uuid("user_id").notNull().references(() => profiles.id, { onDelete: "restrict" }),
     generationJobId: uuid("generation_job_id").notNull().unique().references(() => generationJobs.id, { onDelete: "restrict" }),
     gatewayGenerationId: text("gateway_generation_id"),
+    /** OpenRouter generation reference, kept separate from the historical Gateway column. */
+    providerGenerationId: text("provider_generation_id"),
+    provider: text("provider", { enum: ["openrouter", "vercel_ai_gateway"] }),
+    providerEndpoint: text("provider_endpoint"),
+    /** Where the exact cost came from; NULL for pre-migration rows. */
+    costSource: text("cost_source"),
+    /** Full usage evidence (tokens, upstream cost) retained verbatim for audit. */
+    usageEvidence: jsonb("usage_evidence").$type<Record<string, unknown>>(),
     usage: jsonb("usage").$type<Record<string, number>>().notNull().default({}),
-    source: text("source", { enum: ["estimate", "gateway_actual", "reconciled_actual"] }).notNull(),
+    source: text("source", { enum: ["estimate", "gateway_actual", "reconciled_actual", "openrouter_actual"] }).notNull(),
     actualCostUsd: numeric("actual_cost_usd", { precision: 24, scale: 8 }),
     chargedCredits: bigint("charged_credits", { mode: "number" }),
     reconciliationStatus: text("reconciliation_status", { enum: ["estimated", "pending", "settled", "required"] }).notNull(),
@@ -706,6 +779,7 @@ export const schema = {
   idempotencyRecords,
   providers,
   models,
+  modelEndpoints,
   modelPrices,
   generationJobs,
   usageEvents,

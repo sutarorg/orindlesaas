@@ -41,7 +41,7 @@ export default function PrivacyPage() {
         <p>This public frontend does not intentionally install analytics, advertising or third-party tracking cookies. Future authentication requires secure session cookies. If nonessential analytics or similar technologies are introduced, the production site must provide appropriate notice and consent controls where required.</p>
       </LegalSection>
       <LegalSection id="providers" title="5. Service providers and sharing">
-        <p>The confirmed future architecture includes Supabase, Vercel, Cloudflare R2, E2B, Dodo Payments, Resend and AI providers accessed through Vercel AI Gateway. Their actual roles, enabled services, data locations and subprocessor terms must be verified before launch and reflected in an updated disclosure.</p>
+        <p>The confirmed future architecture includes Supabase, Vercel, Cloudflare R2, E2B, Dodo Payments, Resend and AI model providers accessed through OpenRouter. Their actual roles, enabled services, data locations and subprocessor terms must be verified before launch and reflected in an updated disclosure.</p>
         <p>Information should not be sold. Sharing should be limited to service operation, legal requirements, safety, business transfers with appropriate notice, or instructions from the user.</p>
       </LegalSection>
       <LegalSection id="retention" title="6. Retention, deletion and security">

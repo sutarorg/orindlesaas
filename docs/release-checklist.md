@@ -8,7 +8,7 @@ Status: **Prompt 6 execution checklist**. Checked items have linked observed loc
 - [x] Inventoried actual page/API routes, existing Vitest/Playwright tests, server modules, migrations, and available credential/runtime names.
 - [x] Researched current official Next.js testing, Vitest coverage, Playwright projects/fixtures, WCAG 2.2/evaluation, OWASP ASVS/WSTG, Supabase RLS/grants, and PostgreSQL locking guidance.
 - [x] Created the independent matrix, scenarios, specialized plans, defect/failure registers, and release/runbook documents before running tests.
-- [x] Preserved exactly four products, one account/workspace/wallet, premium-white defaults, mobile-first behavior, all six articles, Dodo Payments and Vercel AI Gateway; content/build/browser regressions pass.
+- [x] Preserved exactly four products, one account/workspace/wallet, premium-white defaults, mobile-first behavior, all six articles, Dodo Payments and OpenRouter (formerly Vercel AI Gateway); content/build/browser regressions pass.
 - [x] Preserved exact one-time Creator/Pro/Studio prices and credits; unit/database/JSON-LD checks confirm no subscription or duplicate entitlement metering.
 
 ## 2. Repeatable local and CI quality gates
