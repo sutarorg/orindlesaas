@@ -18,6 +18,16 @@ Without that check an operator could enable a model whose every generation then 
 because `resolveGenerationModel` correctly refuses to price an endpoint-less model. A model that appears
 selectable and always fails is worse than one that is visibly not ready.
 
+Two further gates had the same flaw and were fixed together:
+
+- The enablement check itself still demanded a `model_prices` row, so an OpenRouter model with an
+  approved, priced endpoint was refused with "a current exact price is required".
+- Editing the compatibility policy of an **enabled** model validated against `model_prices` alone, so
+  changing durations or resolutions on a live model always returned `409`.
+
+Both now go through `validateModelQuote`, which quotes the model the same way a real generation does:
+through its approved endpoints for OpenRouter, through the price row for historical Gateway models.
+
 The publisher must also be enabled; the wording changed from "provider" to "publisher" to match
 OpenRouter's model, where a model author publishes models that providers serve.
 

@@ -7,7 +7,7 @@
 | `npx tsc --noEmit` (including tests) | clean |
 | `npx eslint .` | 0 errors, 0 warnings |
 | `npx vitest run` | **234 passed across 36 files** |
-| Integration suite, real PostgreSQL | **10/10** |
+| Integration suite, real PostgreSQL | **11/11** |
 | `npm run check` (typecheck + lint + build) | passed |
 
 ## Honest scope
@@ -39,7 +39,7 @@ The integration guard chain is easy to get wrong and fails **silently**:
 - host must be `localhost`, `127.0.0.1` or `postgres`
 - database must be named `orindle_qa`
 
-A wrong variable name (for example `QA_DISPOSABLE`) skips all ten tests and looks exactly like a pass.
+A wrong variable name (for example `QA_DISPOSABLE`) skips every integration test and looks exactly like a pass.
 
 ## Suite additions
 
@@ -50,7 +50,7 @@ A wrong variable name (for example `QA_DISPOSABLE`) skips all ten tests and look
 | `tests/unit/server-openrouter-usage.test.ts` | 12 | ID classification, exact cost truncation, evidence verification |
 | `tests/unit/server-catalog-sync.test.ts` | 13 | normalisation, invalid accounting, endpoint recording |
 | `tests/unit/server-compatibility.test.ts` | 7 | provider-aware compatibility evidence |
-| `tests/integration/database.test.ts` | 10 | real schema, sync, RLS |
+| `tests/integration/database.test.ts` | 11 | real schema, sync, RLS, endpoint quoting and the approval gate |
 
 ## Every bug here was found by running code, not by reading it
 
@@ -72,10 +72,13 @@ This is the most useful result of the exercise. Each of the following passed rev
    for OpenRouter.
 8. **Endpoint-priced models invisible.** Both `resolveGenerationModel` and the customer selector
    inner-joined `model_prices`, so a model priced only by endpoints could never resolve or appear.
+9. **Enablement and policy edits refused.** The enablement gate and the compatibility-policy mutation
+   both required a `model_prices` row. Even with a priced endpoint approved, the model could neither be
+   enabled nor re-configured — so an OpenRouter model could never actually go live.
 
-Findings 3–8 were all discovered in the final end-to-end run, after the unit suite was already green,
+Findings 3–9 were all discovered in the final end-to-end run, after the unit suite was already green,
 which is the point: unit tests over mocks confirmed the pieces worked in isolation while the assembled
-path was broken in six ways.
+path was broken in seven ways.
 
 ## Fixture traps
 

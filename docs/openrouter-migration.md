@@ -30,7 +30,7 @@ broke a different part of the product when left in place; they are recorded in
 | Errors & retries | `retryableReadOnly`, no retry of uncertain paid work | `openrouter-errors.md` |
 | Admin | Endpoint approval table, endpoint metrics, enablement gate | `openrouter-admin.md` |
 | Database | `0005_openrouter_provider_neutral.sql`, preserved Gateway history | `openrouter-database.md` |
-| Testing | 234 unit tests, 10 integration tests on real PostgreSQL | `openrouter-testing.md` |
+| Testing | 234 unit tests, 11 integration tests on real PostgreSQL | `openrouter-testing.md` |
 | Security | Key handling, no client routing, no key exposure | `openrouter-security.md` |
 | Operations | Sync cadence, approval workflow, tick scheduling | `openrouter-operations.md` |
 | Lessons | The three Gateways-only assumptions that broke silently | `openrouter-lessons.md` |
@@ -53,7 +53,7 @@ Verified by execution, not inspection:
 - `npx tsc --noEmit` clean, including test files.
 - `npx eslint .` — 0 errors, 0 warnings.
 - `npx vitest run` — **234 passed across 36 files**.
-- Integration suite — **10/10** against a real PostgreSQL 55440 instance, applying `0000`–`0005`
+- Integration suite — **11/11** against a real PostgreSQL 55440 instance, applying `0000`–`0005`
   and synchronising a realistic OpenRouter catalogue.
 - `0005` re-runs cleanly three times (idempotent).
 - End-to-end, against the real database: catalogue sync → endpoint approval → exact chat, image and

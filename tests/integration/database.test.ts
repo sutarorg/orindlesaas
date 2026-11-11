@@ -339,4 +339,79 @@ describe("disposable real PostgreSQL verification", () => {
     expect(await getDb().select({ id: catalogSyncRuns.id }).from(catalogSyncRuns).where(eq(catalogSyncRuns.status, "running"))).toEqual([]);
     expect(await getDb().select({ id: catalogPriceObservations.id }).from(catalogPriceObservations).limit(1)).toHaveLength(1);
   });
+
+  it("quotes endpoint-priced models, gates enablement, and validates a policy change", async () => {
+    // Endpoint discovery is credential-gated: without a key the sync records models but skips endpoint
+    // enrichment. The value is never used because `fetchImpl` replaces the network entirely.
+    process.env.OPENROUTER_API_KEY = "qa-not-a-real-key";
+    // A model served by two providers at different rates. The quote must take the dearest, because
+    // OpenRouter may fall back to either one for a single request.
+    const catalogue = {
+      data: [
+        { id: "qa-beta/chat-one", name: "QA Beta Chat", architecture: { input_modalities: ["text"], output_modalities: ["text"] }, pricing: { prompt: "0.000002", completion: "0.000006" }, supported_parameters: ["max_tokens"] },
+      ],
+    };
+    const endpoints = {
+      data: { endpoints: [
+        { provider_name: "Cheap", provider_slug: "cheap", pricing: { prompt: "0.000001", completion: "0.000003" } },
+        { provider_name: "Dear", provider_slug: "dear", pricing: { prompt: "0.000004", completion: "0.000009" } },
+      ] },
+    };
+    const fetchImpl = (async (input: RequestInfo | URL) => {
+      const body = String(input).includes("/endpoints") ? endpoints : catalogue;
+      return new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json" } });
+    }) as unknown as typeof fetch;
+    await syncOpenRouterCatalog({ trigger: "manual", mode: "full", fetchImpl });
+
+    const [model] = await admin<{ id: string; enabled: boolean }[]>`select id, enabled from public.models where id = 'qa-beta/chat-one'`;
+    expect(model).toBeDefined();
+    // Discovery never enables, and never approves.
+    expect(model!.enabled).toBe(false);
+    const unapproved = await admin<{ approved: boolean; enabled: boolean }[]>`select approved, enabled from public.model_endpoints where model_id = 'qa-beta/chat-one' order by provider_name`;
+    expect(unapproved).toEqual([{ approved: false, enabled: false }, { approved: false, enabled: false }]);
+
+    // The enablement gate refuses a model with no approved endpoint instead of letting it look live.
+    await admin`update public.providers set enabled = true where id = 'qa-beta'`;
+    await admin`update public.models set enabled = true where id = 'qa-beta/chat-one'`;
+    const [enabledRow] = await admin<{ enabled: boolean }[]>`select enabled from public.models where id = 'qa-beta/chat-one'`;
+    expect(enabledRow!.enabled).toBe(true); // the database allows it; the *application* gate refuses it
+
+    const { assertModelCanBeEnabled, resolveGenerationModel, validateModelQuote } = await import("@/lib/server/ai/models");
+    // Read through Drizzle, not raw SQL: the application expects the camelCase row shape, and a raw
+    // snake_case row would fail on `productCompatibility` for reasons that have nothing to do with the
+    // behaviour under test.
+    const [row] = await getDb().select().from(models).where(eq(models.id, "qa-beta/chat-one"));
+    const withoutEndpoints = await assertModelCanBeEnabled(row as never, true, undefined, 0);
+    expect(withoutEndpoints).toMatchObject({ ok: false });
+    expect(withoutEndpoints.reason).toMatch(/approve.*endpoint/i);
+
+    // With no approved endpoint the model cannot be quoted at all, so it cannot be sold.
+    await expect(resolveGenerationModel({ modelId: "qa-beta/chat-one", kind: "chat", prompt: "hello", options: {} }))
+      .rejects.toMatchObject({ code: "conflict" });
+
+    // Approve both endpoints: now it quotes, and quotes the dearest rate.
+    await admin`update public.model_endpoints set approved = true, enabled = true where model_id = 'qa-beta/chat-one'`;
+    expect(await assertModelCanBeEnabled(row as never, true, undefined, 2)).toMatchObject({ ok: true });
+
+    const quote = await resolveGenerationModel({ modelId: "qa-beta/chat-one", kind: "chat", prompt: "x".repeat(400), options: { maxOutputTokens: 100 } });
+    expect(quote.routing?.maximumRates).toEqual({ prompt: "0.000004", completion: "0.000009" });
+    expect(quote.routing?.allowFallbacks).toBe(true);
+    expect(quote.estimatedCostUsd).toBe("0.00130000");
+
+    // Editing the policy of an enabled endpoint-priced model must not be blocked for lack of a
+    // `model_prices` row; that was the bug this covers.
+    const policy = await validateModelQuote(row as never, "chat", undefined);
+    expect(policy.reason).toBeUndefined();
+    expect(policy).toMatchObject({ ok: true });
+
+    // Revoking an endpoint removes the model from the customer selector.
+    const { listEnabledCatalog } = await import("@/lib/server/ai/models");
+    expect((await listEnabledCatalog("chat")).some((entry) => entry.id === "qa-beta/chat-one")).toBe(true);
+    await admin`update public.model_endpoints set approved = false, enabled = false where model_id = 'qa-beta/chat-one'`;
+    expect((await listEnabledCatalog("chat")).some((entry) => entry.id === "qa-beta/chat-one")).toBe(false);
+
+    // Clean up so later assertions about catalogue counts stay independent.
+    await admin`update public.models set discovery_status = 'missing', enabled = false where id = 'qa-beta/chat-one'`;
+    delete process.env.OPENROUTER_API_KEY;
+  });
 });

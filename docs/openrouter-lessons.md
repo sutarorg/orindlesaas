@@ -1,6 +1,6 @@
 # Lessons: what silently broke, and why
 
-Eight real defects were found during this migration. All eight passed code review and failed only when
+Nine real defects were found during this migration. All nine passed code review and failed only when
 executed. They are recorded because each one would have shipped looking correct, and because several
 share a single root cause worth remembering.
 
@@ -16,7 +16,7 @@ compatibility verdict.
 This is why "the unit tests pass" was not evidence of a working migration: each test exercised a piece
 in isolation, and the pieces were individually fine.
 
-## The eight
+## The nine
 
 | # | Symptom | Cause | Consequence if shipped |
 |---|---|---|---|
@@ -28,11 +28,12 @@ in isolation, and the pieces were individually fine.
 | 6 | Video enablement blocked | `resolutionPricing` Gateway SKU map was mandatory | same, one layer deeper |
 | 7 | Video quote always failed | engine resolved the label through that map, absent on OpenRouter | video could not be quoted at all |
 | 8 | Endpoint-priced models invisible | `innerJoin(modelPrices)` in two paths | a correctly priced model never resolved and never appeared in the selector |
+| 9 | Enablement and policy edits refused | the enable gate and the policy mutation both demanded a `model_prices` row | an operator could not enable or re-configure an endpoint-priced model, so none could ever go live |
 
-## Why six of the eight survived a green unit suite
+## Why seven of the nine survived a green unit suite
 
 They were found in the final end-to-end run, in order, one after another: fix one and the next appeared
-behind it. Findings 3–8 each lived on a *different* segment of one pipeline — compatibility →
+behind it. Findings 3–9 each lived on a *different* segment of one pipeline — compatibility →
 enablement → price lookup → quote → selector — and every segment had its own tests and its own passing
 assertions.
 
@@ -61,7 +62,7 @@ finally pushed through sync, approval, quote and selector against a real databas
 - **RLS needs two statements.** `.enableRLS()` in `schema.ts` **and** `ALTER TABLE … ENABLE ROW LEVEL
   SECURITY`, or the table is created unprotected. Silent.
 - **The integration guard chain fails silently.** `QA_DATABASE_DISPOSABLE=1`, host
-  `localhost|127.0.0.1|postgres`, database `orindle_qa`. A typo in the variable name skips all ten tests,
+  `localhost|127.0.0.1|postgres`, database `orindle_qa`. A typo in the variable name skips the whole suite,
   which is indistinguishable from ten passes.
 - **Drizzle emit is not idempotent.** Hand-guard every statement. Fix a missing-table error in the
   snapshot, never by editing generated SQL. Never split on `;` — `DO $$` blocks break.

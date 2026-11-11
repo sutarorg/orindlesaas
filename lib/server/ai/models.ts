@@ -314,6 +314,28 @@ export function validateModelPrice(model: ModelRow, price: PriceVersionLike | un
 }
 
 /**
+ * Whether a model can still quote a product exactly, including for an OpenRouter model whose price is
+ * defined by its approved endpoints rather than by a `model_prices` row.
+ *
+ * The admin policy mutation used to validate against `model_prices` alone, so editing the policy of an
+ * enabled endpoint-priced model always failed with "a current exact price is required" even though the
+ * model quoted perfectly. That blocked the only supported way to adjust durations or resolutions on a
+ * live model, and it contradicted the quote the customer would actually receive.
+ */
+export async function validateModelQuote(
+  model: ModelRow,
+  product: GenerationKind,
+  price: PriceVersionLike | undefined,
+): Promise<{ ok: boolean; reason?: string }> {
+  if (model.provider !== "openrouter") return validateModelPrice(model, price, product);
+  const endpointPrice = await endpointAwarePrice(model, product, reviewedResolutionLabels(model, product));
+  if (!endpointPrice) {
+    return { ok: false, reason: "Approve at least one priced serving endpoint that can quote this product exactly." };
+  }
+  return validateModelPrice(model, { ...(price ?? {}), ...endpointPrice.price } as PriceVersionLike, product);
+}
+
+/**
  * Whether an administrator may enable a model.
  *
  * For an OpenRouter model the decisive question is not "is there a model-level price" but "is there
@@ -321,20 +343,25 @@ export function validateModelPrice(model: ModelRow, price: PriceVersionLike | un
  * generation, so enabling the model would produce a selectable entry that always fails. This check
  * is synchronous on purpose; callers pass the approved endpoint count they have already read.
  */
-export function assertModelCanBeEnabled(
+export async function assertModelCanBeEnabled(
   model: ModelRow,
   providerEnabled: boolean,
   price: PriceRow | undefined,
   approvedEndpointCount?: number,
-): { ok: boolean; reason?: string } {
+): Promise<{ ok: boolean; reason?: string }> {
   if (!providerEnabled) return { ok: false, reason: "Enable the publisher before enabling this model." };
   if (model.provider === "openrouter" && approvedEndpointCount === 0) {
     return { ok: false, reason: "Approve and enable at least one priced serving endpoint before enabling this model." };
   }
-  if (!model.kind || model.discoveryStatus !== "present" || !price) return { ok: false, reason: "A supported product, current discovery, and current exact price are required." };
+  // An OpenRouter model is priced by its endpoints, so a `model_prices` row is not required. Requiring
+  // one here would block enabling exactly the models this migration introduced, even after an operator
+  // had approved a correctly priced endpoint.
+  if (!model.kind || model.discoveryStatus !== "present" || (model.provider !== "openrouter" && !price)) {
+    return { ok: false, reason: "A supported product, current discovery, and current exact price are required." };
+  }
   const availability = availabilityReason(model.gatewayMetadata);
   if (availability) return { ok: false, reason: availability };
-  return validateModelPrice(model, price, model.kind);
+  return validateModelQuote(model, model.kind, price);
 }
 
 export function estimateCost(input: {
